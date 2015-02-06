@@ -7,7 +7,7 @@ import java.util.*;
 
 public class Settings {
 	public static final String SETTINGSFILE = "settings.dat";
-	public static final Set<Integer> EMPTY_SET = Collections.emptySet();
+	public static final Set<Long> EMPTY_SET = Collections.emptySet();
 	
 	public static String COMMAND = null;
 	

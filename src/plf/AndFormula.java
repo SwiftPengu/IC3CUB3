@@ -25,9 +25,9 @@ public class AndFormula extends Formula{
 	}
 
 	@Override
-	public Set<Integer> getVariables() {
-		Set<Integer> lvars = left.getVariables();
-		Set<Integer> rvars = right.getVariables();
+	public Set<Long> getVariables() {
+		Set<Long> lvars = left.getVariables();
+		Set<Long> rvars = right.getVariables();
 		assert(lvars!=null);
 		assert(rvars!=null);
 		lvars.addAll(rvars);
@@ -42,5 +42,10 @@ public class AndFormula extends Formula{
 	@Override
 	public Formula rename(int old, int replacement) {
 		return new AndFormula(left.rename(old, replacement),right.rename(old, replacement));
+	}
+
+	@Override
+	public Formula getPrimed() {
+		return new AndFormula(left.getPrimed(),right.getPrimed());
 	}
 }

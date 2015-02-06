@@ -25,9 +25,9 @@ public class OrFormula extends Formula{
 	}
 	
 	@Override
-	public Set<Integer> getVariables() {
-		Set<Integer> lvars = left.getVariables();
-		Set<Integer> rvars = right.getVariables();
+	public Set<Long> getVariables() {
+		Set<Long> lvars = left.getVariables();
+		Set<Long> rvars = right.getVariables();
 		assert(lvars!=null);
 		assert(rvars!=null);
 		lvars.addAll(rvars);
@@ -44,5 +44,8 @@ public class OrFormula extends Formula{
 		return new OrFormula(left.rename(old, replacement), right.rename(old, replacement));
 	}
 	
-	
+	@Override
+	public Formula getPrimed() {
+		return new OrFormula(left.getPrimed(),right.getPrimed());
+	}	
 }

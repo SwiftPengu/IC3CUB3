@@ -1,7 +1,6 @@
 package sat;
 
 import java.util.List;
-import java.util.Set;
 
 import plf.Formula;
 
@@ -11,10 +10,10 @@ public abstract class SATSolver {
 	 * @param f the formula to be satisfied
 	 * @return empty list if unsatisfiable, a list of formulae each representing a satisfiable interpretation if satisfiable
 	 */
-	public abstract List<Formula> solve(Formula f, Set<Integer> skip);
+	public abstract List<Formula> solve(Formula f, boolean skip);
 	public abstract List<Formula> solve(Formula f);
 	
-	public List<Formula> solveTimed(Formula f, Set<Integer> skip){
+	public List<Formula> solveTimed(Formula f, boolean skip){
 		long time = System.currentTimeMillis();
 		List<Formula> result = solve(f,skip);
 		System.out.println(String.format("Took %dms",System.currentTimeMillis()-time));

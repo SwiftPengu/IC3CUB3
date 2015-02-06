@@ -1,6 +1,5 @@
 package plf;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import sat.SATSolver;
@@ -18,7 +17,11 @@ public abstract class Formula {
 	
 	public abstract Formula not();
 	
-	public abstract Set<Integer> getVariables();
+	public abstract Set<Long> getVariables();
+	
+	public Set<Long> getPrimedVariables(){
+		return getPrimed().getVariables();
+	}
 	
 	public abstract String getLogic2CNFString();
 	
@@ -51,6 +54,8 @@ public abstract class Formula {
 	 * @return true when this.equals(f) is satisfiable
 	 */
 	public boolean equal(Formula f,SATSolver satsolver){
-		return satsolver.solve(this.equals(f),new HashSet<Integer>()).size()>0;
+		return satsolver.solve(this.equals(f),false).size()>0;
 	}
+	
+	public abstract Formula getPrimed();
 }
