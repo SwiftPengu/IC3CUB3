@@ -1,6 +1,9 @@
 package plf;
 
+import java.util.HashSet;
 import java.util.Set;
+
+import sat.SATSolver;
 
 public abstract class Formula {
 	public Formula and(Formula f){
@@ -40,4 +43,14 @@ public abstract class Formula {
 	}
 	
 	public abstract Formula rename(int old, int replacement);
+	
+	/**
+	 * Query a SAT solver whether this formula is equal to another formula
+	 * @param f the other formula to check
+	 * @param satsolver the SAT solver to query 
+	 * @return true when this.equals(f) is satisfiable
+	 */
+	public boolean equal(Formula f,SATSolver satsolver){
+		return satsolver.solve(this.equals(f),new HashSet<Integer>()).size()>0;
+	}
 }

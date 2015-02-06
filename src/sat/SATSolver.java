@@ -1,18 +1,29 @@
 package sat;
 
+import java.util.List;
+import java.util.Set;
+
 import plf.Formula;
 
-public interface SATSolver {
+public abstract class SATSolver {
 	/**
-	 * Feeds the 
-	 * @param f
-	 * @return
+	 * Feeds the given formula to a SAT solver, and returns a satisfiable interpretation if it exists
+	 * @param f the formula to be satisfied
+	 * @return empty list if unsatisfiable, a list of formulae each representing a satisfiable interpretation if satisfiable
 	 */
-	public Formula solve(Formula f);
+	public abstract List<Formula> solve(Formula f, Set<Integer> skip);
+	public abstract List<Formula> solve(Formula f);
+	
+	public List<Formula> solveTimed(Formula f, Set<Integer> skip){
+		long time = System.currentTimeMillis();
+		List<Formula> result = solve(f,skip);
+		System.out.println(String.format("Took %dms",System.currentTimeMillis()-time));
+		return result;
+	}
 	
 	/**
 	 * Whether this solver needs the formula to be in CNF notation
 	 * @return true when this solver needs the formula to be in CNF notation
 	 */
-	public boolean needsCNF();
+	public abstract boolean needsCNF();
 }
