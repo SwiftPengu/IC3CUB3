@@ -31,11 +31,6 @@ public class Logic2CNF extends SATSolver {
 		}
 		
 	}
-	
-	@Override
-	public List<Formula> solve(Formula f){
-		return solve(f,false);
-	}
 
 	@Override
 	public List<Formula> solve(Formula f,boolean skip) {
