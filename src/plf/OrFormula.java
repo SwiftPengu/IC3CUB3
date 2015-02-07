@@ -19,7 +19,7 @@ public class OrFormula extends Formula{
 	}
 	
 	@Override
-	public Formula not() {
+	public AndFormula not() {
 		//DeMorgan's law
 		return new AndFormula(left.not(),right.not());
 	}
@@ -40,12 +40,12 @@ public class OrFormula extends Formula{
 	}
 
 	@Override
-	public Formula rename(int old, int replacement) {
+	public OrFormula rename(int old, int replacement) {
 		return new OrFormula(left.rename(old, replacement), right.rename(old, replacement));
 	}
 	
 	@Override
-	public Formula getPrimed() {
+	public OrFormula getPrimed() {
 		return new OrFormula(left.getPrimed(),right.getPrimed());
 	}	
 }

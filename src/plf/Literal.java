@@ -31,7 +31,7 @@ public class Literal extends Formula{
 	}
 
 	@Override
-	public Formula not() {
+	public Literal not() {
 		return new Literal(id,!negated,primed);
 	}
 	
@@ -53,7 +53,7 @@ public class Literal extends Formula{
 	}
 
 	@Override
-	public Formula rename(int old, int replacement) {
+	public Literal rename(int old, int replacement) {
 		if(id==old){
 			return new Literal(replacement,this.negated,primed);
 		}else{

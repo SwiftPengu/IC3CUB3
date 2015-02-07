@@ -46,7 +46,7 @@ public class IC3 {
 			while(ctifound){
 				ctifound = false;
 				//test Fk ^ T ^ ~p'
-				List<Formula> result = satsolver.solve(F.get(k).and(T).and(pPrime.not()),true);
+				List<? extends Formula> result = satsolver.solve(F.get(k).and(T).and(pPrime.not()),true);
 				if(result.size()>0){
 					System.out.println("F_k ^ T ^ ~p' satisfiable for k="+k);
 					ctifound=true;

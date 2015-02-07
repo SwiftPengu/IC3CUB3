@@ -2,7 +2,9 @@ package plf.cnf;
 
 import java.util.*;
 
-public class Cube {
+import plf.Formula;
+
+public class Cube extends Formula{
 	private ArrayDeque<Clause> clauses;
 	
 	public Cube(Collection<Clause> literals){
@@ -13,6 +15,14 @@ public class Cube {
 	
 	public Cube(Clause c){
 		this(Arrays.asList(new Clause[]{c}));
+	}
+	
+	public Cube(){
+		this(new ArrayList<Clause>(0));
+	}
+	
+	public void addClause(Clause l){
+		clauses.add(l);
 	}
 	
 	@Override
@@ -27,5 +37,44 @@ public class Cube {
 		}
 		sb.append(")");
 		return sb.toString();
+	}
+
+	@Override
+	public Clause not() {
+		// TODO
+		return null;
+	}
+
+	@Override
+	public Set<Long> getVariables() {
+		Set<Long> vars = new HashSet<Long>();
+		for(Clause c:clauses){
+			vars.addAll(c.getVariables());
+		}
+		return vars;
+	}
+
+	@Override
+	public String getLogic2CNFString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Cube rename(int old, int replacement) {
+		Cube result = new Cube();
+		for(Clause c:clauses){
+			result.addClause(c.rename(old, replacement));
+		}
+		return result;
+	}
+
+	@Override
+	public Cube getPrimed() {
+		Cube result = new Cube();
+		for(Clause c:clauses){
+			result.addClause(c.getPrimed());
+		}
+		return result;
 	}
 }
