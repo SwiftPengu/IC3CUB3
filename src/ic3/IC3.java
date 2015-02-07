@@ -138,11 +138,10 @@ public class IC3 {
 	 */
 	public boolean hasFixpoint(List<Formula> f) {
 		for(int f1 = 0;f1<f.size()-1;f1++){
-			for(int f2=f1+1;f2<f.size();f2++){
-				//compare the two formulae
-				boolean equal = f.get(f1).equal(f.get(f2), satsolver);
-				if(equal)return true;
-			}
+			int f2 = f1+ 1;
+			//compare the two formulae
+			boolean equal = f.get(f1).equal(f.get(f2), satsolver);
+			if(equal)return true;
 		}
 		return false;
 	}
