@@ -81,4 +81,8 @@ public class Clause extends Formula{
 		}
 		return primed;
 	}
+
+	public ArrayDeque<Literal> getLiterals() {
+		return literals;
+	}
 }
