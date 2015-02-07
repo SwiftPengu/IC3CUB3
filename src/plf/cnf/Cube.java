@@ -77,4 +77,8 @@ public class Cube extends Formula{
 		}
 		return result;
 	}
+	
+	public ArrayDeque<Clause> getClauses(){
+		return clauses;
+	}
 }
