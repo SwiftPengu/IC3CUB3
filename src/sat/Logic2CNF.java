@@ -105,7 +105,7 @@ public class Logic2CNF extends SATSolver {
 				String varstring = linescan.next();
 				boolean negated = varstring.charAt(0)=='~'; //test for negation
 				long varid = Long.parseLong(varstring.substring(negated?2:1));
-				if(!skip || varid%2==1){
+				if(!skip || !isPrimeVar(varid)){
 					Literal var = new Literal(varid,negated,false);
 					
 					//add the formula

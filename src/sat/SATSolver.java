@@ -28,4 +28,8 @@ public abstract class SATSolver {
 	 * @return true when this solver needs the formula to be in CNF notation
 	 */
 	public abstract boolean needsCNF();
+	
+	protected boolean isPrimeVar(long var){
+		return var%2==0;
+	}
 }
