@@ -69,6 +69,14 @@ public class Literal extends Formula{
 		return primed?this.id+1:this.id;
 	}
 	
+	/**
+	 * Obtains the DIMACS id
+	 * @return the DIMACS integer representing this variable
+	 */
+	public long getDIMACSID(){
+		return negated?-getID():getID();
+	}
+	
 	protected long getInternalID(){
 		return this.id;
 	}
