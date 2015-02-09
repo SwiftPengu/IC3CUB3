@@ -41,35 +41,38 @@ public class IC3 {
 		Formula pPrime = P.getPrimed();
 		
 		while(true){
-			boolean ctifound = true;
 			ArrayDeque<Formula> addedClauses = new ArrayDeque<Formula>();
-			while(ctifound){
-				ctifound = false;
-				//test Fk ^ T ^ ~p'
-				List<? extends Formula> result = satsolver.solve(F.get(k).and(T).and(pPrime.not()),true);
-				if(result.size()>0){
-					System.out.println("F_k ^ T ^ ~p' satisfiable for k="+k);
-					ctifound=true;
+			PriorityQueue<ProofObligation> proofObligations = new PriorityQueue<ProofObligation>();
+			//test Fk ^ T ^ ~p'
+			List<? extends Formula> result = satsolver.solve(F.get(k).and(T).and(pPrime.not()),true);
+			if(result.size()>0){
+				System.out.println("F_k ^ T ^ ~p' satisfiable for k="+k);
+				
+				//obtain counterexample S and S'
+				Formula s = result.get(0);
+				System.out.println("s: "+s);
+				proofObligations.add(new ProofObligation(s, k-1));
+			}
+			while(proofObligations.size()>0){
+				ProofObligation probl = proofObligations.remove();
+				Formula s = probl.getCTI();
+				Integer inductiveFrontier = findInductiveFrontier(probl,F,T,k);
+				if(inductiveFrontier==null){
+					System.out.println("Found counterexample to P: "+s);
+					return false;
+				}else{
+					refine(s,F,inductiveFrontier,addedClauses);
 					
-					//obtain counterexample S and S'
-					Formula s = result.get(0);
-					System.out.println("s: "+s);
-					
-					Integer inductiveFrontier = findInductiveFrontier(F,s,T,k);
-					if(inductiveFrontier==null){
-						System.out.println("Found counterexample to P: "+s);
-						return false;
-					}else{
-						refine(s,F,inductiveFrontier,addedClauses);
+					//aggressively check if the CTI is resolved in the first non-inductive frontier
+					int nextfrontier = inductiveFrontier+1;
+					if(nextfrontier<k){
+						proofObligations.add(new ProofObligation(s, nextfrontier));
 					}
 				}
 			}
 			k++;
 			F.add(P); //Fk = P
-			boolean propagated = propagateClauses(T,F,addedClauses,k);
-			if(!propagated){
-				return false;
-			}
+			propagateClauses(T,F,addedClauses,k);
 			if(hasFixpoint(F)){
 				System.out.println(String.format("Fixpoint found at k=%d, TS |= P",k));
 				return true;
@@ -78,19 +81,20 @@ public class IC3 {
 	}
 
 	//Find highest inductive Fi
-	private Integer findInductiveFrontier(List<Formula> F, Formula s,Formula T, int k) {
+	private Integer findInductiveFrontier(ProofObligation probl,List<Formula> F, Formula T, int k) {
 		Integer result = null;
+		Formula s = probl.getCTI();
 		Formula sPrime = s.getPrimed();
-		for(int i = k;i>=0;i--){
+		for(int i = k;i>=probl.getLevel();i--){
 			Formula Fi = F.get(i);
 			System.out.println("Check s "+s+" inductive at F"+i+";" +F.get(i));
-			boolean inductive = satsolver.solve(Fi.and(s.not()).and(T).implies(sPrime.not()).not()).size()==0;
+			boolean inductive = satsolver.solve(Fi.and(s.not()).and(T).and(sPrime)).size()==0;
 			if(inductive){
 				System.out.println("S is inductive at i="+i);
 				result = i;
 				return i;
 			}else{
-				if(Runner.VERBOSE>1)System.out.println("No");
+				if(Runner.VERBOSE>1)System.out.println("S not inductive at i="+i);
 			}
 		}
 		return result;
@@ -112,7 +116,7 @@ public class IC3 {
 		}while(i<inductiveFrontier+1);
 	}
 
-	private boolean propagateClauses(Formula T,List<Formula> F,
+	private void propagateClauses(Formula T,List<Formula> F,
 			ArrayDeque<Formula> addedClauses,int k) {
 		//Propagate clauses
 		while(addedClauses.size()>0){
@@ -124,11 +128,10 @@ public class IC3 {
 				//propagate
 				F.set(k, F.get(k).and(c));
 			}else{
-				System.out.println("Clause "+c+" can not be propagated");
-				return false;
+				System.out.println("Clause "+c+" can  not be propagated");
+				//return false;
 			}
 		}
-		return true;
 	}
 
 	/**
