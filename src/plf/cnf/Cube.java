@@ -8,7 +8,7 @@ public class Cube extends Formula{
 	private ArrayDeque<Clause> clauses;
 	
 	public Cube(Collection<Clause> literals){
-		assert(literals.size()>0);
+		//assert(literals.size()>0);
 		this.clauses = new ArrayDeque<Clause>();
 		this.clauses.addAll(literals);
 	}
@@ -33,7 +33,7 @@ public class Cube extends Formula{
 		Iterator<Clause> lit = clauses.iterator();
 		sb.append(lit.next());
 		while(lit.hasNext()){
-			sb.append("^ "+lit);
+			sb.append("^ "+lit.next());
 		}
 		sb.append(")");
 		return sb.toString();
@@ -42,6 +42,7 @@ public class Cube extends Formula{
 	@Override
 	public Clause not() {
 		// TODO
+		assert(false);
 		return null;
 	}
 
@@ -57,6 +58,7 @@ public class Cube extends Formula{
 	@Override
 	public String getLogic2CNFString() {
 		// TODO Auto-generated method stub
+		assert(false);
 		return null;
 	}
 

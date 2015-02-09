@@ -9,7 +9,7 @@ public class Clause extends Formula{
 	private ArrayDeque<Literal> literals;
 	
 	public Clause(Collection<Literal> literals){
-		assert(literals.size()>0);
+		//assert(literals.size()>0);
 		this.literals = new ArrayDeque<Literal>();
 		this.literals.addAll(literals);
 	}
@@ -34,7 +34,7 @@ public class Clause extends Formula{
 		Iterator<Literal> lit = literals.iterator();
 		sb.append(lit.next());
 		while(lit.hasNext()){
-			sb.append("v "+lit);
+			sb.append("v "+lit.next());
 		}
 		sb.append(")");
 		return sb.toString();
@@ -61,6 +61,7 @@ public class Clause extends Formula{
 	@Override
 	public String getLogic2CNFString() {
 		// TODO Auto-generated method stub
+		assert(false);
 		return null;
 	}
 
