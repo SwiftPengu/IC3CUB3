@@ -10,15 +10,15 @@ public abstract class SATSolver {
 	 * @param f the formula to be satisfied
 	 * @return empty list if unsatisfiable, a list of formulae each representing a satisfiable interpretation if satisfiable
 	 */
-	public abstract List<? extends Formula> solve(Formula f, boolean skipPrimed);
+	public abstract List<? extends Formula> sat(Formula f, boolean skipPrimed);
 
-	public List<? extends Formula> solve(Formula f){
-		return solve(f,false);
+	public List<? extends Formula> sat(Formula f){
+		return sat(f,false);
 	}
 	
 	public List<? extends Formula> solveTimed(Formula f, boolean skip){
 		long time = System.currentTimeMillis();
-		List<? extends Formula> result = solve(f,skip);
+		List<? extends Formula> result = sat(f,skip);
 		System.out.println(String.format("Took %dms",System.currentTimeMillis()-time));
 		return result;
 	}

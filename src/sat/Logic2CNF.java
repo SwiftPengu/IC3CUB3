@@ -33,7 +33,7 @@ public class Logic2CNF extends SATSolver {
 	}
 
 	@Override
-	public List<Formula> solve(Formula f,boolean skip) {
+	public List<Formula> sat(Formula f,boolean skip) {
 		try {
 			//Run Logic2CNF
 			final Process logic2cnf = Runtime.getRuntime().exec(Settings.COMMAND);
@@ -106,7 +106,7 @@ public class Logic2CNF extends SATSolver {
 				boolean negated = varstring.charAt(0)=='~'; //test for negation
 				long varid = Long.parseLong(varstring.substring(negated?2:1));
 				if(!skip || varid%2==1){
-					Literal var = new Literal(varid,negated,false);
+					Literal var = new Literal(varid,negated,false,false);
 					
 					//add the formula
 					if(singleformula==null){

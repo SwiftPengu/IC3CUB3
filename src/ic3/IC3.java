@@ -4,9 +4,9 @@ import java.util.*;
 
 import plf.Formula;
 import plf.Literal;
+import plf.cnf.Cube;
 import runner.Runner;
 import sat.SATSolver;
-
 
 public class IC3 {
 	private final SATSolver satsolver;
@@ -15,16 +15,18 @@ public class IC3 {
 		this.satsolver=satsolver;
 	}
 	
-	public boolean check(Formula I, Formula T, Formula P){	
+	//TODO return cex or TS |= P
+	public boolean check(Formula I, Formula T, Formula P,Formula NP){
 		//check I => P
-		if(satsolver.solve(I.implies(P).not()).size()>0){
+		if(satsolver.sat(I.and(P.not())).size()>0){
 			System.out.println("I => P does not hold");
 			return false;
 		}else{
 			System.out.println("I => P");
 		}
 		//check I ^ T => P
-		if(satsolver.solve(I.and(T).implies(P).not()).size()>0){
+		System.out.println(satsolver.sat(I.and(T).implies(P)));
+		if(satsolver.sat(I.and(T).and(P.not())).size()>0){
 			System.out.println("I ^ T => P does not hold");
 			return false;
 		}else{
@@ -38,13 +40,13 @@ public class IC3 {
 		F.add(P);//F1 = P
 		
 		//init P'
-		Formula pPrime = P.getPrimed();
-		
+		Formula PPrime = P.getPrimed();
+		Formula NPPrime = NP.getPrimed();
 		while(true){
 			ArrayDeque<Formula> addedClauses = new ArrayDeque<Formula>();
 			PriorityQueue<ProofObligation> proofObligations = new PriorityQueue<ProofObligation>();
 			//test Fk ^ T ^ ~p'
-			List<? extends Formula> result = satsolver.solve(F.get(k).and(T).and(pPrime.not()),true);
+			List<? extends Formula> result = satsolver.sat(F.get(k).and(T).and(NPPrime),true);
 			if(result.size()>0){
 				System.out.println("F_k ^ T ^ ~p' satisfiable for k="+k);
 				
@@ -52,6 +54,8 @@ public class IC3 {
 				Formula s = result.get(0);
 				System.out.println("s: "+s);
 				proofObligations.add(new ProofObligation(s, k-1));
+			}else{
+				System.out.println("P satisfied");
 			}
 			while(proofObligations.size()>0){
 				ProofObligation probl = proofObligations.remove();
@@ -61,7 +65,7 @@ public class IC3 {
 					System.out.println("Found counterexample to P: "+s);
 					return false;
 				}else{
-					refine(s,F,inductiveFrontier,addedClauses);
+					strengthen(s,F,inductiveFrontier,addedClauses);
 					
 					//aggressively check if the CTI is resolved in the first non-inductive frontier
 					int nextfrontier = inductiveFrontier+1;
@@ -71,7 +75,9 @@ public class IC3 {
 				}
 			}
 			k++;
+			
 			F.add(P); //Fk = P
+			System.out.println("K in creased to "+k);
 			propagateClauses(T,F,addedClauses,k);
 			if(hasFixpoint(F)){
 				System.out.println(String.format("Fixpoint found at k=%d, TS |= P",k));
@@ -85,10 +91,11 @@ public class IC3 {
 		Integer result = null;
 		Formula s = probl.getCTI();
 		Formula sPrime = s.getPrimed();
+		Formula nots = s.not();
 		for(int i = k;i>=probl.getLevel();i--){
 			Formula Fi = F.get(i);
 			System.out.println("Check s "+s+" inductive at F"+i+";" +F.get(i));
-			boolean inductive = satsolver.solve(Fi.and(s.not()).and(T).and(sPrime)).size()==0;
+			boolean inductive = satsolver.sat(Fi.and(nots).and(T).and(sPrime)).size()==0;
 			if(inductive){
 				System.out.println("S is inductive at i="+i);
 				result = i;
@@ -101,7 +108,7 @@ public class IC3 {
 	}
 
 	//Refine F1...Fi+1
-	private void refine(Formula S,List<Formula> F, Integer inductiveFrontier,ArrayDeque<Formula> addedClauses) {
+	private void strengthen(Formula S,List<Formula> F, Integer inductiveFrontier,ArrayDeque<Formula> addedClauses) {
 		//first obtain a minimal inductive subclause
 		Formula c = MIC(S);
 		System.out.println("MIC: "+c);
@@ -116,14 +123,16 @@ public class IC3 {
 		}while(i<inductiveFrontier+1);
 	}
 
+	//TODO fix implementation
 	private void propagateClauses(Formula T,List<Formula> F,
 			ArrayDeque<Formula> addedClauses,int k) {
 		//Propagate clauses
 		while(addedClauses.size()>0){
 			Formula c = addedClauses.pop();
 			//check whether clause can be propagated (F_k ^ c ^ T => c') satisfiable
-			Formula cprime = c.getPrimed();
-			boolean canbepropagated = satsolver.solve(F.get(k).and(c).and(T).implies(cprime).not()).size()==0;
+			Formula notcprime = c.getPrimed().not();
+			Formula Fk = F.get(k);
+			boolean canbepropagated = satsolver.sat(Fk.and(c).and(T).and(notcprime)).size()==0;
 			if(canbepropagated){
 				//propagate
 				F.set(k, F.get(k).and(c));
@@ -151,6 +160,8 @@ public class IC3 {
 	
 	//TODO implement MIC algorithm
 	private Formula MIC(Formula S){
-		return new Literal(3).not();
+		Cube result = new Cube();
+		result.addLiteral(new Literal(3).not());
+		return result.toFormula();
 	}
 }

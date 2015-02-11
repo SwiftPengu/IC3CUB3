@@ -8,6 +8,7 @@ import plf.Formula;
 import plf.Literal;
 import sat.Logic2CNF;
 
+
 public class Runner {
 	public static int VERBOSE = 1;
 	
@@ -15,14 +16,15 @@ public class Runner {
 		try {			
 			long time = System.currentTimeMillis();
 			//init formulae
-			Formula x1 = new Literal();
-			Formula x2 = new Literal();
-			Formula x1p = x1.getPrimed();
-			Formula x2p = x2.getPrimed();
+			Literal x1 = new Literal();
+			Literal x2 = new Literal();
+			Literal x1p = x1.getPrimed();
+			Literal x2p = x2.getPrimed();
 			
 			//List<Formula> F = new ArrayList<Formula>();
 			Formula F0 = x1.not().and(x2.not()); //F0 = I
 			Formula P = x1.not().or(x2);
+			Formula NP = x1.and(x2.not());
 			
 			//TRANS
 			/*Formula TA = x1.not().and(x2.not()).and(x1p.not().and(x2p.not()));//00 -> 00
@@ -49,7 +51,7 @@ public class Runner {
 			//System.out.println(T.getLogic2CNFString());
 			
 			IC3 ic3 = new IC3(new Logic2CNF());
-			ic3.check(F0, TB, P);
+			ic3.check(F0, TB, P,NP);
 			
 			System.out.println(String.format("Time needed: %dms",System.currentTimeMillis()-time));
 		} catch (IOException e) {

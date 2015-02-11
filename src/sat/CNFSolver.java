@@ -1,8 +1,5 @@
 package sat;
 
-import java.util.List;
-
-import plf.Formula;
 import plf.cnf.Cube;
 
 public abstract class CNFSolver extends SATSolver{
@@ -11,19 +8,9 @@ public abstract class CNFSolver extends SATSolver{
 	 * @param c the formula to be satisfied
 	 * @return empty list if unsatisfiable, a list of cubes each representing a satisfiable interpretation if satisfiable
 	 */
-	public abstract List<Cube> solve(Cube c, boolean skip);
+	public abstract Cube sat(Cube c, boolean skip);
 	
-	public List<Cube> solve(Cube c){
-		return solve(c,false);
-	}
-	
-	@Override
-	public boolean needsCNF() {
-		return true;
-	}
-	
-	@Override
-	public List<? extends Formula> solve(Formula f, boolean skip) {
-		return solve((Cube)f,skip);
+	public Cube sat(Cube c){
+		return sat(c,false);
 	}
 }

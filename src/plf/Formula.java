@@ -54,7 +54,7 @@ public abstract class Formula {
 	 * @return true when this.equals(f) is satisfiable
 	 */
 	public boolean equal(Formula f,SATSolver satsolver){
-		return satsolver.solve(this.equals(f),false).size()>0;
+		return satsolver.sat(this.equals(f),false).size()>0;
 	}
 	
 	public abstract Formula getPrimed();
