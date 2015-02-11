@@ -2,6 +2,7 @@ package plf;
 
 import java.util.Set;
 
+import plf.cnf.TseitinCube;
 import sat.SATSolver;
 
 public abstract class Formula {
@@ -58,4 +59,10 @@ public abstract class Formula {
 	}
 	
 	public abstract Formula getPrimed();
+	
+	/**
+	 * Converts this Formula to CNF
+	 * @return a cube which is equisatisfiable to this Formula
+	 */
+	public abstract TseitinCube toCNF();
 }

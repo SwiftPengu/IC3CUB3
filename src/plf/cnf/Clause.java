@@ -2,10 +2,9 @@ package plf.cnf;
 
 import java.util.*;
 
-import plf.Formula;
-import plf.Literal;
+import plf.*;
 
-public class Clause extends Formula{
+public class Clause {
 	private ArrayDeque<Literal> literals;
 	
 	public Clause(Collection<Literal> literals){
@@ -34,13 +33,12 @@ public class Clause extends Formula{
 		Iterator<Literal> lit = literals.iterator();
 		sb.append(lit.next());
 		while(lit.hasNext()){
-			sb.append("v "+lit.next());
+			sb.append(" v "+lit.next());
 		}
 		sb.append(")");
 		return sb.toString();
 	}
 
-	@Override
 	public Cube not() {
 		Cube negatedcube = new Cube();
 		for(Literal l:literals){
@@ -49,32 +47,7 @@ public class Clause extends Formula{
 		return negatedcube;
 	}
 
-	@Override
-	public Set<Long> getVariables() {
-		Set<Long> result = new HashSet<Long>();
-		for(Literal l:literals){
-			result.add(l.getID());
-		}
-		return result;
-	}
 
-	@Override
-	public String getLogic2CNFString() {
-		// TODO Auto-generated method stub
-		assert(false);
-		return null;
-	}
-
-	@Override
-	public Clause rename(int old, int replacement) {
-		Clause renamed = new Clause();
-		for(Literal l:literals){
-			renamed.addLiteral(l.rename(old, replacement));
-		}
-		return renamed;
-	}
-
-	@Override
 	public Clause getPrimed() {
 		Clause primed = new Clause();
 		for(Literal l:literals){
@@ -85,5 +58,38 @@ public class Clause extends Formula{
 
 	public ArrayDeque<Literal> getLiterals() {
 		return literals;
+	}
+	
+	public Clause or(Clause f) {
+		Clause result = new Clause(literals);
+		for(Literal l:f.getLiterals()){
+			result.addLiteral(l);
+		}
+		return result;
+	}
+	
+	public Formula toFormula(){
+		assert(literals.size()>0);
+		Iterator<Literal> litit = literals.iterator();
+		Literal first = litit.next();
+		if(literals.size()==1){
+			return first;
+		}else{
+			Formula result = first;
+			while(litit.hasNext()){
+				result = new OrFormula(result, litit.next());
+			}
+			return result;
+		}
+	}
+	
+	public Set<Long> getVariables(){
+		HashSet<Long> result = new HashSet<Long>();
+		for(Literal l:getLiterals()){
+			//if(!l.isTseitin()){
+				result.add(l.getID());
+			//}
+		}
+		return result;
 	}
 }
