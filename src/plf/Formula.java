@@ -66,5 +66,16 @@ public abstract class Formula {
 	 * Converts this Formula to CNF
 	 * @return a cube which is equisatisfiable to this Formula
 	 */
-	public abstract TseitinCube toCNF();
+	protected abstract TseitinCube toCNF();
+	
+	public TseitinCube tseitinTransform(){
+		return tseitinTransform(false);
+	}
+	
+	public TseitinCube tseitinTransform(boolean negated){
+		TseitinCube result = toCNF();
+		if(negated)result.negate();
+		result.stick();
+		return result;
+	}
 }

@@ -18,15 +18,14 @@ public class IC3 {
 	//TODO return cex or TS |= P
 	public boolean check(Formula I, Formula T, Formula P,Formula NP){
 		//check I => P
-		if(satsolver.sat(I.and(P.not())).size()>0){
+		if(satsolver.sat(I.and(NP)).size()>0){
 			System.out.println("I => P does not hold");
 			return false;
 		}else{
 			System.out.println("I => P");
 		}
 		//check I ^ T => P
-		System.out.println(satsolver.sat(I.and(T).implies(P)));
-		if(satsolver.sat(I.and(T).and(P.not())).size()>0){
+		if(satsolver.sat(I.and(T).and(NP)).size()>0){
 			System.out.println("I ^ T => P does not hold");
 			return false;
 		}else{
@@ -39,8 +38,7 @@ public class IC3 {
 		int k = 1;
 		F.add(P);//F1 = P
 		
-		//init P'
-		Formula PPrime = P.getPrimed();
+		//init ~P'
 		Formula NPPrime = NP.getPrimed();
 		while(true){
 			ArrayDeque<Formula> addedClauses = new ArrayDeque<Formula>();

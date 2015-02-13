@@ -6,7 +6,9 @@ import java.io.IOException;
 
 import plf.Formula;
 import plf.Literal;
+import plf.cnf.TseitinCube;
 import sat.Logic2CNF;
+import sat.SATSolver;
 
 
 public class Runner {
@@ -48,10 +50,10 @@ public class Runner {
 			
 			//TA <=> TB <=> TC
 			
-			//System.out.println(T.getLogic2CNFString());
+			SATSolver l2c = new Logic2CNF();
+			IC3 ic3 = new IC3(l2c);
 			
-			IC3 ic3 = new IC3(new Logic2CNF());
-			ic3.check(F0, TB, P,NP);
+			ic3.check(F0.tseitinTransform().toFormula(), TB.tseitinTransform().toFormula(), P.tseitinTransform().toFormula(),P.tseitinTransform(true).toFormula());
 			
 			System.out.println(String.format("Time needed: %dms",System.currentTimeMillis()-time));
 		} catch (IOException e) {

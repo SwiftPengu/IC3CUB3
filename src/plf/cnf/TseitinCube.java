@@ -13,6 +13,10 @@ public class TseitinCube extends Cube {
 		this.tseitinliteral=outputlit;
 	}
 	
+	public void stick(){
+		addLiteral(getTseitinOutput());
+	}
+	
 	public TseitinCube(Literal outputlit){
 		this(outputlit,new ArrayList<Clause>(0));
 	}
@@ -31,5 +35,10 @@ public class TseitinCube extends Cube {
 		//States that the output of this formula should be false
 		return new AndFormula(super.toFormula(),getTseitinOutput().not());
 	}
-
+	
+	public void negate(){
+		tseitinliteral = getTseitinOutput().not();
+	}
+	
+	
 }
