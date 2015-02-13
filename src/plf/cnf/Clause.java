@@ -92,4 +92,12 @@ public class Clause {
 		}
 		return result;
 	}
+	
+	/**
+	 * Returns a cube stating only this clause
+	 * @return a cube which containing just this clause
+	 */
+	public Cube asCube(){
+		return new Cube(this);
+	}
 }

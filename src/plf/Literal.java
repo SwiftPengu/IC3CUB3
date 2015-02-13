@@ -14,7 +14,7 @@ public class Literal extends Formula{
 	private final boolean tseitin;
 	
 	public Literal(long id,boolean negated,boolean primed,boolean tseitin){
-		assert(id!=0);
+		assert(id>0);
 		this.id=id;
 		this.negated=negated;
 		this.primed = primed;
@@ -32,6 +32,7 @@ public class Literal extends Formula{
 	public Literal(){
 		this(counter);
 		counter+=2;
+		
 	}
 	
 	public Literal(boolean tseitin){

@@ -2,8 +2,8 @@ package ic3;
 
 import java.util.*;
 
-import plf.Formula;
 import plf.Literal;
+import plf.cnf.Clause;
 import plf.cnf.Cube;
 import runner.Runner;
 import sat.SATSolver;
@@ -16,7 +16,7 @@ public class IC3 {
 	}
 	
 	//TODO return cex or TS |= P
-	public boolean check(Formula I, Formula T, Formula P,Formula NP){
+	public boolean check(Cube I, Cube T, Cube P,Cube NP){
 		//check I => P
 		if(satsolver.sat(I.and(NP)).size()>0){
 			System.out.println("I => P does not hold");
@@ -33,23 +33,23 @@ public class IC3 {
 		}
 		
 		//init frontier sets
-		List<Formula> F = new ArrayList<Formula>();
+		List<Cube> F = new ArrayList<Cube>();
 		F.add(I);//F0 = I
 		int k = 1;
 		F.add(P);//F1 = P
 		
 		//init ~P'
-		Formula NPPrime = NP.getPrimed();
+		Cube NPPrime = NP.getPrimed();
 		while(true){
-			ArrayDeque<Formula> addedClauses = new ArrayDeque<Formula>();
+			ArrayDeque<Clause> addedClauses = new ArrayDeque<Clause>();
 			PriorityQueue<ProofObligation> proofObligations = new PriorityQueue<ProofObligation>();
 			//test Fk ^ T ^ ~p'
-			List<? extends Formula> result = satsolver.sat(F.get(k).and(T).and(NPPrime),true);
+			List<? extends Cube> result = satsolver.sat(F.get(k).and(T).and(NPPrime),true);
 			if(result.size()>0){
 				System.out.println("F_k ^ T ^ ~p' satisfiable for k="+k);
 				
 				//obtain counterexample S and S'
-				Formula s = result.get(0);
+				Cube s = result.get(0);
 				System.out.println("s: "+s);
 				proofObligations.add(new ProofObligation(s, k-1));
 			}else{
@@ -57,7 +57,7 @@ public class IC3 {
 			}
 			while(proofObligations.size()>0){
 				ProofObligation probl = proofObligations.remove();
-				Formula s = probl.getCTI();
+				Cube s = probl.getCTI();
 				Integer inductiveFrontier = findInductiveFrontier(probl,F,T,k);
 				if(inductiveFrontier==null){
 					System.out.println("Found counterexample to P: "+s);
@@ -85,13 +85,14 @@ public class IC3 {
 	}
 
 	//Find highest inductive Fi
-	private Integer findInductiveFrontier(ProofObligation probl,List<Formula> F, Formula T, int k) {
+	private Integer findInductiveFrontier(ProofObligation probl,List<Cube> F, Cube T, int k) {
 		Integer result = null;
-		Formula s = probl.getCTI();
-		Formula sPrime = s.getPrimed();
-		Formula nots = s.not();
+		Cube s = probl.getCTI();
+		Cube sPrime = s.getPrimed();
+		//TODO check if this can be done more efficiently
+		Clause nots = s.not();
 		for(int i = k;i>=probl.getLevel();i--){
-			Formula Fi = F.get(i);
+			Cube Fi = F.get(i);
 			System.out.println("Check s "+s+" inductive at F"+i+";" +F.get(i));
 			boolean inductive = satsolver.sat(Fi.and(nots).and(T).and(sPrime)).size()==0;
 			if(inductive){
@@ -106,9 +107,9 @@ public class IC3 {
 	}
 
 	//Refine F1...Fi+1
-	private void strengthen(Formula S,List<Formula> F, Integer inductiveFrontier,ArrayDeque<Formula> addedClauses) {
+	private void strengthen(Cube S,List<Cube> F, Integer inductiveFrontier,ArrayDeque<Clause> addedClauses) {
 		//first obtain a minimal inductive subclause
-		Formula c = MIC(S);
+		Clause c = MIC(S);
 		System.out.println("MIC: "+c);
 		
 		addedClauses.add(c);
@@ -122,14 +123,14 @@ public class IC3 {
 	}
 
 	//TODO fix implementation
-	private void propagateClauses(Formula T,List<Formula> F,
-			ArrayDeque<Formula> addedClauses,int k) {
+	private void propagateClauses(Cube T,List<Cube> F,
+			ArrayDeque<Clause> addedClauses,int k) {
 		//Propagate clauses
 		while(addedClauses.size()>0){
-			Formula c = addedClauses.pop();
+			Clause c = addedClauses.pop();
 			//check whether clause can be propagated (F_k ^ c ^ T => c') satisfiable
-			Formula notcprime = c.getPrimed().not();
-			Formula Fk = F.get(k);
+			Cube notcprime = c.getPrimed().not();
+			Cube Fk = F.get(k);
 			boolean canbepropagated = satsolver.sat(Fk.and(c).and(T).and(notcprime)).size()==0;
 			if(canbepropagated){
 				//propagate
@@ -146,20 +147,21 @@ public class IC3 {
 	 * @param f a list of formulae
 	 * @return true if there exist two formulae f1 and f2 for which f1 <=> f2 is satisfiable
 	 */
-	public boolean hasFixpoint(List<Formula> f) {
+	public boolean hasFixpoint(List<Cube> f) {
 		for(int f1 = 0;f1<f.size()-1;f1++){
 			int f2 = f1+ 1;
 			//compare the two formulae
-			boolean equal = f.get(f1).equal(f.get(f2), satsolver);
+			//TODO there must be more efficient way of doing this
+			boolean equal = satsolver.sat(f.get(f1).toFormula().iff(f.get(f2).toFormula()).tseitinTransform()).size()>0;
 			if(equal)return true;
 		}
 		return false;
 	}
 	
 	//TODO implement MIC algorithm
-	private Formula MIC(Formula S){
-		Cube result = new Cube();
+	private Clause MIC(Cube S){
+		Clause result = new Clause();
 		result.addLiteral(new Literal(3).not());
-		return result.toFormula();
+		return result;
 	}
 }

@@ -81,6 +81,12 @@ public class Cube {
 		return result;
 	}
 	
+	public Cube and(Clause c){
+		//TODO make new cube?
+		addClause(c);
+		return this;
+	}
+	
 	public Formula toFormula(){
 		assert(clauses.size()>0);
 		Iterator<Clause> clauseit = clauses.iterator();
@@ -94,5 +100,14 @@ public class Cube {
 			}
 			return result;
 		}
+	}
+	
+	public Clause not(){
+		Clause result = new Clause();
+		for(Clause c:getClauses()){
+			assert(c.getLiterals().size()==1);
+			result.addLiteral(c.getLiterals().getFirst());
+		}
+		return result;
 	}
 }
