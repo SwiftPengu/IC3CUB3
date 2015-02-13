@@ -3,7 +3,7 @@ package plf.cnf;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import plf.Literal;
+import plf.*;
 
 public class TseitinCube extends Cube {
 	private Literal tseitinliteral;
@@ -20,4 +20,16 @@ public class TseitinCube extends Cube {
 	public Literal getTseitinOutput(){
 		return tseitinliteral;
 	}
+	
+	@Override
+	public Formula toFormula() {
+		//States that the output of this formula should be true
+		return new AndFormula(super.toFormula(),getTseitinOutput());
+	}
+	
+	public Formula toNegatedFormula() {
+		//States that the output of this formula should be false
+		return new AndFormula(super.toFormula(),getTseitinOutput().not());
+	}
+
 }

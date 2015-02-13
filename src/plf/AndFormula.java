@@ -75,12 +75,12 @@ public class AndFormula extends Formula{
 		
 		//b v ~c
 		temp = new Clause();
-		temp.addLiteral(R.getTseitinOutput().not());
-		temp.addLiteral(output);
+		temp.addLiteral(R.getTseitinOutput());
+		temp.addLiteral(output.not());
 		result.addClause(temp);
 		
 		//state the the output should be true (=satisfiable)
-		result.addLiteral(output);
+		//result.addLiteral(output);
 
 		//add all clauses from L and R
 		for(Clause c:L.getClauses()){
@@ -90,5 +90,15 @@ public class AndFormula extends Formula{
 			result.addClause(c);
 		}		
 		return result;
+	}
+
+	@Override
+	public Set<Long> getTseitinVariables() {
+		Set<Long> lvars = left.getTseitinVariables();
+		Set<Long> rvars = right.getTseitinVariables();
+		assert(lvars!=null);
+		assert(rvars!=null);
+		lvars.addAll(rvars);
+		return lvars;
 	}
 }
