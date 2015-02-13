@@ -109,7 +109,16 @@ public class Literal extends Formula{
 	@Override
 	public TseitinCube toCNF() {
 		TseitinCube result = new TseitinCube(this, new ArrayList<Clause>(1));
-		result.addLiteral(this);
+		//result.addLiteral(this);
+		return result;
+	}
+	
+	@Override
+	public Set<Long> getTseitinVariables() {
+		HashSet<Long> result = new HashSet<Long>();
+		if(isTseitin()){
+			result.add(getID());
+		}
 		return result;
 	}
 }
