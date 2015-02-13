@@ -20,6 +20,8 @@ public abstract class Formula {
 	
 	public abstract Set<Long> getVariables();
 	
+	public abstract Set<Long> getTseitinVariables();
+	
 	public Set<Long> getPrimedVariables(){
 		return getPrimed().getVariables();
 	}
