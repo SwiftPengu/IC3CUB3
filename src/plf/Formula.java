@@ -2,7 +2,7 @@ package plf;
 
 import java.util.Set;
 
-import sat.SATSolver;
+import plf.cnf.TseitinCube;
 
 public abstract class Formula {
 	public Formula and(Formula f){
@@ -18,6 +18,8 @@ public abstract class Formula {
 	public abstract Formula not();
 	
 	public abstract Set<Long> getVariables();
+	
+	public abstract Set<Long> getTseitinVariables();
 	
 	public Set<Long> getPrimedVariables(){
 		return getPrimed().getVariables();
@@ -40,22 +42,29 @@ public abstract class Formula {
 	 * @param f a formula to be equal to this formula
 	 * @return a formula representing this <=> f
 	 */
-	public Formula equals(Formula f){
+	public Formula iff(Formula f){
 		assert(f!=null);
 		return new AndFormula(this.implies(f),f.implies(this));
 	}
 	
 	public abstract Formula rename(int old, int replacement);
 	
+	public abstract Formula getPrimed();
+	
 	/**
-	 * Query a SAT solver whether this formula is equal to another formula
-	 * @param f the other formula to check
-	 * @param satsolver the SAT solver to query 
-	 * @return true when this.equals(f) is satisfiable
+	 * Converts this Formula to CNF
+	 * @return a cube which is equisatisfiable to this Formula
 	 */
-	public boolean equal(Formula f,SATSolver satsolver){
-		return satsolver.solve(this.equals(f),false).size()>0;
+	protected abstract TseitinCube toCNF();
+	
+	public TseitinCube tseitinTransform(){
+		return tseitinTransform(false);
 	}
 	
-	public abstract Formula getPrimed();
+	public TseitinCube tseitinTransform(boolean negated){
+		TseitinCube result = toCNF();
+		if(negated)result.negate();
+		result.stick();
+		return result;
+	}
 }

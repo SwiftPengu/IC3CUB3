@@ -2,7 +2,7 @@ package sat;
 
 import java.util.List;
 
-import plf.Formula;
+import plf.cnf.Cube;
 
 public abstract class SATSolver {
 	/**
@@ -10,22 +10,16 @@ public abstract class SATSolver {
 	 * @param f the formula to be satisfied
 	 * @return empty list if unsatisfiable, a list of formulae each representing a satisfiable interpretation if satisfiable
 	 */
-	public abstract List<? extends Formula> solve(Formula f, boolean skipPrimed);
+	public abstract List<? extends Cube> sat(Cube f, boolean skipPrimed);
 
-	public List<? extends Formula> solve(Formula f){
-		return solve(f,false);
+	public List<? extends Cube> sat(Cube f){
+		return sat(f,false);
 	}
 	
-	public List<? extends Formula> solveTimed(Formula f, boolean skip){
+	public List<? extends Cube> solveTimed(Cube f, boolean skip){
 		long time = System.currentTimeMillis();
-		List<? extends Formula> result = solve(f,skip);
+		List<? extends Cube> result = sat(f,skip);
 		System.out.println(String.format("Took %dms",System.currentTimeMillis()-time));
 		return result;
 	}
-	
-	/**
-	 * Whether this solver needs the formula to be in CNF notation
-	 * @return true when this solver needs the formula to be in CNF notation
-	 */
-	public abstract boolean needsCNF();
 }

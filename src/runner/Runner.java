@@ -7,6 +7,8 @@ import java.io.IOException;
 import plf.Formula;
 import plf.Literal;
 import sat.Logic2CNF;
+import sat.SATSolver;
+
 
 public class Runner {
 	public static int VERBOSE = 1;
@@ -15,10 +17,10 @@ public class Runner {
 		try {			
 			long time = System.currentTimeMillis();
 			//init formulae
-			Formula x1 = new Literal();
-			Formula x2 = new Literal();
-			Formula x1p = x1.getPrimed();
-			Formula x2p = x2.getPrimed();
+			Literal x1 = new Literal();
+			Literal x2 = new Literal();
+			Literal x1p = x1.getPrimed();
+			Literal x2p = x2.getPrimed();
 			
 			//List<Formula> F = new ArrayList<Formula>();
 			Formula F0 = x1.not().and(x2.not()); //F0 = I
@@ -46,10 +48,10 @@ public class Runner {
 			
 			//TA <=> TB <=> TC
 			
-			//System.out.println(T.getLogic2CNFString());
+			SATSolver l2c = new Logic2CNF();
+			IC3 ic3 = new IC3(l2c);
 			
-			IC3 ic3 = new IC3(new Logic2CNF());
-			ic3.check(F0, TB, P);
+			ic3.check(F0.tseitinTransform(), TB.tseitinTransform(), P.tseitinTransform(),P.tseitinTransform(true));
 			
 			System.out.println(String.format("Time needed: %dms",System.currentTimeMillis()-time));
 		} catch (IOException e) {
