@@ -65,8 +65,8 @@ public class Cube {
 		return result;
 	}
 	
-	public Set<Long> getVariables(){
-		HashSet<Long> result = new HashSet<Long>();
+	public Set<Integer> getVariables(){
+		HashSet<Integer> result = new HashSet<Integer>();
 		for(Clause c:getClauses()){
 			result.addAll(c.getVariables());
 		}
@@ -109,5 +109,27 @@ public class Cube {
 			result.addLiteral(c.getLiterals().getFirst());
 		}
 		return result;
+	}
+	
+	public Set<Integer> getTseitinVariables(){
+		HashSet<Integer> result = new HashSet<Integer>();
+		for(Clause c:getClauses()){
+			result.addAll(c.getTseitinVariables());
+		}
+		return result;
+	}
+	
+	/**
+	 * Obtains the number of literals in the largest clause
+	 * @return the maximum amount of variables in a single clause
+	 */
+	public int maxclauses(){
+		assert(getClauses().size()>0);
+		int max = getClauses().getFirst().getLiterals().size();
+		for(Clause c:getClauses()){
+			int size = c.getLiterals().size();
+			if(size>max)max=size;
+		}
+		return max;
 	}
 }

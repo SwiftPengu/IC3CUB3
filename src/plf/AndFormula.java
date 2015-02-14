@@ -28,9 +28,9 @@ public class AndFormula extends Formula{
 	}
 
 	@Override
-	public Set<Long> getVariables() {
-		Set<Long> lvars = left.getVariables();
-		Set<Long> rvars = right.getVariables();
+	public Set<Integer> getVariables() {
+		Set<Integer> lvars = left.getVariables();
+		Set<Integer> rvars = right.getVariables();
 		assert(lvars!=null);
 		assert(rvars!=null);
 		lvars.addAll(rvars);
@@ -93,9 +93,9 @@ public class AndFormula extends Formula{
 	}
 
 	@Override
-	public Set<Long> getTseitinVariables() {
-		Set<Long> lvars = left.getTseitinVariables();
-		Set<Long> rvars = right.getTseitinVariables();
+	public Set<Integer> getTseitinVariables() {
+		Set<Integer> lvars = left.getTseitinVariables();
+		Set<Integer> rvars = right.getTseitinVariables();
 		assert(lvars!=null);
 		assert(rvars!=null);
 		lvars.addAll(rvars);

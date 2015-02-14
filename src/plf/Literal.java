@@ -6,14 +6,14 @@ import plf.cnf.Clause;
 import plf.cnf.TseitinCube;
 
 public class Literal extends Formula{
-	private static long counter = 1;
+	private static int LITCOUNT = 1;
 	
-	private final long id;
+	private final int id;
 	private final boolean negated;
 	private final boolean primed;
 	private final boolean tseitin;
 	
-	public Literal(long id,boolean negated,boolean primed,boolean tseitin){
+	public Literal(int id,boolean negated,boolean primed,boolean tseitin){
 		assert(id>0);
 		this.id=id;
 		this.negated=negated;
@@ -21,23 +21,23 @@ public class Literal extends Formula{
 		this.tseitin=tseitin;
 	}
 	
-	public Literal(long id,boolean negated){
+	public Literal(int id,boolean negated){
 		this(id,negated,false,false);
 	}
 	
-	public Literal(long id){
+	public Literal(int id){
 		this(id,false);
 	}
 	
 	public Literal(){
-		this(counter);
-		counter+=2;
+		this(LITCOUNT);
+		LITCOUNT+=2;
 		
 	}
 	
 	public Literal(boolean tseitin){
-		this(counter,false,false,true);
-		counter+=2;
+		this(LITCOUNT,false,false,true);
+		LITCOUNT+=2;
 	}
 
 	@Override
@@ -51,8 +51,8 @@ public class Literal extends Formula{
 	}
 	
 	@Override
-	public Set<Long> getVariables() {
-		HashSet<Long> result = new HashSet<Long>();
+	public Set<Integer> getVariables() {
+		HashSet<Integer> result = new HashSet<Integer>();
 		result.add(getID());
 		return result;
 	}
@@ -75,7 +75,7 @@ public class Literal extends Formula{
 	 * Obtains the official id (not the internal id)
 	 * @return
 	 */
-	public long getID(){
+	public int getID(){
 		return primed?this.id+1:this.id;
 	}
 	
@@ -83,11 +83,11 @@ public class Literal extends Formula{
 	 * Obtains the DIMACS id
 	 * @return the DIMACS integer representing this variable
 	 */
-	public long getDIMACSID(){
+	public int getDIMACSID(){
 		return negated?-getID():getID();
 	}
 	
-	protected long getInternalID(){
+	protected int getInternalID(){
 		return this.id;
 	}
 	
@@ -115,11 +115,16 @@ public class Literal extends Formula{
 	}
 	
 	@Override
-	public Set<Long> getTseitinVariables() {
-		HashSet<Long> result = new HashSet<Long>();
+	public Set<Integer> getTseitinVariables() {
+		HashSet<Integer> result = new HashSet<Integer>();
 		if(isTseitin()){
 			result.add(getID());
 		}
 		return result;
+	}
+	
+	
+	public static int MAXID(){
+		return LITCOUNT;
 	}
 }

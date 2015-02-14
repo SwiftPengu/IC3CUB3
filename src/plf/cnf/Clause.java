@@ -83,8 +83,8 @@ public class Clause {
 		}
 	}
 	
-	public Set<Long> getVariables(){
-		HashSet<Long> result = new HashSet<Long>();
+	public Set<Integer> getVariables(){
+		HashSet<Integer> result = new HashSet<Integer>();
 		for(Literal l:getLiterals()){
 			//if(!l.isTseitin()){
 				result.add(l.getID());
@@ -99,5 +99,15 @@ public class Clause {
 	 */
 	public Cube asCube(){
 		return new Cube(this);
+	}
+	
+	public Set<Integer> getTseitinVariables(){
+		HashSet<Integer> result = new HashSet<Integer>();
+		for(Literal l:getLiterals()){
+			if(l.isTseitin()){
+				result.add(l.getID());
+			}
+		}
+		return result;
 	}
 }

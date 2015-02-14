@@ -17,11 +17,11 @@ public abstract class Formula {
 	
 	public abstract Formula not();
 	
-	public abstract Set<Long> getVariables();
+	public abstract Set<Integer> getVariables();
 	
-	public abstract Set<Long> getTseitinVariables();
+	public abstract Set<Integer> getTseitinVariables();
 	
-	public Set<Long> getPrimedVariables(){
+	public Set<Integer> getPrimedVariables(){
 		return getPrimed().getVariables();
 	}
 	

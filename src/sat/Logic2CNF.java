@@ -57,7 +57,7 @@ public class Logic2CNF extends SATSolver {
 		PrintWriter pw = new PrintWriter(new BufferedOutputStream(logic2cnf.getOutputStream()));
 		//define variables
 		pw.print("def");
-		for(Long i:f.getVariables()){
+		for(Integer i:f.getVariables()){
 			pw.print(" x"+i);
 		}
 		pw.println(";");
@@ -83,7 +83,7 @@ public class Logic2CNF extends SATSolver {
 
 	}
 	
-	private List<Cube> processOutput(Process logic2cnf, boolean skip, Set<Long> tseitinvars) {
+	private List<Cube> processOutput(Process logic2cnf, boolean skip, Set<Integer> tseitinvars) {
 		List<Cube> result = new ArrayList<Cube>();
 		
 		//process results line by line
@@ -102,10 +102,11 @@ public class Logic2CNF extends SATSolver {
 			while(linescan.hasNext()){
 				String varstring = linescan.next();
 				boolean negated = varstring.charAt(0)=='~'; //test for negation
-				long varid = Long.parseLong(varstring.substring(negated?2:1));
-				if(!skip || varid%2==1){
+				int varid = Integer.parseInt(varstring.substring(negated?2:1));
+				boolean primedvar = isPrimed(varid);
+				if(!skip || !primedvar){
 					if(!tseitinvars.contains(varid)){//discard extra introduced variables
-						Literal var = new Literal(varid,negated,false,false);
+						Literal var = new Literal(varid-(primedvar?1:0),negated,primedvar,false);
 						
 						//add the formula
 						if(singleformula==null){
@@ -121,5 +122,9 @@ public class Logic2CNF extends SATSolver {
 		}
 		sc.close();
 		return result;
+	}
+	
+	private boolean isPrimed(int varid){
+		return varid%2==0;
 	}
 }
