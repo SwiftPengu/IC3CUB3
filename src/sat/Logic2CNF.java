@@ -5,6 +5,8 @@ import java.util.*;
 
 import plf.Formula;
 import plf.Literal;
+import plf.cnf.Clause;
+import plf.cnf.Cube;
 import runner.Runner;
 import runner.Settings;
 
@@ -33,7 +35,8 @@ public class Logic2CNF extends SATSolver {
 	}
 
 	@Override
-	public List<Formula> solve(Formula f,boolean skip) {
+	public List<Cube> sat(Cube c,boolean skip) {
+		Formula f = c.toFormula();
 		try {
 			//Run Logic2CNF
 			final Process logic2cnf = Runtime.getRuntime().exec(Settings.COMMAND);
@@ -41,18 +44,13 @@ public class Logic2CNF extends SATSolver {
 			//Feed input
 			processInput(logic2cnf,f);			
 			processErrorStream(logic2cnf); //Gobble std.err
-			List<Formula> result = processOutput(logic2cnf,skip); //obtain processed output
+			List<Cube> result = processOutput(logic2cnf,skip,f.getTseitinVariables()); //obtain processed output
 			if(Runner.VERBOSE>1)System.out.println("D: "+result);
 			logic2cnf.destroy(); //Clean up Logic2CNF
 			return result;
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	@Override
-	public boolean needsCNF() {
-		return false;
 	}
 	
 	private void processInput(Process logic2cnf,Formula f) {
@@ -85,8 +83,8 @@ public class Logic2CNF extends SATSolver {
 
 	}
 	
-	private List<Formula> processOutput(Process logic2cnf, boolean skip) {
-		List<Formula> result = new ArrayList<Formula>();
+	private List<Cube> processOutput(Process logic2cnf, boolean skip, Set<Long> tseitinvars) {
+		List<Cube> result = new ArrayList<Cube>();
 		
 		//process results line by line
 		Scanner sc = new Scanner(logic2cnf.getInputStream());
@@ -98,21 +96,23 @@ public class Logic2CNF extends SATSolver {
 			linescan.next(); //skip line number
 			
 			//construct formula
-			Formula singleformula = null;
+			Cube singleformula = null;
 			
 			//process all variables
 			while(linescan.hasNext()){
 				String varstring = linescan.next();
 				boolean negated = varstring.charAt(0)=='~'; //test for negation
 				long varid = Long.parseLong(varstring.substring(negated?2:1));
-				if(!skip || !isPrimeVar(varid)){
-					Literal var = new Literal(varid,negated,false);
-					
-					//add the formula
-					if(singleformula==null){
-						singleformula = var;
-					}else{
-						singleformula = singleformula.and(var);
+				if(!skip || varid%2==1){
+					if(!tseitinvars.contains(varid)){//discard extra introduced variables
+						Literal var = new Literal(varid,negated,false,false);
+						
+						//add the formula
+						if(singleformula==null){
+							singleformula = new Clause(var).asCube();
+						}else{
+							singleformula = singleformula.and(new Clause(var).asCube());
+						}
 					}
 				}
 			}
