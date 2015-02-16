@@ -7,22 +7,22 @@ import plf.*;
 public class Cube {
 	private final ArrayDeque<Clause> clauses;
 	
-	public Cube(Collection<Clause> literals){
+	public Cube(Collection<Clause> clauses){
 		//assert(literals.size()>0);
 		this.clauses = new ArrayDeque<Clause>();
-		this.clauses.addAll(literals);
+		this.clauses.addAll(clauses);
 	}
 	
-	public Cube(Clause c){
-		this(Arrays.asList(new Clause[]{c}));
+	public Cube(Clause... clauses){
+		this(Arrays.asList(clauses));
 	}
 	
 	public Cube(){
 		this(new ArrayList<Clause>(0));
 	}
 	
-	public void addClause(Clause l){
-		clauses.add(l);
+	public void addClause(Clause... l){
+		clauses.addAll(Arrays.asList(l));
 	}
 	
 	public void addLiteral(Literal l){

@@ -13,8 +13,8 @@ public class Clause {
 		this.literals.addAll(literals);
 	}
 	
-	public Clause(Literal l){
-		this(Arrays.asList(new Literal[]{l}));
+	public Clause(Literal... literals){
+		this(Arrays.asList(literals));
 	}
 	
 	public Clause(){
