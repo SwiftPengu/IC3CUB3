@@ -66,7 +66,7 @@ public class IC3 {
 				}else{
 					strengthen(s,F,inductiveFrontier,addedClauses);
 					
-					//aggressively check if the CTI is resolved in the first non-inductive frontier
+					//'aggressively' check if the CTI is resolved in the first non-inductive frontier
 					int nextfrontier = inductiveFrontier+1;
 					if(nextfrontier<k){
 						proofObligations.add(new ProofObligation(s, nextfrontier));
@@ -152,11 +152,12 @@ public class IC3 {
 		for(int f1 = 0;f1<f.size()-1;f1++){
 			int f2 = f1+ 1;
 			//compare the two formulae
-			//TODO there must be more efficient way of doing this
-			boolean equal = satsolver.sat(f.get(f1).toFormula().iff(f.get(f2).toFormula()).tseitinTransform()).size()>0;
+			boolean equal = f.get(f1).equals(f.get(f2));
 			if(equal)return true;
 		}
 		return false;
+		//implementation which asks the SAT solver:
+		//boolean equal = satsolver.sat(f.get(f1).toFormula().iff(f.get(f2).toFormula()).tseitinTransform()).size()>0;
 	}
 	
 	//TODO implement MIC algorithm

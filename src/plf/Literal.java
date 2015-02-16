@@ -127,4 +127,8 @@ public class Literal extends Formula{
 	public static int MAXID(){
 		return LITCOUNT;
 	}
+	
+	public boolean equals(Literal l){
+		return l.getID()==getID() && l.negated==negated;
+	}
 }
