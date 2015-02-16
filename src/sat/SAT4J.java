@@ -9,53 +9,73 @@ import org.sat4j.specs.*;
 import plf.cnf.*;
 import plf.*;
 
-public class SAT4J extends CNFSolver{
+public class SAT4J extends SATSolver{
 	private ISolver solver;
-	private static final ArrayList<Cube> UNSAT = new ArrayList<Cube>();
+	private static final ArrayList<Cube> UNSAT = new ArrayList<Cube>(); //UNSAT constant
 	
 	public SAT4J(ISolver solver){
 		this.solver=solver;
 	}
 	
 	public SAT4J(){
-		this(SolverFactory.newDefault());
+		this(SolverFactory.newLight());
 	}
 	
-	protected ISolver getSolver(){
-		return solver;
+	protected ISolver getSolver(Cube c){
+		ISolver result = solver;
+		solver.reset();
+		solver.newVar(Literal.MAXID());
+		solver.setExpectedNumberOfClauses(c.getClauses().size());
+		//solver.setTimeout(3600);
+		return result;
 	}
 
 	@Override
-	public List<Cube> solve(Cube c, boolean skipPrimed) {
-		ISolver solver = getSolver();
+	public List<Cube> sat(Cube c, boolean skipPrimed) {
+		//Set up the solver
+		ISolver solver = getSolver(c);
+		Set<Integer> tseitinvars = c.getTseitinVariables();
 		for(Clause clause:c.getClauses()){
-			try {
-				VecInt convertedClause = new VecInt();
-				for(Literal l:clause.getLiterals()){
-					convertedClause.push((int) l.getDIMACSID());//FIXME check if long can actually be cast, and if long is nessecary
-				}
-				solver.addClause(convertedClause);
+			VecInt conv = new VecInt(clause.toDIMACSArray());
+			//System.out.println(clause+"; "+conv);
+			try {	
+				//System.out.println(clause);
+				solver.addClause(conv);
 			} catch (ContradictionException e) {
+				System.out.println("Trivially unsat");
+				//System.out.println(c);
 				return UNSAT;
 			}
 		}
+		//attempt to find a model
 		try {
 			Cube result = new Cube();
-			int[] model = solver.findModel();
-			for(int var:model){
-				int id = Math.abs(var);
-				if(!skipPrimed || !isPrimeVar(id)){
-					result.addClause(new Clause(new Literal(id,var<0,isPrimeVar(id))));
+			//System.exit(0);
+			boolean satisfiable = solver.isSatisfiable();
+			if(satisfiable){
+				int[] model = solver.findModel();
+				for(int var:model){
+					int id = Math.abs(var);
+					boolean primed = isPrimeVar(id);
+					if(!skipPrimed || !primed){
+						//only add non-tseitin variables
+						if(!tseitinvars.contains(var)){
+							Literal lit = new Literal(id-(primed?1:0),var<0,primed,false);
+							result.addLiteral(lit);
+						}
+					}
 				}
+				return Arrays.asList(new Cube[]{result});
+			}else{
+				return UNSAT;
 			}
-			return Arrays.asList(new Cube[]{result});
 		} catch (TimeoutException e) {
-			assert(false); //timeout should not happen
+			assert(false); //timeout should not occur, as we have not requested one
 			return UNSAT;
 		}
 	}
 	
-	public IProblem getProblem(Cube c){
-		return null;
+	public boolean isPrimeVar(int id){
+		return id%2==0;
 	}
 }

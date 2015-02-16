@@ -110,4 +110,15 @@ public class Clause {
 		}
 		return result;
 	}
+	
+	public int[] toDIMACSArray(){
+		assert(literals.size()>0);
+		int[] result = new int[literals.size()];
+		int index = 0;
+		for(Literal l:getLiterals()){
+			result[index] = l.getDIMACSID();
+			index++;
+		}
+		return result;
+	}
 }

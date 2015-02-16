@@ -18,6 +18,7 @@ public class IC3 {
 	//TODO return cex or TS |= P
 	public boolean check(Cube I, Cube T, Cube P,Cube NP){
 		//check I => P
+		System.out.println("Check I => P");
 		if(satsolver.sat(I.and(NP)).size()>0){
 			System.out.println("I => P does not hold");
 			return false;
