@@ -1,20 +1,27 @@
 package runner;
 
+import java.util.Arrays;
+import java.util.Collections;
+
 import ic3.IC3;
 
-import java.io.IOException;
+import org.sat4j.core.VecInt;
+import org.sat4j.minisat.SolverFactory;
+import org.sat4j.specs.*;
+import org.sat4j.tools.ModelIterator;
 
 import plf.Formula;
 import plf.Literal;
-import sat.Logic2CNF;
+import plf.cnf.Clause;
+import plf.cnf.Cube;
+import sat.SAT4J;
 import sat.SATSolver;
 
 
 public class Runner {
 	public static int VERBOSE = 1;
 	
-	public static void main(String[] args){		
-		try {			
+	public static void main(String[] args){	
 			long time = System.currentTimeMillis();
 			//init formulae
 			Literal x1 = new Literal();
@@ -23,8 +30,10 @@ public class Runner {
 			Literal x2p = x2.getPrimed();
 			
 			//List<Formula> F = new ArrayList<Formula>();
-			Formula F0 = x1.not().and(x2.not()); //F0 = I
-			Formula P = x1.not().or(x2);
+			//Formula F0 = x1.not().and(x2.not()); //F0 = I
+			Cube F0 = new Cube(new Clause(x1.not()),new Clause(x2.not()));
+			//Formula P = x1.not().or(x2);
+			Clause P = new Clause(x1.not(),x2);
 			
 			//TRANS
 			/*Formula TA = x1.not().and(x2.not()).and(x1p.not().and(x2p.not()));//00 -> 00
@@ -33,12 +42,19 @@ public class Runner {
 			TA=TA.or(x1.and(x2).and(x1p.and(x2p.not()))); //11 -> 10
 			TA=TA.or(x1.and(x2.not()).and(x1p.and(x2p.not()))); //10 -> 10*/
 			
-			//T from stanford
-			Formula TB = x1.or(x2.not()).or(x2p);
+			//T from the stanford paper
+			/*Formula TB = x1.or(x2.not()).or(x2p);
 			TB = TB.and(x1.or(x2).or(x1p.not()));
 			TB = TB.and(x1.not().or(x1p));
 			TB = TB.and(x1.not().or(x2p.not()));
-			TB = TB.and(x2.or(x2p.not()));
+			TB = TB.and(x2.or(x2p.not()));*/
+			
+			Cube TB = new Cube();
+			TB.addClause(new Clause(x1,x2.not(),x2p));
+			TB.addClause(new Clause(x1,x2,x1p.not()));
+			TB.addClause(new Clause(x1.not(),x1p));
+			TB.addClause(new Clause(x1.not(),x2p.not()));
+			TB.addClause(new Clause(x2,x2p.not()));
 			
 			//TRANS in CNF (WolframAlpha of TA)		
 			/*Formula TC = x1.not().or(x1p).and(
@@ -48,14 +64,11 @@ public class Runner {
 			
 			//TA <=> TB <=> TC
 			
-			SATSolver l2c = new Logic2CNF();
-			IC3 ic3 = new IC3(l2c);
-			
-			ic3.check(F0.tseitinTransform(), TB.tseitinTransform(), P.tseitinTransform(),P.tseitinTransform(true));
+			SATSolver solver = new SAT4J();
+			IC3 ic3 = new IC3(solver);
+
+			ic3.check(F0, TB, P.asCube(),P.not());
 			
 			System.out.println(String.format("Time needed: %dms",System.currentTimeMillis()-time));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 }
