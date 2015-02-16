@@ -45,7 +45,7 @@ public class IC3 {
 			ArrayDeque<Clause> addedClauses = new ArrayDeque<Clause>();
 			PriorityQueue<ProofObligation> proofObligations = new PriorityQueue<ProofObligation>();
 			//test Fk ^ T ^ ~p'
-			List<? extends Cube> result = satsolver.sat(F.get(k).and(T).and(NPPrime),true);
+			List<Cube> result = satsolver.sat(F.get(k).and(T).and(NPPrime),true);
 			if(result.size()>0){
 				System.out.println("F_k ^ T ^ ~p' satisfiable for k="+k);
 				
