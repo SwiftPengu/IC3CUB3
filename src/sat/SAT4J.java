@@ -6,8 +6,9 @@ import org.sat4j.core.VecInt;
 import org.sat4j.minisat.SolverFactory;
 import org.sat4j.specs.*;
 
-import plf.cnf.*;
-import plf.*;
+import plf.Literal;
+import plf.cnf.Clause;
+import plf.cnf.Cube;
 
 public class SAT4J extends SATSolver{
 	private ISolver solver;
@@ -18,7 +19,7 @@ public class SAT4J extends SATSolver{
 	}
 	
 	public SAT4J(){
-		this(SolverFactory.newLight());
+		this(SolverFactory.newDefault());
 	}
 	
 	protected ISolver getSolver(Cube c){
