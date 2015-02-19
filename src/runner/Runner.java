@@ -1,16 +1,6 @@
 package runner;
 
-import java.util.Arrays;
-import java.util.Collections;
-
 import ic3.IC3;
-
-import org.sat4j.core.VecInt;
-import org.sat4j.minisat.SolverFactory;
-import org.sat4j.specs.*;
-import org.sat4j.tools.ModelIterator;
-
-import plf.Formula;
 import plf.Literal;
 import plf.cnf.Clause;
 import plf.cnf.Cube;
@@ -21,7 +11,7 @@ import sat.SATSolver;
 public class Runner {
 	public static int VERBOSE = 1;
 	
-	public static void main(String[] args){	
+	public static void main(String[] args){
 			long time = System.currentTimeMillis();
 			//init formulae
 			Literal x1 = new Literal();
@@ -31,7 +21,7 @@ public class Runner {
 			
 			//List<Formula> F = new ArrayList<Formula>();
 			//Formula F0 = x1.not().and(x2.not()); //F0 = I
-			Cube F0 = new Cube(new Clause(x1.not()),new Clause(x2.not()));
+			Cube F0 = new Cube(x1.not(),x2.not());
 			//Formula P = x1.not().or(x2);
 			Clause P = new Clause(x1.not(),x2);
 			
@@ -49,12 +39,11 @@ public class Runner {
 			TB = TB.and(x1.not().or(x2p.not()));
 			TB = TB.and(x2.or(x2p.not()));*/
 			
-			Cube TB = new Cube();
-			TB.addClause(new Clause(x1,x2.not(),x2p));
-			TB.addClause(new Clause(x1,x2,x1p.not()));
-			TB.addClause(new Clause(x1.not(),x1p));
-			TB.addClause(new Clause(x1.not(),x2p.not()));
-			TB.addClause(new Clause(x2,x2p.not()));
+			Cube TB = new Cube(new Clause(x1,x2.not(),x2p),
+						new Clause(x1,x2,x1p.not()),
+						new Clause(x1.not(),x1p),
+						new Clause(x1.not(),x2p.not()),
+						new Clause(x2,x2p.not()));
 			
 			//TRANS in CNF (WolframAlpha of TA)		
 			/*Formula TC = x1.not().or(x1p).and(

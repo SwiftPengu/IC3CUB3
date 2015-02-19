@@ -64,7 +64,7 @@ public class IC3 {
 					System.out.println("Found counterexample to P: "+s);
 					return false;
 				}else{
-					strengthen(s,F,inductiveFrontier,addedClauses);
+					strengthen(s,F,T,inductiveFrontier,addedClauses);
 					
 					//'aggressively' check if the CTI is resolved in the first non-inductive frontier
 					int nextfrontier = inductiveFrontier+1;
@@ -76,7 +76,7 @@ public class IC3 {
 			k++;
 			
 			F.add(P); //Fk = P
-			System.out.println("K in creased to "+k);
+			System.out.println("K increased to "+k);
 			propagateClauses(T,F,addedClauses,k);
 			if(hasFixpoint(F)){
 				System.out.println(String.format("Fixpoint found at k=%d, TS |= P",k));
@@ -108,9 +108,9 @@ public class IC3 {
 	}
 
 	//Refine F1...Fi+1
-	private void strengthen(Cube S,List<Cube> F, Integer inductiveFrontier,ArrayDeque<Clause> addedClauses) {
+	private void strengthen(Cube S,List<Cube> F, Cube T,Integer inductiveFrontier,ArrayDeque<Clause> addedClauses) {
 		//first obtain a minimal inductive subclause
-		Clause c = MIC(S);
+		Clause c = MIC(S, F.get(0), T, F.get(inductiveFrontier));
 		System.out.println("MIC: "+c);
 		
 		addedClauses.add(c);
@@ -153,17 +153,74 @@ public class IC3 {
 			int f2 = f1+ 1;
 			//compare the two formulae
 			boolean equal = f.get(f1).equals(f.get(f2));
-			if(equal)return true;
+			if(equal){
+				return true;
+			}
 		}
 		return false;
 		//implementation which asks the SAT solver:
 		//boolean equal = satsolver.sat(f.get(f1).toFormula().iff(f.get(f2).toFormula()).tseitinTransform()).size()>0;
 	}
-	
-	//TODO implement MIC algorithm
-	private Clause MIC(Cube S){
-		Clause result = new Clause();
-		result.addLiteral(new Literal(3).not());
+		
+	/**
+	 * Finds a minimally inductive clause relative to F (F ^ T ^ ~result => ~result') given a negated counterexample
+	 * @param notcex the negated counterexample
+	 * @param F the frontier set which the result should be relatively inductive to
+	 * @return a minimally inductive clause which is inductive relative to F
+	 */
+	public Clause MIC(final Cube cex,final Cube I,final Cube T,final Cube F){
+		//assert notcex is inductive (F ^ ~s ^ T => ~s') satisfiable
+		// <=> ~(F ^ ~s ^ T => ~s') <=> (F ^ ~s ^ T ^ s') unsatisfiable
+		Clause notcex = cex.not();
+		assert(satsolver.sat(F.and(notcex).and(T).and(cex.getPrimed())).size()==0) : "MIC: ~cex is not inductive on F";
+		
+		Clause result = notcex.clone(); //~s is the maximum inductive clause, return this if all else fails
+		ArrayList<Literal> literals = new ArrayList<Literal>(result.getLiterals());
+		//visit literals in random order
+		Collections.shuffle(literals);
+		
+		//drop a literal
+		for (Literal l:literals){
+			boolean copiedold = true; //result might have been refined in the meantime
+			Clause rhat = new Clause(); //result - l
+			for(Literal newlit:result.getLiterals()){
+				if(newlit!=l){
+					rhat.addLiteral(newlit);
+				}else{
+					copiedold=false; //we skipped a literal, so we didnt produce a copy
+				}
+			}
+			if(!copiedold){
+				//apply DOWN to rhat if it is not empty
+				if(rhat.getLiterals().size()>0){
+					Clause down = down(rhat,I,T,F);
+					if(down!=null){
+						result = down;
+					}
+				}
+			}
+		}
 		return result;
+	}
+	
+	private Clause down(Clause rhat,Cube I,Cube T, Cube Fi){
+		Cube notrhat = rhat.not();
+		System.out.println("Down on: "+rhat);
+		//test initiation (are bad states reachable from I?): ~(I => ~rhat) <=> I ^ rhat satisfiable
+		if(satsolver.sat(I.and(rhat)).size()>0){
+			System.out.println("Initiation failed");
+			return null;
+		}
+		
+		//rhat => ~s
+		//test consecution (attempt to obtain an unsat proof for ~(Fi ^ rhat ^ T => rhat') <=> Fi ^ rhat ^ T ^ ~rhat'
+		List<? extends Cube> counterexamples = satsolver.sat(Fi.and(T).and(rhat).and(notrhat.getPrimed()),true);
+		if(counterexamples.size()==0){
+			System.out.println(rhat+" is inductive!");
+			return rhat;
+		}else{
+			//TODO use counterexample to refine rhat (rhat = rhat without literals not in ~cex
+			return null;
+		}
 	}
 }

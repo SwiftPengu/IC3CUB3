@@ -9,6 +9,7 @@ import org.sat4j.specs.*;
 import plf.Literal;
 import plf.cnf.Clause;
 import plf.cnf.Cube;
+import runner.Runner;
 
 public class SAT4J extends SATSolver{
 	private ISolver solver;
@@ -43,7 +44,7 @@ public class SAT4J extends SATSolver{
 				//System.out.println(clause);
 				solver.addClause(conv);
 			} catch (ContradictionException e) {
-				System.out.println("Trivially unsat");
+				if(Runner.VERBOSE>1)System.out.println("Trivially unsat");
 				//System.out.println(c);
 				return UNSAT;
 			}
