@@ -95,9 +95,7 @@ public class Cube {
 	}
 
 	public Cube and(Clause c) {
-		// TODO make new cube?
-		addClause(c);
-		return this;
+		return and(c.asCube());
 	}
 
 	public Formula toFormula() {
@@ -119,7 +117,7 @@ public class Cube {
 		Clause result = new Clause();
 		for (Clause c : getClauses()) {
 			assert (c.getLiterals().size() == 1);
-			result.addLiteral(c.getLiterals().getFirst());
+			result.addLiteral(c.getLiterals().getFirst().not());
 		}
 		return result;
 	}

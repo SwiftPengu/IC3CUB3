@@ -76,11 +76,13 @@ public class IC3 {
 			k++;
 			
 			F.add(P); //Fk = P
-			System.out.println("K increased to "+k);
+			System.out.println("k increased to "+k);
 			propagateClauses(T,F,addedClauses,k);
 			if(hasFixpoint(F)){
 				System.out.println(String.format("Fixpoint found at k=%d, TS |= P",k));
 				return true;
+			}else{
+				System.out.println(F);
 			}
 		}
 	}
@@ -117,7 +119,9 @@ public class IC3 {
 		//add c to F1..Fi+1
 		int i = 1;
 		do{
+			System.out.println("F"+i+" was: "+F.get(i));
 			F.set(i, F.get(i).and(c));
+			
 			System.out.println("F"+i+" becomes: "+F.get(i));
 			i++;
 		}while(i<inductiveFrontier+1);
@@ -127,7 +131,29 @@ public class IC3 {
 	private void propagateClauses(Cube T,List<Cube> F,
 			ArrayDeque<Clause> addedClauses,int k) {
 		//Propagate clauses
-		while(addedClauses.size()>0){
+		System.out.println("Propagating clauses: "+addedClauses);
+		for(Clause clause:addedClauses){
+			//check whether clause can be propagated (F_i ^ T  => c') satisfiable
+			//<=> F_i ^ T ^ ~c' unsat
+			for(int i = 0;i<k;i++){
+				Cube frontier = F.get(i);
+				Cube nextfrontier = F.get(i+1);
+				Cube notcprime = clause.getPrimed().not();
+				if(!nextfrontier.getClauses().contains(clause)){
+					System.out.printf("Test if %s can be propagated from %s(%d) to %s(%d)\n", clause,frontier,i,nextfrontier,i+1);
+					boolean canbepropagated = satsolver.sat(frontier.and(clause).and(T).and(notcprime)).size()==0;
+					if(canbepropagated){
+						System.out.println("Yes");
+						nextfrontier.addClause(clause);
+						//frontier.addClause(clause);
+					}else{
+						System.out.println("No");
+					}
+				}
+				
+			}
+		}
+	/*	while(addedClauses.size()>0){
 			Clause c = addedClauses.pop();
 			//check whether clause can be propagated (F_k ^ c ^ T => c') satisfiable
 			Cube notcprime = c.getPrimed().not();
@@ -140,7 +166,7 @@ public class IC3 {
 				System.out.println("Clause "+c+" can  not be propagated");
 				//return false;
 			}
-		}
+		}*/
 	}
 
 	/**
@@ -171,7 +197,9 @@ public class IC3 {
 	public Clause MIC(final Cube cex,final Cube I,final Cube T,final Cube F){
 		//assert notcex is inductive (F ^ ~s ^ T => ~s') satisfiable
 		// <=> ~(F ^ ~s ^ T => ~s') <=> (F ^ ~s ^ T ^ s') unsatisfiable
+		System.out.println(cex);
 		Clause notcex = cex.not();
+		System.out.println(notcex);
 		assert(satsolver.sat(F.and(notcex).and(T).and(cex.getPrimed())).size()==0) : "MIC: ~cex is not inductive on F";
 		
 		Clause result = notcex.clone(); //~s is the maximum inductive clause, return this if all else fails
@@ -205,10 +233,10 @@ public class IC3 {
 	
 	private Clause down(Clause rhat,Cube I,Cube T, Cube Fi){
 		Cube notrhat = rhat.not();
-		System.out.println("Down on: "+rhat);
+		if(Runner.VERBOSE>1)System.out.println("Down on: "+rhat);
 		//test initiation (are bad states reachable from I?): ~(I => ~rhat) <=> I ^ rhat satisfiable
 		if(satsolver.sat(I.and(rhat)).size()>0){
-			System.out.println("Initiation failed");
+			if(Runner.VERBOSE>1) System.out.println("Initiation failed");
 			return null;
 		}
 		
@@ -216,7 +244,7 @@ public class IC3 {
 		//test consecution (attempt to obtain an unsat proof for ~(Fi ^ rhat ^ T => rhat') <=> Fi ^ rhat ^ T ^ ~rhat'
 		List<? extends Cube> counterexamples = satsolver.sat(Fi.and(T).and(rhat).and(notrhat.getPrimed()),true);
 		if(counterexamples.size()==0){
-			System.out.println(rhat+" is inductive!");
+			if(Runner.VERBOSE>1)System.out.println(rhat+" is inductive!");
 			return rhat;
 		}else{
 			//TODO use counterexample to refine rhat (rhat = rhat without literals not in ~cex
