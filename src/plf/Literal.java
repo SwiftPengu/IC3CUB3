@@ -128,7 +128,21 @@ public class Literal extends Formula{
 		return LITCOUNT;
 	}
 	
+	@Override
+	public boolean equals(Object obj) {
+		if(obj instanceof Literal){
+			return equals((Literal)obj);
+		}else{
+			return false;
+		}
+	}
+	
 	public boolean equals(Literal l){
 		return l.getID()==getID() && l.negated==negated;
+	}
+	
+	@Override
+	public int hashCode() {
+		return getDIMACSID();
 	}
 }

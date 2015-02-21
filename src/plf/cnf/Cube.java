@@ -5,11 +5,11 @@ import java.util.*;
 import plf.*;
 
 public class Cube {
-	private final LinkedList<Clause> clauses;
+	private final Set<Clause> clauses;
 
 	public Cube(Collection<Clause> clauses) {
 		// assert(literals.size()>0);
-		this.clauses = new LinkedList<Clause>();
+		this.clauses = new HashSet<Clause>();
 		this.clauses.addAll(clauses);
 	}
 
@@ -64,7 +64,7 @@ public class Cube {
 		return result;
 	}
 
-	public List<Clause> getClauses() {
+	public Set<Clause> getClauses() {
 		return clauses;
 	}
 
@@ -117,7 +117,7 @@ public class Cube {
 		Clause result = new Clause();
 		for (Clause c : getClauses()) {
 			assert (c.getLiterals().size() == 1);
-			result.addLiteral(c.getLiterals().getFirst().not());
+			result.addLiteral(c.getLiterals().iterator().next().not());
 		}
 		return result;
 	}
@@ -149,13 +149,22 @@ public class Cube {
 	public Cube clone() {
 		return new Cube(getClauses());
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(obj instanceof Cube){
+			return equals((Cube)obj);
+		}else{
+			return false;
+		}
+	}
 
 	public boolean equals(Cube c) {
-		for (Clause cl : getClauses()) {
-			if (!c.getClauses().contains(cl)) {
-				return false;
-			}
-		}
-		return true;
+		return getClauses().equals(c.getClauses());
+	}
+	
+	@Override
+	public int hashCode() {
+		return clauses.hashCode();
 	}
 }

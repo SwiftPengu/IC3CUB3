@@ -5,11 +5,11 @@ import java.util.*;
 import plf.*;
 
 public class Clause {
-	private LinkedList<Literal> literals;
+	private Set<Literal> literals;
 
 	public Clause(Collection<Literal> literals) {
 		// assert(literals.size()>0);
-		this.literals = new LinkedList<Literal>();
+		this.literals = new HashSet<Literal>();
 		this.literals.addAll(literals);
 	}
 
@@ -55,7 +55,7 @@ public class Clause {
 		return primed;
 	}
 
-	public LinkedList<Literal> getLiterals() {
+	public Set<Literal> getLiterals() {
 		return literals;
 	}
 
@@ -125,12 +125,22 @@ public class Clause {
 	public Clause clone() {
 		return new Clause(getLiterals());
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(obj instanceof Clause){
+			return equals((Clause)obj);
+		}else{
+			return false;
+		}
+	}
 
 	public boolean equals(Clause c) {
-		for (Literal l : getLiterals()) {
-			if (c.getLiterals().contains(l))
-				return false;
-		}
-		return true;
+		return getLiterals().equals(c.getLiterals());
+	}
+	
+	@Override
+	public int hashCode() {
+		return literals.hashCode();
 	}
 }
