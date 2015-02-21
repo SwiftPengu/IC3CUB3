@@ -1,9 +1,9 @@
-package plf;
+package ic3cub3.plf;
+
+import ic3cub3.plf.cnf.Clause;
+import ic3cub3.plf.cnf.TseitinCube;
 
 import java.util.*;
-
-import plf.cnf.Clause;
-import plf.cnf.TseitinCube;
 
 public class Literal extends Formula{
 	private static int LITCOUNT = 1;

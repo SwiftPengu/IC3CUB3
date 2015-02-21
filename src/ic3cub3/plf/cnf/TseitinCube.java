@@ -1,9 +1,9 @@
-package plf.cnf;
+package ic3cub3.plf.cnf;
+
+import ic3cub3.plf.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
-
-import plf.*;
 
 public class TseitinCube extends Cube {
 	private Literal tseitinliteral;

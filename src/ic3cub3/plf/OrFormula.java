@@ -1,9 +1,9 @@
-package plf;
+package ic3cub3.plf;
+
+import ic3cub3.plf.cnf.Clause;
+import ic3cub3.plf.cnf.TseitinCube;
 
 import java.util.Set;
-
-import plf.cnf.Clause;
-import plf.cnf.TseitinCube;
 
 public class OrFormula extends Formula{
 	private final Formula left;

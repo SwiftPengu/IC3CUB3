@@ -1,8 +1,8 @@
-package plf.cnf;
+package ic3cub3.plf.cnf;
+
+import ic3cub3.plf.*;
 
 import java.util.*;
-
-import plf.*;
 
 public class Cube {
 	private final Set<Clause> clauses;

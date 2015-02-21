@@ -1,7 +1,7 @@
-package ic3;
+package ic3cub3.ic3;
 
-import plf.cnf.Cube;
-import runner.Runner;
+import ic3cub3.plf.cnf.Cube;
+import ic3cub3.runner.Runner;
 
 /**
  * Class representing an obligation to prove that a given CTI should not hold be

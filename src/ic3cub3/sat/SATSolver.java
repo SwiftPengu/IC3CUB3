@@ -1,8 +1,8 @@
-package sat;
+package ic3cub3.sat;
+
+import ic3cub3.plf.cnf.Cube;
 
 import java.util.List;
-
-import plf.cnf.Cube;
 
 public abstract class SATSolver {
 	/**

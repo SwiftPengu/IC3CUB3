@@ -1,13 +1,13 @@
-package ic3;
+package ic3cub3.ic3;
 
+
+import ic3cub3.plf.Literal;
+import ic3cub3.plf.cnf.Clause;
+import ic3cub3.plf.cnf.Cube;
+import ic3cub3.runner.Runner;
+import ic3cub3.sat.SATSolver;
 
 import java.util.*;
-
-import plf.Literal;
-import plf.cnf.Clause;
-import plf.cnf.Cube;
-import runner.Runner;
-import sat.SATSolver;
 
 public class IC3 {
 	private final SATSolver satsolver;

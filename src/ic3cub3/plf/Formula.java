@@ -1,8 +1,8 @@
-package plf;
+package ic3cub3.plf;
+
+import ic3cub3.plf.cnf.TseitinCube;
 
 import java.util.Set;
-
-import plf.cnf.TseitinCube;
 
 public abstract class Formula {
 	public Formula and(Formula f){

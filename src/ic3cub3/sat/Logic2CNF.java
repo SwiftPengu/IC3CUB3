@@ -1,14 +1,14 @@
-package sat;
+package ic3cub3.sat;
+
+import ic3cub3.plf.Formula;
+import ic3cub3.plf.Literal;
+import ic3cub3.plf.cnf.Clause;
+import ic3cub3.plf.cnf.Cube;
+import ic3cub3.runner.Runner;
+import ic3cub3.runner.Settings;
 
 import java.io.*;
 import java.util.*;
-
-import plf.Formula;
-import plf.Literal;
-import plf.cnf.Clause;
-import plf.cnf.Cube;
-import runner.Runner;
-import runner.Settings;
 
 /**
  * Class which invokes Logic2CNF

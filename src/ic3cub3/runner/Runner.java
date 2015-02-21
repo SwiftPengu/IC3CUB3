@@ -1,11 +1,11 @@
-package runner;
+package ic3cub3.runner;
 
-import ic3.IC3;
-import plf.Literal;
-import plf.cnf.Clause;
-import plf.cnf.Cube;
-import sat.SAT4J;
-import sat.SATSolver;
+import ic3cub3.ic3.IC3;
+import ic3cub3.plf.Literal;
+import ic3cub3.plf.cnf.Clause;
+import ic3cub3.plf.cnf.Cube;
+import ic3cub3.sat.SAT4J;
+import ic3cub3.sat.SATSolver;
 
 
 public class Runner {

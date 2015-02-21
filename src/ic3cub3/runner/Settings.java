@@ -1,4 +1,4 @@
-package runner;
+package ic3cub3.runner;
 
 import java.io.File;
 import java.io.FileNotFoundException;
