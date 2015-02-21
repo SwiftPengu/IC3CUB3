@@ -1,5 +1,6 @@
 package ic3;
 
+
 import java.util.*;
 
 import plf.Literal;
@@ -94,7 +95,7 @@ public class IC3 {
 		Cube sPrime = s.getPrimed();
 		//TODO check if this can be done more efficiently
 		Clause nots = s.not();
-		for(int i = k;i>=probl.getLevel();i--){
+		for(int i = k;i>=0;i--){
 			Cube Fi = F.get(i);
 			System.out.println("Check s "+s+" inductive at F"+i+";" +F.get(i));
 			boolean inductive = satsolver.sat(Fi.and(nots).and(T).and(sPrime)).size()==0;
@@ -197,7 +198,7 @@ public class IC3 {
 	public Clause MIC(final Cube cex,final Cube I,final Cube T,final Cube F){
 		//assert notcex is inductive (F ^ ~s ^ T => ~s') satisfiable
 		// <=> ~(F ^ ~s ^ T => ~s') <=> (F ^ ~s ^ T ^ s') unsatisfiable
-		System.out.println(cex);
+		System.out.println("MIC on: "+cex);
 		Clause notcex = cex.not();
 		System.out.println(notcex);
 		assert(satsolver.sat(F.and(notcex).and(T).and(cex.getPrimed())).size()==0) : "MIC: ~cex is not inductive on F";
@@ -234,8 +235,8 @@ public class IC3 {
 	private Clause down(Clause rhat,Cube I,Cube T, Cube Fi){
 		Cube notrhat = rhat.not();
 		if(Runner.VERBOSE>1)System.out.println("Down on: "+rhat);
-		//test initiation (are bad states reachable from I?): ~(I => ~rhat) <=> I ^ rhat satisfiable
-		if(satsolver.sat(I.and(rhat)).size()>0){
+		//test initiation (are bad states reachable from I?): ~(I => rhat) unsat <=> I ^ ~rhat satisfiable
+		if(satsolver.sat(I.and(notrhat)).size()>0){
 			if(Runner.VERBOSE>1) System.out.println("Initiation failed");
 			return null;
 		}
