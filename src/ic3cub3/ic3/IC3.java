@@ -19,19 +19,19 @@ public class IC3 {
 	//TODO return cex or TS |= P
 	public boolean check(Cube I, Cube T, Cube P,Cube NP){
 		//check I => P
-		System.out.println("Check I => P");
+		if(Runner.VERBOSE>0)System.out.println("Check I => P");
 		if(satsolver.sat(I.and(NP)).size()>0){
-			System.out.println("I => P does not hold");
+			if(Runner.VERBOSE>0)System.out.println("I => P does not hold");
 			return false;
 		}else{
-			System.out.println("I => P");
+			if(Runner.VERBOSE>0)System.out.println("I => P");
 		}
 		//check I ^ T => P
 		if(satsolver.sat(I.and(T).and(NP)).size()>0){
-			System.out.println("I ^ T => P does not hold");
+			if(Runner.VERBOSE>0)System.out.println("I ^ T => P does not hold");
 			return false;
 		}else{
-			System.out.println("I ^ T => P");
+			if(Runner.VERBOSE>0)System.out.println("I ^ T => P");
 		}
 		
 		//init frontier sets
@@ -43,19 +43,19 @@ public class IC3 {
 		//init ~P'
 		Cube NPPrime = NP.getPrimed();
 		while(true){
-			ArrayDeque<Clause> addedClauses = new ArrayDeque<Clause>();
+			Set<Clause> addedClauses = new HashSet<Clause>();
 			PriorityQueue<ProofObligation> proofObligations = new PriorityQueue<ProofObligation>();
 			//test Fk ^ T ^ ~p'
 			List<Cube> result = satsolver.sat(F.get(k).and(T).and(NPPrime),true);
 			if(result.size()>0){
-				System.out.println("F_k ^ T ^ ~p' satisfiable for k="+k);
+				if(Runner.VERBOSE>0)System.out.println("F_k ^ T ^ ~p' satisfiable for k="+k);
 				
 				//obtain counterexample S and S'
 				Cube s = result.get(0);
-				System.out.println("s: "+s);
+				if(Runner.VERBOSE>0)System.out.println("s: "+s);
 				proofObligations.add(new ProofObligation(s, k-1));
 			}else{
-				System.out.println("P satisfied");
+				if(Runner.VERBOSE>0)System.out.println("P satisfied");
 			}
 			while(proofObligations.size()>0){
 				ProofObligation probl = proofObligations.remove();
@@ -77,13 +77,13 @@ public class IC3 {
 			k++;
 			
 			F.add(P); //Fk = P
-			System.out.println("k increased to "+k);
+			if(Runner.VERBOSE>0)System.out.println("k increased to "+k);
 			propagateClauses(T,F,addedClauses,k);
 			if(hasFixpoint(F)){
 				System.out.println(String.format("Fixpoint found at k=%d, TS |= P",k));
 				return true;
 			}else{
-				System.out.println(F);
+				if(Runner.VERBOSE>0)System.out.println("No fixpoint: "+F);
 			}
 		}
 	}
@@ -97,42 +97,42 @@ public class IC3 {
 		Clause nots = s.not();
 		for(int i = k;i>=0;i--){
 			Cube Fi = F.get(i);
-			System.out.println("Check s "+s+" inductive at F"+i+";" +F.get(i));
+			if(Runner.VERBOSE>0)System.out.println("Check s "+s+" inductive at F"+i+";" +F.get(i));
 			boolean inductive = satsolver.sat(Fi.and(nots).and(T).and(sPrime)).size()==0;
 			if(inductive){
-				System.out.println("S is inductive at i="+i);
+				if(Runner.VERBOSE>0)System.out.println("S is inductive at i="+i);
 				result = i;
 				return i;
 			}else{
-				if(Runner.VERBOSE>1)System.out.println("S not inductive at i="+i);
+				if(Runner.VERBOSE>0)System.out.println("S not inductive at i="+i);
 			}
 		}
 		return result;
 	}
 
 	//Refine F1...Fi+1
-	private void strengthen(Cube S,List<Cube> F, Cube T,Integer inductiveFrontier,ArrayDeque<Clause> addedClauses) {
+	private void strengthen(Cube S,List<Cube> F, Cube T,Integer inductiveFrontier,Set<Clause> addedClauses) {
 		//first obtain a minimal inductive subclause
 		Clause c = MIC(S, F.get(0), T, F.get(inductiveFrontier));
-		System.out.println("MIC: "+c);
+		if(Runner.VERBOSE>0)System.out.println("MIC: "+c);
 		
 		addedClauses.add(c);
 		//add c to F1..Fi+1
 		int i = 1;
 		do{
-			System.out.println("F"+i+" was: "+F.get(i));
+			if(Runner.VERBOSE>0)System.out.println("F"+i+" was: "+F.get(i));
 			F.set(i, F.get(i).and(c));
 			
-			System.out.println("F"+i+" becomes: "+F.get(i));
+			if(Runner.VERBOSE>0)System.out.println("F"+i+" becomes: "+F.get(i));
 			i++;
 		}while(i<inductiveFrontier+1);
 	}
 
 	//TODO fix implementation
 	private void propagateClauses(Cube T,List<Cube> F,
-			ArrayDeque<Clause> addedClauses,int k) {
+			Set<Clause> addedClauses,int k) {
 		//Propagate clauses
-		System.out.println("Propagating clauses: "+addedClauses);
+		if(Runner.VERBOSE>0)System.out.println("Propagating clauses: "+addedClauses);
 		for(Clause clause:addedClauses){
 			//check whether clause can be propagated (F_i ^ T  => c') satisfiable
 			//<=> F_i ^ T ^ ~c' unsat
@@ -141,14 +141,11 @@ public class IC3 {
 				Cube nextfrontier = F.get(i+1);
 				Cube notcprime = clause.getPrimed().not();
 				if(!nextfrontier.getClauses().contains(clause)){
-					System.out.printf("Test if %s can be propagated from %s(%d) to %s(%d)\n", clause,frontier,i,nextfrontier,i+1);
+					if(Runner.VERBOSE>0)System.out.printf("Test if %s can be propagated from %s(%d) to %s(%d)\n", clause,frontier,i,nextfrontier,i+1);
 					boolean canbepropagated = satsolver.sat(frontier.and(clause).and(T).and(notcprime)).size()==0;
 					if(canbepropagated){
-						System.out.println("Yes");
 						nextfrontier.addClause(clause);
 						//frontier.addClause(clause);
-					}else{
-						System.out.println("No");
 					}
 				}
 				
@@ -198,9 +195,9 @@ public class IC3 {
 	public Clause MIC(final Cube cex,final Cube I,final Cube T,final Cube F){
 		//assert notcex is inductive (F ^ ~s ^ T => ~s') satisfiable
 		// <=> ~(F ^ ~s ^ T => ~s') <=> (F ^ ~s ^ T ^ s') unsatisfiable
-		System.out.println("MIC on: "+cex);
+		if(Runner.VERBOSE>0)System.out.println("MIC on: "+cex);
 		Clause notcex = cex.not();
-		System.out.println(notcex);
+		if(Runner.VERBOSE>1)System.out.println(notcex);
 		assert(satsolver.sat(F.and(notcex).and(T).and(cex.getPrimed())).size()==0) : "MIC: ~cex is not inductive on F";
 		
 		Clause result = notcex.clone(); //~s is the maximum inductive clause, return this if all else fails

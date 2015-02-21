@@ -28,7 +28,6 @@ public class SAT4J extends SATSolver{
 		solver.reset();
 		solver.newVar(Literal.MAXID());
 		solver.setExpectedNumberOfClauses(c.getClauses().size());
-		//solver.setTimeout(3600);
 		return result;
 	}
 

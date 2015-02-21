@@ -9,10 +9,9 @@ import ic3cub3.sat.SATSolver;
 
 
 public class Runner {
-	public static int VERBOSE = 1;
+	public static int VERBOSE = 0;
 	
 	public static void main(String[] args){
-			long time = System.currentTimeMillis();
 			//init formulae
 			Literal x1 = new Literal();
 			Literal x2 = new Literal();
@@ -53,11 +52,13 @@ public class Runner {
 			
 			//TA <=> TB <=> TC
 			
-			SATSolver solver = new SAT4J();
-			IC3 ic3 = new IC3(solver);
-
-			ic3.check(F0, TB, P.asCube(),P.not());
+//			while(true){
+				long time = System.currentTimeMillis();
+				SATSolver solver = new SAT4J();
+				IC3 ic3 = new IC3(solver);
+				ic3.check(F0, TB, P.asCube(),P.not());
+				System.out.println(String.format("Time needed: %dms",System.currentTimeMillis()-time));
+			//}
 			
-			System.out.println(String.format("Time needed: %dms",System.currentTimeMillis()-time));
 	}
 }
