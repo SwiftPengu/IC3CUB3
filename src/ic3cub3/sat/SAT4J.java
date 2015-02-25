@@ -60,7 +60,7 @@ public class SAT4J extends SATSolver{
 					boolean primed = isPrimeVar(id);
 					if(!skipPrimed || !primed){
 						//only add non-tseitin variables
-						if(!tseitinvars.contains(var)){
+						if(!tseitinvars.contains(id)){
 							Literal lit = new Literal(id-(primed?1:0),var<0,primed,false);
 							result.addLiteral(lit);
 						}
@@ -77,6 +77,7 @@ public class SAT4J extends SATSolver{
 	}
 	
 	public boolean isPrimeVar(int id){
+		assert(id>0);
 		return id%2==0;
 	}
 }
