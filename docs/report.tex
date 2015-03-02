@@ -1,0 +1,70 @@
+\documentclass[a4paper]{article}
+
+\usepackage{parskip}
+
+\begin{document}
+\title{Solving RERS 2014 with IC3}
+\maketitle
+
+\section{Introduction}
+%IC3 intro
+
+%RERS 2014 intro
+
+%Implementation overview
+
+\section{Background}
+\subsection{SAT}
+The IC3 algorithm uses a SAT solver to learn more about the system under verification. Before introducing the IC3 algorithm, it makes sense to briefly explain some basic principles on SAT solving.
+
+Given a propositional logic formula with an arbitrary number of literals, a SAT solver attempts to find a set of truth assignments for each literal which satisfy the formula. This means that substituting the literals with their respective truth assignments results in a formula which evaluates to $\top$. This problem is known as the \emph{Satisfiability} problem. A formula for which such a truth assignment exists is called satisfiable.
+
+\subsection{CNF}
+\subsection{Tseitin transformation}
+When converting an arbitrary formula to CNF using standard logic equivalence rules, it is possible to create formulae which are exponential in size when compared to the original formula.
+
+Using the Tseitin transformation, it is possible to convert an arbitrary formula to a formula in CNF which is not equal, but equisatisfiable to the original. This means that the new formula is satisfiable iff the original formula is satisfiable. The resulting formula is linear in size when compared to the original formula.
+
+Furthermore, the Tseitin transformed formula also has a 1-to-1 correspondence with satisfiable assignments to the original formula. This means that a satisfiable assignment of the converted formula is easily transformed to a satisfiable assignment of the original formula.
+
+The Tseitin transform introduces new literals for each operator. Each operator is viewed as a logic gate, which consists of some inputs, and a single output. For each operator, a literal is introduced which represents the output of a gate modelling that operator.
+
+%TODO beschrijf AND en OR conversion
+
+\subsection{IC3}
+IC3, which stands for ... %Inductive Clauses Indubitable Correctness
+%Brief description of IC3
+
+\section{Implementation}
+\subsection{Propositional Logic Formulae and CNF}
+Two systems for representing propositional logic formulae was developed. A system to represent arbitrary propositional logic formulae, and a system to represent formulae in conjunctive normal form. Furthermore, both systems contain code to convert either system to an equisatisfiable formula in the other system.
+
+The first system supports formulae consisting of the $\lnot$,$\lor$,and $\land$ operators. It is implemented (by an object oriented structure) as a binary tree. It comes with convenience methods which also implement the $\rightarrow$ and $\leftrightarrow$ operators. Negation of the entire formula is also supported.
+
+The second system represents formulae which are in CNF. A single formula is implemented as a cube, a set clauses. A clause is implemented as a set of literals. For example, the formula $(p \land (q \lor \lnot r))$ is represented as $\{\{p\},\{q,\lnot r\}\}$.
+\subsubsection{Conversion}
+The conversion from the CNF system to the PLF system results in a formula which is equal under $\Leftrightarrow$. However, the conversion from the first to the second system is implemented as the Tseitin transformation, which only preserves equisatisfiability.
+
+\subsection{SAT solver}
+%intro
+\subsubsection{Logic2CNF}
+At the beginning of the project, no formulae representing test cases were avaiable in CNF, and in order to test the semantics of IC3, a SAT solver was needed which supported arbitrary formulae. Logic2CNF is a fork of Minisat, which supports arbitrary formulae. Internally it applies the Tseitin transform algorithm, and drops the newly introduced literals from the output. It is able to find all models for a given formula, but also supports searching up to a specified maximum.
+
+\subsubsection{SAT4J}
+SAT4J is a Java implementation of the Minisat SAT solver. It supports only formulae which are in CNF. SAT4J is able to find a single model of a formula, but it is also able to find all models.
+
+Furthermore, it conserves the behaviour of Minisat to report unsatisfiablity whenever a trivially unsatisfiable formula is provided to it (e.g.: $p \land \lnot p$). This enables the SAT solver to exit early.
+
+\subsection{IC3}
+\subsubsection{Overview}
+%Beschrijving main loop
+\subsubsection{The MIC algorithm}
+%Down algoritme
+\subsubsection{Problem solving architecture}
+%Wat informatie over hoe problemen aan het algoritme kunnen worden gevoerd
+\subsubsection{Testcases}
+%Alle testcases uit 'Where Monolithic and Incremental Meet'
+
+\subsection{Encoding} %On the encoding of problems for IC3
+
+\end{document}
