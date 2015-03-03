@@ -16,8 +16,10 @@ public class IC3 {
 		this.satsolver=satsolver;
 	}
 	
-	//TODO return cex or TS |= P
 	public boolean check(Cube I, Cube T, Cube P,Cube NP){
+		//
+		// Establish invariants
+		
 		//check I => P
 		if(Runner.VERBOSE>0)System.out.println("Check I => P");
 		if(satsolver.sat(I.and(NP)).size()>0){
@@ -42,9 +44,12 @@ public class IC3 {
 		
 		//init ~P'
 		Cube NPPrime = NP.getPrimed();
+		
+		//Start checking
+		PriorityQueue<ProofObligation> proofObligations = new PriorityQueue<ProofObligation>();
 		while(true){
 			Set<Clause> addedClauses = new HashSet<Clause>();
-			PriorityQueue<ProofObligation> proofObligations = new PriorityQueue<ProofObligation>();
+			
 			//test Fk ^ T ^ ~p'
 			List<Cube> result = satsolver.sat(F.get(k).and(T).and(NPPrime),true);
 			if(result.size()>0){
@@ -63,6 +68,7 @@ public class IC3 {
 				Integer inductiveFrontier = findInductiveFrontier(probl,F,T,k);
 				if(inductiveFrontier==null){
 					System.out.println("Found counterexample to P: "+s);
+					System.out.println("Trace: "+proofObligations);
 					return false;
 				}else{
 					strengthen(s,F,T,inductiveFrontier,addedClauses);
@@ -74,16 +80,14 @@ public class IC3 {
 					}
 				}
 			}
-			k++;
 			
+			//No more counterexamples, and no solution yet, so increase k.
+			k++;
 			F.add(P); //Fk = P
-			if(Runner.VERBOSE>0)System.out.println("k increased to "+k);
+			System.out.println("k increased to "+k);
 			propagateClauses(T,F,addedClauses,k);
 			if(hasFixpoint(F)){
-				System.out.println(String.format("Fixpoint found at k=%d, TS |= P",k));
 				return true;
-			}else{
-				if(Runner.VERBOSE>0)System.out.println("No fixpoint: "+F);
 			}
 		}
 	}
@@ -118,17 +122,14 @@ public class IC3 {
 		
 		addedClauses.add(c);
 		//add c to F1..Fi+1
-		int i = 1;
-		do{
+		for(int i = 1;i<=inductiveFrontier+1;i++){
 			if(Runner.VERBOSE>0)System.out.println("F"+i+" was: "+F.get(i));
 			F.set(i, F.get(i).and(c));
 			
 			if(Runner.VERBOSE>0)System.out.println("F"+i+" becomes: "+F.get(i));
-			i++;
-		}while(i<inductiveFrontier+1);
+		}
 	}
 
-	//TODO fix implementation
 	private void propagateClauses(Cube T,List<Cube> F,
 			Set<Clause> addedClauses,int k) {
 		//Propagate clauses
@@ -145,26 +146,14 @@ public class IC3 {
 					boolean canbepropagated = satsolver.sat(frontier.and(clause).and(T).and(notcprime)).size()==0;
 					if(canbepropagated){
 						nextfrontier.addClause(clause);
-						//frontier.addClause(clause);
+						if(Runner.VERBOSE>0)System.out.println("Yes");
+					}else{
+						if(Runner.VERBOSE>0)System.out.println("No");
 					}
 				}
 				
 			}
 		}
-	/*	while(addedClauses.size()>0){
-			Clause c = addedClauses.pop();
-			//check whether clause can be propagated (F_k ^ c ^ T => c') satisfiable
-			Cube notcprime = c.getPrimed().not();
-			Cube Fk = F.get(k);
-			boolean canbepropagated = satsolver.sat(Fk.and(c).and(T).and(notcprime)).size()==0;
-			if(canbepropagated){
-				//propagate
-				F.set(k, F.get(k).and(c));
-			}else{
-				System.out.println("Clause "+c+" can  not be propagated");
-				//return false;
-			}
-		}*/
 	}
 
 	/**
@@ -173,15 +162,19 @@ public class IC3 {
 	 * @return true if there exist two formulae f1 and f2 for which f1 <=> f2 is satisfiable
 	 */
 	public boolean hasFixpoint(List<Cube> f) {
+		//TODO simplify f2 first
 		for(int f1 = 0;f1<f.size()-1;f1++){
 			int f2 = f1+ 1;
 			//compare the two formulae
 			boolean equal = f.get(f1).equals(f.get(f2));
 			if(equal){
+				System.out.println(String.format("Fixpoint found at F%d and F%d, TS |= P",f1,f2));
 				return true;
 			}
 		}
+		if(Runner.VERBOSE>0)System.out.println("No fixpoint: "+f);
 		return false;
+		
 		//implementation which asks the SAT solver:
 		//boolean equal = satsolver.sat(f.get(f1).toFormula().iff(f.get(f2).toFormula()).tseitinTransform()).size()>0;
 	}
