@@ -32,5 +32,9 @@ public class ProofObligation implements Comparable<ProofObligation> {
 	public int compareTo(ProofObligation arg0) {
 		return this.level - arg0.level;
 	}
-
+	
+	@Override
+	public String toString() {
+		return String.format("ProofObligation[%s,%d]",getCTI(),getLevel());
+	}
 }
