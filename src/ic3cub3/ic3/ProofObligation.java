@@ -3,7 +3,7 @@ package ic3cub3.ic3;
 import ic3cub3.plf.cnf.Cube;
 import ic3cub3.runner.Runner;
 
-import java.util.*;
+import java.util.LinkedList;
 
 /**
  * Class representing an obligation to prove that a given CTI should not hold be
