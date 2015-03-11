@@ -4,6 +4,11 @@ import ic3cub3.plf.Literal;
 import ic3cub3.plf.cnf.Clause;
 import ic3cub3.plf.cnf.Cube;
 
+/**
+ * Example 1 from 'IC3: Where Monolithic and Incremental Meet'
+ * by Somenzi & Bradley
+ *
+ */
 public class IC3WMIM_1 implements TestProblem{
 	private final Literal x1,x2,x1p,x2p;
 	
