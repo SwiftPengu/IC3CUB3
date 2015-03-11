@@ -7,6 +7,8 @@ import ic3cub3.plf.cnf.Cube;
 /**
  * Example 2 from 'IC3: Where Monolithic and Incremental Meet'
  * by Somenzi & Bradley
+ * 
+ * Fixed, so it adheres to the provided picture
  *
  */
 public class IC3WMIM_2 implements TestProblem{
@@ -14,7 +16,7 @@ public class IC3WMIM_2 implements TestProblem{
 	private final Literal x2;
 	private final Literal x3;
 	private final Literal x1p;
-	private final Literal f; //Notice that x2p has been skipped as it is x1 mathematical constant
+	private final Literal x2p; //Notice that x2p has been skipped as it is x1 mathematical constant
 	private final Literal x3p;
 	
 	
@@ -24,7 +26,7 @@ public class IC3WMIM_2 implements TestProblem{
 		x3 = new Literal();
 		if(debug)System.out.println(String.format("x1: %s, x2: %s, x3: %s",x1,x2,x3));
 		x1p = x1.getPrimed();
-		f = x2.getPrimed();
+		x2p = x2.getPrimed();
 		x3p = x3.getPrimed();
 	}
 	
@@ -41,9 +43,9 @@ public class IC3WMIM_2 implements TestProblem{
 	public Cube getTransition() {
 		return new Cube(
 				new Clause(x2.not(),x1p),
-				new Clause(x3.not(),f),
+				new Clause(x3.not(),x2p),
 				new Clause(x1p.not(),x2),
-				new Clause(f.not(),x3)
+				new Clause(x2p.not(),x3)
 				);
 	}
 

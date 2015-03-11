@@ -74,7 +74,7 @@ public class IC3 {
 			//Solve all proof obligations for given k
 			while(proofObligations.size()>0){
 				ProofObligation probl = proofObligations.remove();
-				System.out.println("Attempting to prove: "+probl);
+				System.out.println("Attempting to prove: "+probl.getCTI()+" not reachable from level "+probl.getLevel());
 				Cube s = probl.getCTI();
 				InductiveFrontier inductiveFrontier = findInductiveFrontier(probl,F,T);
 				if(inductiveFrontier.level==null){
@@ -278,9 +278,11 @@ public class IC3 {
 	}
 	
 	public static void printTrace(Cube I,ProofObligation probl) {
-		System.out.print(I);
+		System.out.println("Trace to ~P: ");
+		System.out.print("I");
 		for(ProofObligation po:probl.getProofTrace()){
-			System.out.print(" --> "+po.getCTI());
+			System.out.println(" --> ");
+			System.out.print(po.getCTI());
 		}
 		System.out.println();
 	}
