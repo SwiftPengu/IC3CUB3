@@ -86,7 +86,6 @@ public class IC3 {
 					
 					//'aggressively' check if the CTI is resolved in the first non-inductive frontier
 					//int nextFrontier = inductiveFrontier.level+1;
-					//TODO check whether current badState is resolved!
 					boolean ctiStillExists = satsolver.sat(F.get(probl.getLevel()).and(T).and(probl.getCTI().getPrimed()),true).size()>0;
 					if(ctiStillExists){
 						if(Runner.VERBOSE>1)System.out.println("CTI still exists");
@@ -121,13 +120,12 @@ public class IC3 {
 	}
 
 	//Find highest inductive Fi
-	//TODO only search up to k-2
 	private InductiveFrontier findInductiveFrontier(ProofObligation probl,List<Cube> F, Cube T) {
 		InductiveFrontier result = new InductiveFrontier();
 		Cube s = probl.getCTI();
 		Cube sPrime = s.getPrimed();
 		Clause nots = s.not();
-		for(int i = probl.getLevel();i>=0;i--){
+		for(int i = probl.getLevel();i>=probl.getLevel()-2 && i>=0;i--){
 			Cube Fi = F.get(i);
 			if(Runner.VERBOSE>0)System.out.println("Check ~s "+nots+" inductive at F"+i+";" +F.get(i)+" ^ "+nots+" ^ "+"T"+" ^ "+sPrime);
 			List<Cube> cex = satsolver.sat(Fi.and(nots).and(T).and(sPrime));
@@ -195,7 +193,6 @@ public class IC3 {
 	 * @return true if there exist two formulae f1 and f2 for which f1 <=> f2 is satisfiable
 	 */
 	public boolean hasFixpoint(List<Cube> F) {
-		//TODO simplify f2 first
 		for(int f1 = 0;f1<F.size()-1;f1++){
 			int f2 = f1+ 1;
 			//compare the two formulae
