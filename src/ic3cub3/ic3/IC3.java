@@ -263,11 +263,5 @@ public class IC3 {
 		}
 	}
 	
-	private class InductiveFrontier{
-		//the level at which ~s becomes inductive
-		public Integer level = null;
-		
-		//counterexample of the next frontier if it is not s
-		public Cube counterexample = null;
 	}
 }
