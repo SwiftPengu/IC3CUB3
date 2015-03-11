@@ -27,7 +27,7 @@ public class IC3WMIM_2 implements TestProblem{
 		if(debug)System.out.println(String.format("x1: %s, x2: %s, x3: %s",x1,x2,x3));
 		x1p = x1.getPrimed();
 		x2p = x2.getPrimed();
-		x3p = x3.getPrimed();
+		//x3p = x3.getPrimed();
 	}
 	
 	public IC3WMIM_2(){
