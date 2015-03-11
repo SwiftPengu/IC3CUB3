@@ -16,8 +16,8 @@ public class IC3WMIM_2 implements TestProblem{
 	private final Literal x2;
 	private final Literal x3;
 	private final Literal x1p;
-	private final Literal x2p; //Notice that x2p has been skipped as it is x1 mathematical constant
-	private final Literal x3p;
+	private final Literal x2p;
+	//private final Literal x3p; x3' is not used
 	
 	
 	public IC3WMIM_2(boolean debug){
