@@ -262,6 +262,4 @@ public class IC3 {
 			return null;
 		}
 	}
-	
-	}
 }
