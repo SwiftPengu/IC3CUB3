@@ -7,5 +7,5 @@ public class InductiveFrontier{
 	public Integer level = null;
 	
 	//counterexample of the next frontier if it is not s
-	public Cube counterexample = null;
+	//public Cube counterexample = null;
 }
