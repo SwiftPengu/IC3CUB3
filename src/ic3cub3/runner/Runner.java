@@ -20,4 +20,8 @@ public class Runner {
 				System.currentTimeMillis() - time));
 
 	}
+	
+	public static void printv(Object s, int minverbosity){
+		if(VERBOSE>=minverbosity)System.out.println(s.toString());
+	}
 }

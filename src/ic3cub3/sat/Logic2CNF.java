@@ -18,7 +18,6 @@ import java.util.*;
 public class Logic2CNF extends SATSolver {
 	
 	public Logic2CNF() throws IOException{
-		//TODO look for logic2cnf
 		File l2c = new File(Settings.COMMAND);
 		if(!l2c.exists())throw new RuntimeException("Logic2CNF not found at "+l2c.getAbsolutePath());
 
