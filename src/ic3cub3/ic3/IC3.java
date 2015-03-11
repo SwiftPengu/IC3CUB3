@@ -70,7 +70,7 @@ public class IC3 {
 				ProofObligation probl = proofObligations.remove();
 				System.out.println("Attempting to prove: "+probl);
 				Cube s = probl.getCTI();
-				InductiveFrontier inductiveFrontier = findInductiveFrontier(probl,F,T,k);
+				InductiveFrontier inductiveFrontier = findInductiveFrontier(probl,F,T);
 				if(inductiveFrontier.level==null){
 					System.out.println("Found counterexample to P: "+s);
 					System.out.println("Trace: "+proofObligations);
@@ -109,12 +109,12 @@ public class IC3 {
 
 	//Find highest inductive Fi
 	//TODO only search up to k-2
-	private InductiveFrontier findInductiveFrontier(ProofObligation probl,List<Cube> F, Cube T, int k) {
+	private InductiveFrontier findInductiveFrontier(ProofObligation probl,List<Cube> F, Cube T) {
 		InductiveFrontier result = new InductiveFrontier();
 		Cube s = probl.getCTI();
 		Cube sPrime = s.getPrimed();
 		Clause nots = s.not();
-		for(int i = k;i>=0;i--){
+		for(int i = probl.getLevel()+1;i>=0;i--){
 			Cube Fi = F.get(i);
 			if(Runner.VERBOSE>0)System.out.println("Check s "+s+" inductive at F"+i+";" +F.get(i));
 			List<Cube> cex = satsolver.sat(Fi.and(nots).and(T).and(sPrime),true);
