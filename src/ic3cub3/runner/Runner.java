@@ -9,8 +9,8 @@ public class Runner {
 	public static int VERBOSE = 1;
 
 	public static void main(String[] args) {		
-		Problem[] tests = new Problem[]{new IC3WMIM_1(),new IC3WMIM_2()};
-		Problem pr = tests[0];
+		Problem[] tests = new Problem[]{new IC3WMIM_1(),new IC3WMIM_2(), new ReachableBadState(true)};
+		Problem pr = tests[2];
 		long time = System.currentTimeMillis();
 		SATSolver solver = new SAT4J();
 		IC3 ic3 = new IC3(solver);
