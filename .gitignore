@@ -15,3 +15,8 @@ hs_err_pid*
 #Do not commit pdfs
 *.pdf
 src/ic3cub3/antlr_gen/
+*.tokens
+*BaseListener.java
+*Lexer.java
+src/ic3cub3/antlr/ProblemParser.java
+src/ic3cub3/antlr/ProblemListener.java
