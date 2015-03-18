@@ -1,4 +1,4 @@
-package ic3cub3.problems.Problem3;
+package ic3cub3.rersproblems.Problem3;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

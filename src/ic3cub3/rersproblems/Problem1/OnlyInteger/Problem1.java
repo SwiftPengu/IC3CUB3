@@ -1,4 +1,4 @@
-package ic3cub3.problems.Problem1.OnlyInteger;
+package ic3cub3.rersproblems.Problem1.OnlyInteger;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
