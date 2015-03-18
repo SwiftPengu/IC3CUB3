@@ -16,7 +16,7 @@ public class ParserHelper {
         ProblemLexer lexer = new ProblemLexer(input);
         ProblemParser parser = new ProblemParser(new CommonTokenStream(lexer));
         parser.addParseListener(new ProblemBaseListener());
-        ParseTree tree = parser.problem();
+        ParseTree tree = parser.program();
         
         System.out.println(tree);
 

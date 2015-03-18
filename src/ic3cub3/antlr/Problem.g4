@@ -1,102 +1,193 @@
 grammar Problem;
 
-
-
 ////
 //Parser rules
 ////
 
-problem: package_decl import_decl* classdef EOF;
+program: (programBody EOF);
+programBody: (includes compoundStatement);
+closedCompoundStatement: (LCURLY compoundStatement RCURLY);
+compoundStatement: statement*;
 
-package_decl: PACKAGE IDENTIFIER (DOT IDENTIFIER)* SEMICOLON;
+label: (IDENTIFIER COLON statement);
 
-import_decl: IMPORT IDENTIFIER (DOT (IDENTIFIER | classname))* SEMICOLON;
+statement: label
+| assignStatement SEMICOLON
+| functionDeclaration
+| varDeclaration SEMICOLON
+| functionCall SEMICOLON
+| ifStatement
+| elseStatement
+| whileStatement
+| closedCompoundStatement;
 
-classfielddef: randomclassdef | bufferedreaderdef;
+expression: (andExpression (OR andExpression)*);
 
-var_decl : (randomclassdef | bufferedreaderdef);
-method_decl : DOT;
+andExpression: booleanExpression (AND booleanExpression)*;
 
-classdef: PUBLIC CLASS IDENTIFIER LPAREN (
-		var_decl |
-		method_decl
-	) RPAREN;
+booleanExpression: addExpression ((EQUAL | NOTEQUAL | SMALLER | GREATER | SMALLEREQ | GREATEREQ) addExpression)*
+| (NOT operand);
+
+addExpression: mulExpression ((PLUS | MINUS) mulExpression)*;
+
+mulExpression: operand ((MULT | DIVIDE | MOD) operand )*;
+
+operand: AMPERSAND? var
+| NUMBER
+| TEXT
+| functionCall
+| (LPAREN expression RPAREN)
+| staticArray;
+
+array: (LBRACKET expression? RBRACKET);
+
+var: (IDENTIFIER array?);
+
+varDeclaration: (type var assign?);
+
+ifStatement: IF LPAREN expression RPAREN statement;
+
+elseStatement: ELSE statement;
+
+whileStatement: WHILE LPAREN expression RPAREN statement;
+
+assignStatement: (var ASSIGN expression);
+
+assign: ASSIGN expression;
+
+staticArray: (LCURLY expression? (COMMA expression)* RCURLY);
+
+type: (CONST? types MULT?);
+
+types: INTEGER | CHAR | VOID;
+
+functionDeclaration: (type var LPAREN argDec RPAREN statement);
+
+functionCall: (var LPAREN expression? (COMMA expression)* RPAREN);
+
+argDec: ((type var)? (COMMA type var)*);
+
+includes: INCLUDEHEADER*;
+
+	// Lexer rules
+
+	TEXT
+	:
+		QUOTE
+		(
+			~( '"' | '\n' | '\r' )
+		)* QUOTE
+	;
+
+	INCLUDEHEADER
+	:
+		HASH INCLUDE .*? '\n'
+	;
+
+	IDENTIFIER
+	:
+		(
+			LETTER
+			| UNDERSCORE
+		)
+		(
+			LETTER
+			| UNDERSCORE
+			| DIGIT
+		)*
+	;
+
+	NUMBER
+	:
+		MINUS? DIGIT+
+	;
 	
-//static class definitions which are present in every problem
-randomclassdef: PUBLIC CNRANDOM IDENTIFIER EQUALS NEW CNRANDOM LBRACE RBRACE SEMICOLON;
-bufferedreaderdef: STATIC CNBUFFR IDENTIFIER EQUALS NEW CNBUFFR;
-
-classname: (CNRANDOM | CNBUFFR);
-
-////
-//Lexer rules
-////
-
-
-//
-//Java keywords
-//
-PACKAGE : 'package';
-IMPORT : 'import';
-CLASS : 'class';
-PUBLIC : 'public';
-PRIVATE : 'private';
-STATIC : 'static';
-VOID : 'void';
-MAIN : 'main';
-NEW : 'new';
-THROW : 'throw';
-TRY : 'try';
-CATCH : 'catch';
-TYPE_INT : 'int';
-TYPE_STR : 'String'; 
-
-ARRAY_DECL: '[]';
-
-IF : 'if';
-
-//constants
-TRUE: 'true';
-FALSE: 'false';
-
-//characters
-LPAREN : '{';
-RPAREN : '}';
-LBRACE : '(';
-RBRACE : ')';
+// tokens which will not be in AST
+COLON : ':';
+SEMICOLON : ';';
+LPAREN : '(';
+RPAREN : ')';
+COMMA : ',';
+LCURLY : '{';
+RCURLY : '}';
 LBRACKET : '[';
 RBRACKET : ']';
-DOUBLEEQUALS : '==';
-EQUALS : '=';
-BINARYAND : '&&';
-BITWISEAND : '&';
-FORWARDSLASH : '/';
-BACKWARDSLASH : '\\';
-SEMICOLON: ';';
-MINUS : '-';
+ASSIGN : '=';
 PLUS : '+';
-COMMA : ',';
-DOT : '.';
+MINUS : '-';
+DIVIDE : '/';
+MULT : '*';
+SMALLER : '<';
+GREATER : '>';
+SMALLEREQ : '<=';
+GREATEREQ : '>=';
+EQUAL : '=';
+NOTEQUAL : '!=';
+AND : '&&';
+OR : '||';
+NOT : '!';
+QUOTE : '"';
+SINGLEQUOTE : '\'';
+UNDERSCORE : '_';
+HASH : '#';
+MOD : '%';
+INTEGER : 'int';
+IF : 'if';
+VOID : 'void';
+RETURN : 'return';
+CHAR : 'char';
+AMPERSAND : '&';
+ELSE : 'else';
+WHILE : 'while';
+CONST : 'const';
+NULL : 'null';
+INCLUDE : 'include';
 
-//auxiliary names
-CNRANDOM : 'Random';
-CNBUFFR : 'BufferedReader';
 
-//base tokens
+	COMMENT
+	:
+		(
+			'//' .*? '\n'
+			| '/*' .*? '*/'
+		) -> skip;
 
-IDENTIFIER : CHAR (CHAR | NUMBER)*;
-STRING: '"' .*? '"';
+	WS
+	:
+		(
+			' '
+			| '\t'
+			| '\f'
+			| '\r'
+			| '\n'
+		)+ -> skip;
 
-//characters, and differentiate between upper and lowercase
-fragment CHAR: (CHAR_UPPERCASE | CHAR_LOWERCASE);
-fragment CHAR_UPPERCASE: [A-Z];
-fragment CHAR_LOWERCASE: [a-z];
+	fragment
+	DIGIT
+	:
+		(
+			'0' .. '9'
+		)
+	;
 
-INT: NUMBER+;
-fragment NUMBER : [0-9] ;
+	fragment
+	LOWER
+	:
+		(
+			'a' .. 'z'
+		)
+	;
 
-//skip spaces, newlines, and tabs
-WHITESPACE : ( '\t' | ' ' | '\r' | '\n'| '\u000C' )+ -> skip ;
-//skip comments
-COMMENT : '//' (.)*? ('\n' | '\t') -> skip;
+	fragment
+	UPPER
+	:
+		(
+			'A' .. 'Z'
+		)
+	;
 
+	fragment
+	LETTER
+	:
+		LOWER
+		| UPPER
+	;
