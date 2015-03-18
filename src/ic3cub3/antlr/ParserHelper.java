@@ -7,6 +7,7 @@ import java.io.*;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 public class ParserHelper {
 	private ParserHelper(){}
@@ -18,7 +19,10 @@ public class ParserHelper {
         parser.addParseListener(new ExceptionListener());
         ParseTree tree = parser.program();
         
-        System.out.println(tree.getText());
+        //Walk over the tree
+        ProblemTreeWalker problemgenerator = new ProblemTreeWalker();
+        ParseTreeWalker tw = new ParseTreeWalker();
+        tw.walk(problemgenerator, tree);
 
         //TODO use listener to generate problem
 		return null;
