@@ -14,3 +14,4 @@ hs_err_pid*
 
 #Do not commit pdfs
 *.pdf
+src/ic3cub3/antlr_gen/
