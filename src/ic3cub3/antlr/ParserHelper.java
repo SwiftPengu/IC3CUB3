@@ -15,10 +15,10 @@ public class ParserHelper {
         ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(f));
         ProblemLexer lexer = new ProblemLexer(input);
         ProblemParser parser = new ProblemParser(new CommonTokenStream(lexer));
-        parser.addParseListener(new ProblemBaseListener());
+        parser.addParseListener(new ExceptionListener());
         ParseTree tree = parser.program();
         
-        System.out.println(tree);
+        System.out.println(tree.getText());
 
         //TODO use listener to generate problem
 		return null;

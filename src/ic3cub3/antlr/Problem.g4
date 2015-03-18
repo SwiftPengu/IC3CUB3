@@ -1,12 +1,19 @@
 grammar Problem;
 
+options{
+	language=Java;
+}
+
 ////
 //Parser rules
 ////
 
 program: (programBody EOF);
+
 programBody: (includes compoundStatement);
+
 closedCompoundStatement: (LCURLY compoundStatement RCURLY);
+
 compoundStatement: statement*;
 
 label: (IDENTIFIER COLON statement);
@@ -19,7 +26,7 @@ statement: label
 | ifStatement
 | elseStatement
 | whileStatement
-| closedCompoundStatement;
+ | closedCompoundStatement;
 
 expression: (andExpression (OR andExpression)*);
 
@@ -70,39 +77,8 @@ argDec: ((type var)? (COMMA type var)*);
 includes: INCLUDEHEADER*;
 
 	// Lexer rules
-
-	TEXT
-	:
-		QUOTE
-		(
-			~( '"' | '\n' | '\r' )
-		)* QUOTE
-	;
-
-	INCLUDEHEADER
-	:
-		HASH INCLUDE .*? '\n'
-	;
-
-	IDENTIFIER
-	:
-		(
-			LETTER
-			| UNDERSCORE
-		)
-		(
-			LETTER
-			| UNDERSCORE
-			| DIGIT
-		)*
-	;
-
-	NUMBER
-	:
-		MINUS? DIGIT+
-	;
 	
-// tokens which will not be in AST
+//TOKENS
 COLON : ':';
 SEMICOLON : ';';
 LPAREN : '(';
@@ -121,7 +97,7 @@ SMALLER : '<';
 GREATER : '>';
 SMALLEREQ : '<=';
 GREATEREQ : '>=';
-EQUAL : '=';
+EQUAL : '==';
 NOTEQUAL : '!=';
 AND : '&&';
 OR : '||';
@@ -143,51 +119,22 @@ CONST : 'const';
 NULL : 'null';
 INCLUDE : 'include';
 
+TEXT: QUOTE(~( '"' | '\n' | '\r' ))* QUOTE;
 
-	COMMENT
-	:
-		(
-			'//' .*? '\n'
-			| '/*' .*? '*/'
-		) -> skip;
+INCLUDEHEADER: HASH INCLUDE .*? '\n';
 
-	WS
-	:
-		(
-			' '
-			| '\t'
-			| '\f'
-			| '\r'
-			| '\n'
-		)+ -> skip;
+IDENTIFIER: (LETTER| UNDERSCORE)(LETTER| UNDERSCORE| DIGIT)*;
 
-	fragment
-	DIGIT
-	:
-		(
-			'0' .. '9'
-		)
-	;
+NUMBER:	MINUS? DIGIT+;
 
-	fragment
-	LOWER
-	:
-		(
-			'a' .. 'z'
-		)
-	;
+COMMENT:('//' .*? '\n') -> skip;
 
-	fragment
-	UPPER
-	:
-		(
-			'A' .. 'Z'
-		)
-	;
+WS:(' '| '\t'| '\f'	| '\r'| '\n' | '\u000C')+ -> skip;
 
-	fragment
-	LETTER
-	:
-		LOWER
-		| UPPER
-	;
+fragment DIGIT: ('0' .. '9');
+
+fragment LOWER:	('a' .. 'z');
+
+fragment UPPER:('A' .. 'Z');
+
+fragment LETTER: LOWER | UPPER;
