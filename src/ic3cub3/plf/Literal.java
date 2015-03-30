@@ -5,12 +5,16 @@ import ic3cub3.plf.cnf.TseitinCube;
 
 import java.util.*;
 
+import lombok.Getter;
+
 public class Literal extends Formula{
 	private static int LITCOUNT = 1;
 	
 	private final int id;
+	@Getter
 	private final boolean negated;
 	private final boolean primed;
+	@Getter
 	private final boolean tseitin;
 	
 	public Literal(int id,boolean negated,boolean primed,boolean tseitin){
@@ -101,10 +105,6 @@ public class Literal extends Formula{
 	
 	public boolean isPrimed(){
 		return primed;
-	}
-	
-	public boolean isTseitin() {
-		return tseitin;
 	}
 
 	@Override

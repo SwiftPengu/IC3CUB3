@@ -5,11 +5,14 @@ import ic3cub3.runner.Runner;
 
 import java.util.LinkedList;
 
+import lombok.Getter;
+
 /**
  * Class representing an obligation to prove that a given CTI should not hold be
  * reachable within level+1 steps
  *
  */
+@Getter
 public class ProofObligation implements Comparable<ProofObligation> {
 	private final Cube CTI;
 	private final int level;
@@ -28,14 +31,6 @@ public class ProofObligation implements Comparable<ProofObligation> {
 		this.parent = parent;
 	}
 
-	public Cube getCTI() {
-		return CTI;
-	}
-
-	public int getLevel() {
-		return level;
-	}
-
 	@Override
 	public int compareTo(ProofObligation arg0) {
 		return this.level - arg0.level;
@@ -44,10 +39,6 @@ public class ProofObligation implements Comparable<ProofObligation> {
 	@Override
 	public String toString() {
 		return String.format("ProofObligation[%s,%d]",getCTI(),getLevel());
-	}
-	
-	public ProofObligation getParent() {
-		return parent;
 	}
 	
 	public LinkedList<ProofObligation> getProofTrace(){

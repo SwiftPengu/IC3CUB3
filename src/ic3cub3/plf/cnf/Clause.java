@@ -4,8 +4,11 @@ import ic3cub3.plf.*;
 
 import java.util.*;
 
+import lombok.Getter;
+
+@Getter
 public class Clause {
-	private Set<Literal> literals;
+	private final Set<Literal> literals;
 
 	public Clause(Collection<Literal> literals) {
 		// assert(literals.size()>0);
@@ -49,21 +52,17 @@ public class Clause {
 
 	public Clause getPrimed() {
 		Clause primed = new Clause();
-		for (Literal l : literals) {
+		getLiterals().forEach(l ->{
 			primed.addLiteral(l.getPrimed());
-		}
+		});
 		return primed;
-	}
-
-	public Set<Literal> getLiterals() {
-		return literals;
 	}
 
 	public Clause or(Clause f) {
 		Clause result = new Clause(literals);
-		for (Literal l : f.getLiterals()) {
+		f.getLiterals().forEach(l->{
 			result.addLiteral(l);
-		}
+		});
 		return result;
 	}
 
@@ -84,11 +83,9 @@ public class Clause {
 
 	public Set<Integer> getVariables() {
 		HashSet<Integer> result = new HashSet<Integer>();
-		for (Literal l : getLiterals()) {
-			// if(!l.isTseitin()){
+		getLiterals().forEach(l -> {
 			result.add(l.getID());
-			// }
-		}
+		});
 		return result;
 	}
 
@@ -103,11 +100,11 @@ public class Clause {
 
 	public Set<Integer> getTseitinVariables() {
 		HashSet<Integer> result = new HashSet<Integer>();
-		for (Literal l : getLiterals()) {
+		getLiterals().forEach(l -> {
 			if (l.isTseitin()) {
 				result.add(l.getID());
 			}
-		}
+		});
 		return result;
 	}
 

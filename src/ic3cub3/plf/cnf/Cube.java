@@ -4,6 +4,9 @@ import ic3cub3.plf.*;
 
 import java.util.*;
 
+import lombok.Getter;
+
+@Getter
 public class Cube {
 	private final Set<Clause> clauses;
 
@@ -25,9 +28,9 @@ public class Cube {
 	 */
 	public Cube(Literal... literals) {
 		this();
-		for (Literal l : literals) {
+		Arrays.stream(literals).forEach(l ->{
 			addLiteral(l);
-		}
+		});
 	}
 
 	public Cube() {
@@ -58,39 +61,35 @@ public class Cube {
 
 	public Cube getPrimed() {
 		Cube result = new Cube();
-		for (Clause c : clauses) {
+		getClauses().forEach(c->{
 			result.addClause(c.getPrimed());
-		}
+		});
 		return result;
 	}
 
-	public Set<Clause> getClauses() {
-		return clauses;
-	}
-
-	public Cube getLiterals() {
+	public Cube getAllLiterals() {
 		Cube result = new Cube();
-		for (Clause c : getClauses()) {
-			for (Literal l : c.getLiterals()) {
+		getClauses().forEach(c ->{
+			c.getLiterals().forEach(l->{
 				result.addLiteral(l);
-			}
-		}
+			});
+		});
 		return result;
 	}
 
 	public Set<Integer> getVariables() {
 		HashSet<Integer> result = new HashSet<Integer>();
-		for (Clause c : getClauses()) {
+		getClauses().forEach(c ->{
 			result.addAll(c.getVariables());
-		}
+		});
 		return result;
 	}
 
 	public Cube and(Cube f) {
 		Cube result = new Cube(clauses);
-		for (Clause c : f.getClauses()) {
+		f.getClauses().forEach(c ->{
 			result.addClause(c);
-		}
+		});
 		return result;
 	}
 
@@ -115,18 +114,18 @@ public class Cube {
 
 	public Clause not() {
 		Clause result = new Clause();
-		for (Clause c : getClauses()) {
+		getClauses().forEach(c ->{
 			assert (c.getLiterals().size() == 1);
-			result.addLiteral(c.getLiterals().iterator().next().not());
-		}
+			result.addLiteral(c.getLiterals().stream().findAny().get().not());
+		});
 		return result;
 	}
 
 	public Set<Integer> getTseitinVariables() {
 		HashSet<Integer> result = new HashSet<Integer>();
-		for (Clause c : getClauses()) {
+		getClauses().forEach(c->{
 			result.addAll(c.getTseitinVariables());
-		}
+		});
 		return result;
 	}
 

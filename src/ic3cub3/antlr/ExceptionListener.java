@@ -1,8 +1,5 @@
 package ic3cub3.antlr;
 
-import ic3cub3.antlr.ProblemParser.StatementContext;
-import ic3cub3.antlr.ProblemParser.TypeContext;
-
 import org.antlr.v4.runtime.tree.ErrorNode;
 
 public class ExceptionListener extends ProblemBaseListener{

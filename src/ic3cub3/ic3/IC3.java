@@ -74,13 +74,13 @@ public class IC3 {
 				ProofObligation probl = proofObligations.remove();
 				printv("Attempting to prove: "+probl.getCTI()+" not reachable from level "+probl.getLevel(),0);
 				Cube s = probl.getCTI();
-				InductiveFrontier inductiveFrontier = findInductiveFrontier(probl,F,T);
-				if(inductiveFrontier.level==null){
+				Integer inductiveFrontier = findInductiveFrontier(probl,F,T);
+				if(inductiveFrontier==null){
 					printv("Found counterexample to P: "+s,0);
 					printTrace(I,probl);
 					return false;
 				}else{
-					strengthen(s,F,T,inductiveFrontier.level,addedClauses);
+					strengthen(s,F,T,inductiveFrontier,addedClauses);
 					
 					//'aggressively' check if the CTI is resolved in the first non-inductive frontier
 					//int nextFrontier = inductiveFrontier.level+1;
@@ -90,16 +90,16 @@ public class IC3 {
 						//cti is not yet resolved, so attempt to resolve it again
 						proofObligations.add(probl);
 						//if the possibility of predecessors of s exists, check for such states
-						if(inductiveFrontier.level<k-1){
+						if(inductiveFrontier<k-1){
 							
 							//find a predecessor state
 							//That is, a solution to Fi+1 ^ T => s
-							printv("Finding a predecessor of s from level "+(inductiveFrontier.level+1),3);
-							List<Cube> predecessors = satsolver.sat(F.get(inductiveFrontier.level+1).and(T).and(probl.getCTI().getPrimed()),true);
+							printv("Finding a predecessor of s from level "+(inductiveFrontier+1),3);
+							List<Cube> predecessors = satsolver.sat(F.get(inductiveFrontier+1).and(T).and(probl.getCTI().getPrimed()),true);
 							printv("Predecessors: "+predecessors,3);
 							assert(predecessors.size()>0) : "Error: no predecessors of s for inductive ~s";
 							Cube t = predecessors.get(0);
-							proofObligations.add(new ProofObligation(t, inductiveFrontier.level,probl));
+							proofObligations.add(new ProofObligation(t, inductiveFrontier,probl));
 						}
 					}
 					
@@ -118,8 +118,8 @@ public class IC3 {
 	}
 
 	//Find highest inductive Fi
-	private InductiveFrontier findInductiveFrontier(ProofObligation probl,List<Cube> F, Cube T) {
-		InductiveFrontier result = new InductiveFrontier();
+	private Integer findInductiveFrontier(ProofObligation probl,List<Cube> F, Cube T) {
+		Integer result = null;
 		Cube s = probl.getCTI();
 		Cube sPrime = s.getPrimed();
 		Clause nots = s.not();
@@ -129,7 +129,7 @@ public class IC3 {
 			List<Cube> cex = satsolver.sat(Fi.and(nots).and(T).and(sPrime));
 			if(cex.size()==0){ //no counterexample
 				printv("~s is inductive at i="+i,1);
-				result.level = i;
+				result = i;
 				return result;
 			}else{
 				printv("~s not inductive at i="+i,1);

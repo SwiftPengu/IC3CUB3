@@ -5,6 +5,9 @@ import ic3cub3.plf.cnf.TseitinCube;
 
 import java.util.Set;
 
+import lombok.Getter;
+
+@Getter
 public class AndFormula extends Formula{
 	private final Formula left;
 	private final Formula right;
@@ -18,19 +21,19 @@ public class AndFormula extends Formula{
 	
 	@Override
 	public String toString() {
-		return String.format("(%s ^ %s)",left.toString(),right.toString());
+		return String.format("(%s ^ %s)",getLeft().toString(),getRight().toString());
 	}
 
 	@Override
 	public OrFormula not() {
 		//DeMorgan's law
-		return new OrFormula(left.not(),right.not());
+		return new OrFormula(getLeft().not(),getRight().not());
 	}
 
 	@Override
 	public Set<Integer> getVariables() {
-		Set<Integer> lvars = left.getVariables();
-		Set<Integer> rvars = right.getVariables();
+		Set<Integer> lvars = getLeft().getVariables();
+		Set<Integer> rvars = getRight().getVariables();
 		assert(lvars!=null);
 		assert(rvars!=null);
 		lvars.addAll(rvars);
@@ -39,17 +42,17 @@ public class AndFormula extends Formula{
 
 	@Override
 	public String getLogic2CNFString() {
-		return String.format("(%s.%s)",left.getLogic2CNFString(),right.getLogic2CNFString());
+		return String.format("(%s.%s)",getLeft().getLogic2CNFString(),getRight().getLogic2CNFString());
 	}
 
 	@Override
 	public AndFormula rename(int old, int replacement) {
-		return new AndFormula(left.rename(old, replacement),right.rename(old, replacement));
+		return new AndFormula(getLeft().rename(old, replacement),getRight().rename(old, replacement));
 	}
 
 	@Override
 	public AndFormula getPrimed() {
-		return new AndFormula(left.getPrimed(),right.getPrimed());
+		return new AndFormula(getLeft().getPrimed(),getRight().getPrimed());
 	}
 	
 	@Override
@@ -57,8 +60,8 @@ public class AndFormula extends Formula{
 		//(~l v ~r v out) ^ (a v ~c) ^ (b v ~c)
 		Literal output = new Literal(true);
 		TseitinCube result = new TseitinCube(output);
-		TseitinCube L = left.toCNF();
-		TseitinCube R = right.toCNF();
+		TseitinCube L = getLeft().toCNF();
+		TseitinCube R = getRight().toCNF();
 		
 		//~l v r ~v out
 		Clause temp = new Clause();
@@ -94,8 +97,8 @@ public class AndFormula extends Formula{
 
 	@Override
 	public Set<Integer> getTseitinVariables() {
-		Set<Integer> lvars = left.getTseitinVariables();
-		Set<Integer> rvars = right.getTseitinVariables();
+		Set<Integer> lvars = getLeft().getTseitinVariables();
+		Set<Integer> rvars = getRight().getTseitinVariables();
 		assert(lvars!=null);
 		assert(rvars!=null);
 		lvars.addAll(rvars);

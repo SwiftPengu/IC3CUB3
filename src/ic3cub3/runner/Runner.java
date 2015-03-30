@@ -1,13 +1,13 @@
 package ic3cub3.runner;
 
-import java.io.*;
-
-import ic3cub3.antlr.*;
+import ic3cub3.antlr.ParserHelper;
 import ic3cub3.ic3.IC3;
 import ic3cub3.sat.SAT4J;
 import ic3cub3.sat.SATSolver;
-import ic3cub3.tests.*;
+import ic3cub3.tests.Problem;
 import ic3cub3.tests.actual.*;
+
+import java.io.*;
 
 public class Runner {
 	public static int VERBOSE = 0;
