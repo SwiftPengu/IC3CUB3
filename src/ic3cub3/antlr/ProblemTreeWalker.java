@@ -1,6 +1,10 @@
 package ic3cub3.antlr;
 
-import ic3cub3.antlr.ProblemParser.*;
+import ic3cub3.antlr.ProblemParser.ExpressionContext;
+import ic3cub3.antlr.ProblemParser.FunctionDeclarationContext;
+import ic3cub3.antlr.ProblemParser.ProgramContext;
+import ic3cub3.antlr.ProblemParser.StatementContext;
+import ic3cub3.antlr.ProblemParser.VarDeclarationContext;
 import ic3cub3.plf.Literal;
 import ic3cub3.tests.ProblemSet;
 
@@ -52,8 +56,11 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 			processAllTransitions(ctx);
 			break;
 		default:
-			assert(methodName.startsWith("calculate_output"));
-			processSingleTransition(ctx);
+			if(methodName.startsWith("calculate_output")){
+				processSingleTransition(ctx);
+			}else{
+				System.out.println("Warning: skipping over unsupported method: "+methodName);
+			}
 			break;
 		}
 	}
