@@ -1,6 +1,6 @@
 package ic3cub3.antlr;
 
-import ic3cub3.tests.Problem;
+import ic3cub3.tests.ProblemSet;
 
 import java.io.*;
 
@@ -12,7 +12,7 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 public class ParserHelper {
 	private ParserHelper(){}
 	
-	public static Problem parse(File f) throws FileNotFoundException, IOException{
+	public static ProblemSet parse(File f) throws FileNotFoundException, IOException{
         ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(f));
         ProblemLexer lexer = new ProblemLexer(input);
         ProblemParser parser = new ProblemParser(new CommonTokenStream(lexer));
@@ -20,11 +20,11 @@ public class ParserHelper {
         ParseTree tree = parser.program();
         
         //Walk over the tree
+        System.out.println("Analyzing parse tree");
         ProblemTreeWalker problemgenerator = new ProblemTreeWalker();
         ParseTreeWalker tw = new ParseTreeWalker();
         tw.walk(problemgenerator, tree);
-
-        //TODO use listener to generate problem
-		return null;
+        System.out.println("Finished analyzing parse tree");
+		return problemgenerator.getProblemSet();
 	}
 }

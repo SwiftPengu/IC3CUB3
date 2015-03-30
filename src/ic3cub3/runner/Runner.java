@@ -7,12 +7,13 @@ import ic3cub3.ic3.IC3;
 import ic3cub3.sat.SAT4J;
 import ic3cub3.sat.SATSolver;
 import ic3cub3.tests.*;
+import ic3cub3.tests.actual.*;
 
 public class Runner {
 	public static int VERBOSE = 0;
 
 	public static void main(String[] args) throws FileNotFoundException, IOException {		
-		ParserHelper.parse(new File("src/ic3cub3/rersproblems/Problem1/Problem1.c"));
+		System.out.println(ParserHelper.parse(new File("src/ic3cub3/rersproblems/Problem1/Problem1.c")));
 		
 		System.exit(0);
 		Problem[] tests = new Problem[]{new IC3WMIM_1(),new IC3WMIM_2(), new ReachableBadState(true)};

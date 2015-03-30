@@ -1,8 +1,9 @@
-package ic3cub3.tests;
+package ic3cub3.tests.actual;
 
 import ic3cub3.plf.Literal;
 import ic3cub3.plf.cnf.Clause;
 import ic3cub3.plf.cnf.Cube;
+import ic3cub3.tests.TestProblem;
 
 // 00 -> 01 -> 10 -> 11 (bad)
 public class ReachableBadState implements TestProblem{
