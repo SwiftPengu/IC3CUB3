@@ -3,6 +3,8 @@ package ic3cub3.plf.cnf;
 import ic3cub3.plf.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import lombok.Getter;
 
@@ -28,9 +30,7 @@ public class Cube {
 	 */
 	public Cube(Literal... literals) {
 		this();
-		Arrays.stream(literals).forEach(l ->{
-			addLiteral(l);
-		});
+		Arrays.stream(literals).forEach(this::addLiteral);
 	}
 
 	public Cube() {
@@ -48,33 +48,20 @@ public class Cube {
 	@Override
 	public String toString() {
 		assert (clauses.size() > 0);
-		StringBuilder sb = new StringBuilder();
-		sb.append("(");
-		Iterator<Clause> lit = clauses.iterator();
-		sb.append(lit.next());
-		while (lit.hasNext()) {
-			sb.append(" ^ " + lit.next());
-		}
-		sb.append(")");
-		return sb.toString();
+		return getClauses().stream().map(Clause::toString).collect(Collectors.joining(" ^ "));
 	}
 
 	public Cube getPrimed() {
 		Cube result = new Cube();
-		getClauses().forEach(c->{
-			result.addClause(c.getPrimed());
-		});
+		getClauses().stream().map(Clause::getPrimed).forEach(result::addClause);
 		return result;
 	}
 
 	public Cube getAllLiterals() {
-		Cube result = new Cube();
-		getClauses().forEach(c ->{
-			c.getLiterals().forEach(l->{
-				result.addLiteral(l);
-			});
-		});
-		return result;
+		return new Cube(getClauses().stream().
+				flatMap(c -> c.getLiterals().stream()).
+				map(Clause::new).
+				collect(Collectors.toSet()));
 	}
 
 	public Set<Integer> getVariables() {
@@ -86,11 +73,10 @@ public class Cube {
 	}
 
 	public Cube and(Cube f) {
-		Cube result = new Cube(clauses);
-		f.getClauses().forEach(c ->{
-			result.addClause(c);
-		});
-		return result;
+		return new Cube(Stream.concat(
+				f.getClauses().stream(), 
+				this.getClauses().stream()).
+					collect(Collectors.toSet()));
 	}
 
 	public Cube and(Clause c) {
@@ -98,35 +84,21 @@ public class Cube {
 	}
 
 	public Formula toFormula() {
-		assert (clauses.size() > 0);
-		Iterator<Clause> clauseit = clauses.iterator();
-		Clause first = clauseit.next();
-		if (clauses.size() == 1) {
-			return first.toFormula();
-		} else {
-			Formula result = first.toFormula();
-			while (clauseit.hasNext()) {
-				result = new AndFormula(result, clauseit.next().toFormula());
-			}
-			return result;
-		}
+		return getClauses().stream().map(Clause::toFormula).collect(Collectors.reducing(AndFormula::new)).get();
 	}
 
 	public Clause not() {
-		Clause result = new Clause();
-		getClauses().forEach(c ->{
-			assert (c.getLiterals().size() == 1);
-			result.addLiteral(c.getLiterals().stream().findAny().get().not());
-		});
-		return result;
+		assert(getClauses().stream().allMatch(c -> c.getLiterals().size()==1));
+		return new Clause(getClauses().stream().
+				flatMap(c -> c.getLiterals().stream()).
+				map(Literal::not).
+				collect(Collectors.toSet()));
 	}
 
 	public Set<Integer> getTseitinVariables() {
-		HashSet<Integer> result = new HashSet<Integer>();
-		getClauses().forEach(c->{
-			result.addAll(c.getTseitinVariables());
-		});
-		return result;
+		return getClauses().stream().
+				flatMap(c -> c.getTseitinVariables().stream()).
+				collect(Collectors.toSet());
 	}
 
 	/**
@@ -135,14 +107,10 @@ public class Cube {
 	 * @return the maximum amount of variables in a single clause
 	 */
 	public int maxclauses() {
-		assert (getClauses().size() > 0);
-		int max = getClauses().iterator().next().getLiterals().size();
-		for (Clause c : getClauses()) {
-			int size = c.getLiterals().size();
-			if (size > max)
-				max = size;
-		}
-		return max;
+		return getClauses().stream().
+				map(Clause::getLiterals).
+				map(Set::size).
+				max(Integer::compare).get();
 	}
 
 	public Cube clone() {

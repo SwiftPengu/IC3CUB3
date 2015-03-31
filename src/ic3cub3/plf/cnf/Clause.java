@@ -3,6 +3,8 @@ package ic3cub3.plf.cnf;
 import ic3cub3.plf.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import lombok.Getter;
 
@@ -31,62 +33,37 @@ public class Clause {
 	@Override
 	public String toString() {
 		assert (literals.size() > 0);
-		StringBuilder sb = new StringBuilder();
-		sb.append("(");
-		Iterator<Literal> lit = literals.iterator();
-		sb.append(lit.next());
-		while (lit.hasNext()) {
-			sb.append(" v " + lit.next());
-		}
-		sb.append(")");
-		return sb.toString();
+		return getLiterals().stream().map(Literal::toString).collect(Collectors.joining(" v "));
 	}
 
 	public Cube not() {
-		Cube negatedcube = new Cube();
-		for (Literal l : literals) {
-			negatedcube.addClause(new Clause(l.not()));
-		}
-		return negatedcube;
+		return new Cube(getLiterals().stream().
+				map(Literal::not).
+				map(Clause::new).
+				collect(Collectors.toSet()));
 	}
 
 	public Clause getPrimed() {
-		Clause primed = new Clause();
-		getLiterals().forEach(l ->{
-			primed.addLiteral(l.getPrimed());
-		});
-		return primed;
+		return new Clause(getLiterals().stream().
+				map(Literal::getPrimed).
+				collect(Collectors.toSet()));
 	}
 
 	public Clause or(Clause f) {
-		Clause result = new Clause(literals);
-		f.getLiterals().forEach(l->{
-			result.addLiteral(l);
-		});
-		return result;
+		return new Clause(Stream.concat(
+				f.getLiterals().stream(), 
+				this.getLiterals().stream()).
+					collect(Collectors.toSet()));
 	}
 
 	public Formula toFormula() {
-		assert (literals.size() > 0);
-		Iterator<Literal> litit = literals.iterator();
-		Literal first = litit.next();
-		if (literals.size() == 1) {
-			return first;
-		} else {
-			Formula result = first;
-			while (litit.hasNext()) {
-				result = new OrFormula(result, litit.next());
-			}
-			return result;
-		}
+		return getLiterals().stream().collect(Collectors.reducing(OrFormula::new)).get();
 	}
 
 	public Set<Integer> getVariables() {
-		HashSet<Integer> result = new HashSet<Integer>();
-		getLiterals().forEach(l -> {
-			result.add(l.getID());
-		});
-		return result;
+		return getLiterals().stream().
+				map(Literal::getID).
+				collect(Collectors.toSet());
 	}
 
 	/**
@@ -99,13 +76,10 @@ public class Clause {
 	}
 
 	public Set<Integer> getTseitinVariables() {
-		HashSet<Integer> result = new HashSet<Integer>();
-		getLiterals().forEach(l -> {
-			if (l.isTseitin()) {
-				result.add(l.getID());
-			}
-		});
-		return result;
+		return getLiterals().stream().
+				filter(Literal::isTseitin).
+				map(Literal::getID).
+				collect(Collectors.toSet());
 	}
 
 	public int[] toDIMACSArray() {
@@ -138,6 +112,6 @@ public class Clause {
 	
 	@Override
 	public int hashCode() {
-		return literals.hashCode();
+		return getLiterals().hashCode();
 	}
 }
