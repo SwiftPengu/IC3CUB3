@@ -2,20 +2,34 @@ package ic3cub3.antlr;
 
 import ic3cub3.antlr.ProblemParser.ExpressionContext;
 import ic3cub3.antlr.ProblemParser.FunctionDeclarationContext;
+import ic3cub3.antlr.ProblemParser.IfStatementContext;
 import ic3cub3.antlr.ProblemParser.ProgramContext;
 import ic3cub3.antlr.ProblemParser.StatementContext;
 import ic3cub3.antlr.ProblemParser.VarDeclarationContext;
+import ic3cub3.plf.Formula;
 import ic3cub3.plf.Literal;
+import ic3cub3.plf.cnf.Clause;
+import ic3cub3.plf.cnf.Cube;
 import ic3cub3.tests.ProblemSet;
 
 import java.util.*;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class ProblemTreeWalker extends ProblemBaseListener {
 	private ProblemSet problemset = null;
 	private final HashMap<String,List<Literal>> variables = new HashMap<>();
 	private final HashMap<String,Integer> init = new HashMap<>();
-	private final Set<Integer> inputs = new HashSet<>(); //ensure unique inputs
+	private final HashMap<Integer,Literal> inputs = new HashMap<>(); //ensure unique inputs
 	private final HashMap<ExpressionContext,Integer> errorids = new HashMap<>(); //lookup for the error numbers
+	private FunctionDeclarationContext mainMethod = null; 
+	private final HashMap<String,FunctionDeclarationContext> methods = new HashMap<>();
+	private Formula I = null;
+	private Formula T = null;
+	private List<Formula> P = new ArrayList<>();
 	
 	public ProblemSet getProblemSet(){
 		return problemset;
@@ -53,11 +67,12 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 			//do nothing
 			break;
 		case "calculate_output":
-			processAllTransitions(ctx);
+			assert(getMainMethod()==null);
+			setMainMethod(ctx);
 			break;
 		default:
 			if(methodName.startsWith("calculate_output")){
-				processSingleTransition(ctx);
+				methods.put(methodName, ctx);
 			}else{
 				System.out.println("Warning: skipping over unsupported method: "+methodName);
 			}
@@ -65,16 +80,6 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 		}
 	}
 	
-	private void processAllTransitions(FunctionDeclarationContext ctx) {
-		// TODO Auto-generated method stub
-		
-	}
-	
-	private void processSingleTransition(FunctionDeclarationContext ctx) {
-		// TODO Auto-generated method stub
-		
-	}
-
 	private void processProperties(FunctionDeclarationContext ctx) {
 		for(StatementContext statement: ctx.statement().closedCompoundStatement().compoundStatement().statement()){
 			assert(statement.ifStatement()!=null);
@@ -122,15 +127,67 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 				.andExpression(0).booleanExpression(0).addExpression(0)
 				.mulExpression(0).operand(0).staticArray().expression()) {
 			// parse any integers
-			inputs.add(Integer.parseInt(inputvalue.andExpression(0)
+			inputs.put(Integer.parseInt(inputvalue.andExpression(0)
 					.booleanExpression(0).addExpression(0).mulExpression(0)
-					.operand(0).NUMBER().getText()));
+					.operand(0).NUMBER().getText()),new Literal());
 		}
 		System.out.println("new inputs: " + inputs);
 	}
+	
+	/**
+	 * Obtains a cube which states that only a single output should be enabled
+	 * @return
+	 */
+	protected Cube getSingleInputFormula(){
+		Cube result = new Cube();
+		//state that at least one output should be true
+		Collection<Literal> inputliterals = getInputs().values();
+		result.addClause(new Clause(inputliterals));
+		//TODO for each (n above 2) state that at least one should be false
 
-	public HashMap<String, List<Literal>> getVariables() {
-		return variables;
+		return result;
+	}
+	
+	private Formula generateSingleMethodFormula(
+			FunctionDeclarationContext currentmethod) {
+		//TODO implementation
+		System.out.println("Independent method: "+currentmethod.var().IDENTIFIER().getText());
+		return new Literal();
+	}
+	
+	private Set<FunctionDeclarationContext> findStatementDependencies(StatementContext ctx){
+		assert(ctx!=null);
+		//base case - single statement
+		if(ctx.closedCompoundStatement()==null){
+			//if statement
+			if(ctx.ifStatement()!=null){
+				return findIfDependencies(ctx.ifStatement());
+			//or function call
+			}else if(ctx.functionCall()!=null){
+				String methodName = ctx.functionCall().var().IDENTIFIER().getText();
+				if(methodName.equals("errorCheck") || methodName.equals("fprintf") || methodName.equals("printf")){
+					return new HashSet<>();
+				}else{
+					assert(methods.get(methodName)!=null): "Method not parsed: "+methodName;
+					return new HashSet<>(Arrays.asList(new FunctionDeclarationContext[]{methods.get(methodName)}));
+				}
+			}else if(ctx.assignStatement()!=null){	
+				return new HashSet<>();
+			}else{
+				throw new IllegalArgumentException("Unsupported structure: "+ctx.getText());
+			}
+		}else{
+			HashSet<FunctionDeclarationContext> result = new HashSet<>();
+			ctx.closedCompoundStatement().compoundStatement().statement().forEach(statement ->{
+				result.addAll(findStatementDependencies(statement));
+			});
+			return result;
+		}
+	}
+	
+	private Set<FunctionDeclarationContext> findIfDependencies(IfStatementContext ctx){
+		assert(ctx.statement()!=null);
+		return findStatementDependencies(ctx.statement());
 	}
 	
 	@Override
@@ -140,8 +197,52 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 	}
 	
 	protected void build(){
-		//TODO build the problem set
 		System.out.println("Building problem set...");
+		int visitcount = 0;
+		assert(getMainMethod()!=null);
+		assert(getMethods()!=null);
+		//first, traverse the call structure of the program, and attempt to generate formulae bottom-up
+		
+		//stack of discovered methods not yet explored
+		Deque<FunctionDeclarationContext> toExplore = new LinkedList<>();
+		toExplore.add(getMainMethod());
+		
+		//set of dependent methods
+		HashMap<FunctionDeclarationContext,Set<FunctionDeclarationContext>> dependencies = new HashMap<>();
+		//map of generated formulae
+		HashMap<FunctionDeclarationContext,Formula> formulae = new HashMap<>();
+		
+		while(!toExplore.isEmpty()){
+			visitcount++;
+			FunctionDeclarationContext currentmethod = toExplore.pop();
+			System.out.println("Exploring: "+currentmethod.var().IDENTIFIER().getText());
+			assert(formulae.get(currentmethod)==null);
+			//generate dependency set
+			Set<FunctionDeclarationContext> currentdependencies = findStatementDependencies(currentmethod.statement());
+
+			//add this method as a dependency
+			currentdependencies.forEach(dep ->{
+				if(dependencies.get(dep)==null){
+					dependencies.put(dep, new HashSet<>());
+				}
+				dependencies.get(dep).add(currentmethod);
+			});
+			
+			//generate formula if no dependencies
+			if(currentdependencies.size()==0){
+				formulae.put(currentmethod, generateSingleMethodFormula(currentmethod));
+			}
+			
+			//add dependencies to the exploration stack
+			currentdependencies.stream().filter(dep -> formulae.get(dep)==null)
+			.forEach(dep ->{
+				//System.out.println("Also exploring "+dep.var().IDENTIFIER().getText());
+				toExplore.push(dep);
+			});
+		}
+		
+		//TODO resolve dependencies
+		System.out.println("Reachable methods: "+visitcount);
 		System.out.println("Finished building problem set...");
 	}
 }
