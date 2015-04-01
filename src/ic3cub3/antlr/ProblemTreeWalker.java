@@ -13,6 +13,7 @@ import ic3cub3.plf.cnf.Cube;
 import ic3cub3.tests.ProblemSet;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -110,7 +111,7 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 					
 					//check whether this is an initialisation
 					if(init.get(id)==null && ctx.assign()!=null){
-						//TODO code breaks with arrays
+						//FIXME code breaks with arrays
 						init.put(id,Integer.parseInt(ctx.assign().expression().andExpression(0).booleanExpression(0).addExpression(0).mulExpression(0).operand(0).NUMBER().getText()));
 						System.out.println("Initialised "+id+" to "+init.get(id));
 					}
@@ -138,13 +139,21 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 	 * Obtains a cube which states that only a single output should be enabled
 	 * @return
 	 */
-	protected Cube getSingleInputFormula(){
-		Cube result = new Cube();
+	protected Cube getUniqueInputFormula(){
+		Collection<Literal> values = getInputs().values();
+		
 		//state that at least one output should be true
-		Collection<Literal> inputliterals = getInputs().values();
-		result.addClause(new Clause(inputliterals));
-		//TODO for each (n above 2) state that at least one should be false
-
+		Cube result = new Cube(new Clause(values.stream().
+				collect(Collectors.toSet())));
+		values.forEach(a ->{
+			values.stream().
+			filter(b -> (a!=b)).
+			forEach(b ->{
+				//internal set usage ensures only unique clauses are added
+				result.addClause(new Clause(a,b));
+			});
+		});
+		System.out.println("Only one output enabled: "+result);
 		return result;
 	}
 	
@@ -239,10 +248,12 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 				//System.out.println("Also exploring "+dep.var().IDENTIFIER().getText());
 				toExplore.push(dep);
 			});
-		}
+		}		
 		
 		//TODO resolve dependencies
 		System.out.println("Reachable methods: "+visitcount);
+		
+		Cube initial = getUniqueInputFormula();
 		System.out.println("Finished building problem set...");
 	}
 }
