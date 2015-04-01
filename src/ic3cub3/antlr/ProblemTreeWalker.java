@@ -6,8 +6,7 @@ import ic3cub3.antlr.ProblemParser.IfStatementContext;
 import ic3cub3.antlr.ProblemParser.ProgramContext;
 import ic3cub3.antlr.ProblemParser.StatementContext;
 import ic3cub3.antlr.ProblemParser.VarDeclarationContext;
-import ic3cub3.plf.Formula;
-import ic3cub3.plf.Literal;
+import ic3cub3.plf.*;
 import ic3cub3.plf.cnf.Clause;
 import ic3cub3.plf.cnf.Cube;
 import ic3cub3.tests.ProblemSet;
@@ -153,15 +152,48 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 				result.addClause(new Clause(a,b));
 			});
 		});
-		System.out.println("Only one output enabled: "+result);
+		System.out.println("Only one input enabled: "+result);
 		return result;
 	}
 	
 	private Formula generateSingleMethodFormula(
 			FunctionDeclarationContext currentmethod) {
-		//TODO implementation
 		System.out.println("Independent method: "+currentmethod.var().IDENTIFIER().getText());
-		return new Literal();
+		Collection<StatementContext> statements = new HashSet<StatementContext>();
+		if(currentmethod.statement().closedCompoundStatement()!=null){
+			statements.addAll(currentmethod.statement().
+					closedCompoundStatement().
+					compoundStatement().
+					statement());
+		}else{
+			statements.add(currentmethod.statement());
+		}
+		return statements.stream().map(this::generateSingleStatementFormula).reduce(OrFormula::new).get();
+	}
+	
+	private Formula generateSingleStatementFormula(StatementContext ctx){
+		if(ctx.ifStatement()!=null){
+			return generateFormulaFromIf(ctx.ifStatement());
+		}else if(ctx.assignStatement()!=null){
+			//TODO lookup variable
+			//TODO set next() of variable
+			throw new RuntimeException("Not yet implemented"); 
+		}else{
+			throw new IllegalArgumentException("Unsupported statement type");
+		}
+	}
+	
+	private Formula generateFormulaFromIf(IfStatementContext ctx){
+		//parse condition
+		return new AndFormula(generateFormulaFromCondition(ctx.expression()),
+				//and statements
+				ctx.statement().closedCompoundStatement().compoundStatement().statement().stream().
+				map(this::generateSingleStatementFormula).
+				reduce(AndFormula::new).get());
+	}
+	
+	private Formula generateFormulaFromCondition(ExpressionContext ctx){
+		throw new RuntimeException("Not yet implemented");
 	}
 	
 	private Set<FunctionDeclarationContext> findStatementDependencies(StatementContext ctx){
