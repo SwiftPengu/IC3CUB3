@@ -32,7 +32,8 @@ The Tseitin transform introduces new literals for each operator. Each operator i
 %TODO beschrijf AND en OR conversion
 
 \subsection{IC3}
-IC3, which stands for ... %Inductive Clauses Indubitable Correctness
+IC3, which stands for 'Incremental Construction of Inductive Clauses for Indubitable Correctness', is a Model Checking algorithm which is able to construct inductive proofs and counterexamples for reachability problems.
+
 %Brief description of IC3
 
 \section{Implementation}
@@ -53,18 +54,44 @@ At the beginning of the project, no formulae representing test cases were avaiab
 \subsubsection{SAT4J}
 SAT4J is a Java implementation of the Minisat SAT solver. It supports only formulae which are in CNF. SAT4J is able to find a single model of a formula, but it is also able to find all models.
 
-Furthermore, it conserves the behaviour of Minisat to report unsatisfiablity whenever a trivially unsatisfiable formula is provided to it (e.g.: $p \land \lnot p$). This enables the SAT solver to exit early.
+Furthermore, it conserves the behaviour of Minisat to report unsatisfiablity whenever a trivially unsatisfiable formula is provided to it (e.g.: $p \land \lnot p$). This enables the SAT solver to return a result early.
 
 \subsection{IC3}
 \subsubsection{Overview}
-%Beschrijving main loop
+%Beschrijving implementatie main loop en invariants
 \subsubsection{The MIC algorithm}
 %Down algoritme
 \subsubsection{Problem solving architecture}
 %Wat informatie over hoe problemen aan het algoritme kunnen worden gevoerd
 \subsubsection{Testcases}
 %Alle testcases uit 'Where Monolithic and Incremental Meet'
+%Hier ook wat zeggen over fout in paper?
 
 \subsection{Encoding} %On the encoding of problems for IC3
+\subsubsection{RERS 2014}
+%Introduction on RERS 2014
+\subsubsection{Problem structure}
+%A general overview of structure the problem files
+%Tell something about the assumptions made (or in the next section)
+\subsubsection{Parser implementation}
+%ANTLR4 versie van de grammatica van Jeroen Meijer en Jaco van der Pol.
+%ANTLR4 Listener tree walker voor opbouw formules
+
+\subsection{Measurements}
+\subsubsection{Description}
+%What and how did we measure
+\subsubsection{Results}
+%Overview of all the checked properties from the first RERS and the results
+
+\subsection{Future Work}
+%Nieuwste versie MIC algoritme (niet alleen down (up is overigens ook al outdated)).
+%JVM optimizen of C code gebruiken
+%Toepassingen vinden waarin de generalisatie goed werkt
+%Kijken wat voor encodings goed werken
+%Vergelijken met BDDs en CEGAR
+%Andere methode voor SAT solven dan DPLL?
+
+\subsection{Conclusion}
+We were able to construct a working implementation of the IC3 algorithm in Java, supporting multiple SAT solvers.
 
 \end{document}
