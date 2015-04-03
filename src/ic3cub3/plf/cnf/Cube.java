@@ -48,7 +48,7 @@ public class Cube {
 	@Override
 	public String toString() {
 		assert (clauses.size() > 0);
-		return "("+getClauses().stream().map(Clause::toString).collect(Collectors.joining(" ^ "))+")";
+		return getClauses().stream().map(Clause::toString).collect(Collectors.joining(" ^ ","(",")"));
 	}
 
 	public Cube getPrimed() {

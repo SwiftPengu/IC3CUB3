@@ -33,7 +33,7 @@ public class Clause {
 	@Override
 	public String toString() {
 		assert (literals.size() > 0);
-		return "("+getLiterals().stream().map(Literal::toString).collect(Collectors.joining(" v "))+")";
+		return getLiterals().stream().map(Literal::toString).collect(Collectors.joining(" v ","(",")"));
 	}
 
 	public Cube not() {
