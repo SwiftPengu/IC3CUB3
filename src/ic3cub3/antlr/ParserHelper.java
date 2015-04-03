@@ -20,11 +20,13 @@ public class ParserHelper {
         ParseTree tree = parser.program();
         
         //Walk over the tree
+        long timer = System.currentTimeMillis();
         System.out.println("Analyzing parse tree");
         ProblemTreeWalker problemgenerator = new ProblemTreeWalker();
         ParseTreeWalker tw = new ParseTreeWalker();
         tw.walk(problemgenerator, tree);
         System.out.println("Finished analyzing parse tree");
+        System.out.printf("Took: %dms\n",System.currentTimeMillis()-timer);
 		return problemgenerator.getProblemSet();
 	}
 }

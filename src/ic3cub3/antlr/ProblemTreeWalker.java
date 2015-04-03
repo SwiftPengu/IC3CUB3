@@ -15,6 +15,8 @@ import ic3cub3.plf.cnf.Cube;
 import ic3cub3.runner.Runner;
 import ic3cub3.tests.ProblemSet;
 
+import ic3cub3.tests.ProblemSet.*;
+
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -27,6 +29,7 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 	
 	private final Map<String,Integer> init = new HashMap<>();
 	private final Map<Integer,Literal> inputs = new HashMap<>(); //ensure unique inputs
+	//TODO convert this to a list:
 	private final Map<ExpressionContext,Integer> errorids = new HashMap<>(); //lookup for the error numbers
 	private FunctionDeclarationContext mainMethod = null;
 	private final Map<String,FunctionDeclarationContext> methods = new HashMap<>();
@@ -86,24 +89,29 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 	}
 	
 	public ProblemSet getProblemSet(){
-		//TODO ProblemSet result = new ProblemSet(I, T, P.stream().map(mapper));
-		return null;
+		return new ProblemSet(getInitial(), getTransitionRelation(), getProperties().stream().map(p -> new PropertyPair(p,p.toFormula().not().tseitinTransform())).collect(Collectors.toList()));
 	}
 	
 	public Cube getInitial(){
-		if(I==null)throw new IllegalStateException("I not initialized, execute tree walk first");
-		return I;
+		if(getI()==null)throw new IllegalStateException("I not initialized, execute tree walk first");
+		return getI();
 	}
 	
 	public Cube getTransitionRelation(){
-		if(T==null)throw new IllegalStateException("T not initialized, execute tree walk first");
-		return T;
+		if(getT()==null)throw new IllegalStateException("T not initialized, execute tree walk first");
+		return getT();
+	}
+	
+	public List<Cube> getProperties(){
+		if(getP()==null || getP().size()==0)throw new IllegalStateException("P[] not initialized, execute tree walk first");
+		return getP();
 	}
 
 	protected void build(){
 		System.out.println("Building problem set...");
 		I = buildInitialState();
 		T = buildTransitionRelation();
+		P = buildProblems();
 		System.out.println("Finished building problem set...");
 	}
 
@@ -180,7 +188,6 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 			})
 			.collect(Collectors.toSet())
 			.forEach(e -> {
-				System.out.println("Solved dependencies of "+e.getKey().var().getText());
 				dependencies.remove(e.getKey());
 			});
 		}
@@ -194,6 +201,14 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 		Cube result = formulae.get(getMainMethod()).tseitinTransform();
 		System.out.println("Conversion complete");
 		return result;
+	}
+	
+	protected List<Cube> buildProblems(){
+		return errorids.entrySet().stream()
+		.sorted((a,b) -> Integer.compare(a.getValue(), b.getValue()))
+		.map(e -> generateFormulaFromCondition(e.getKey()))
+		.map(Formula::tseitinTransform)
+		.collect(Collectors.toList());
 	}
 	
 	/**
@@ -214,7 +229,7 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 				result.addClause(new Clause(a,b));
 			});
 		});
-		System.out.println("Only one input enabled: "+result);
+		Runner.printv("Only one input enabled: "+result,2);
 		return result;
 	}
 	
@@ -282,7 +297,6 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 	
 	private Formula generateFormulaFromIf(IfStatementContext ctx, Map<FunctionDeclarationContext,Formula> methodFormulae){
 		//parse condition
-		System.out.println(ctx.start.getLine());
 		if(ctx.statement().closedCompoundStatement()==null){
 			return new AndFormula(generateFormulaFromCondition(ctx.expression()),
 					generateSingleStatementFormula(ctx.statement(), methodFormulae));	

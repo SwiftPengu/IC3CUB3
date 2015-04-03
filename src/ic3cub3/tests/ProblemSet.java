@@ -14,12 +14,16 @@ import lombok.Data;
 public class ProblemSet {
 	private final Cube initial;
 	private final Cube transition;
-	private final Set<PropertyPair> properties;
+	private final List<PropertyPair> properties;
 	
-	public ProblemSet(Cube initial,Cube transition, PropertyPair... properties){
+	public ProblemSet(Cube initial,Cube transition, PropertyPair property){
+		this(initial,transition,Arrays.asList(new PropertyPair[]{property}));
+	}
+	
+	public ProblemSet(Cube initial,Cube transition, List<PropertyPair> properties){
 		this.initial = initial;
 		this.transition= transition;
-		this.properties = new HashSet<>(Arrays.asList(properties));
+		this.properties = properties;
 	}
 
 	@Data
