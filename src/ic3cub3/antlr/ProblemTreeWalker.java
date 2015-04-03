@@ -23,19 +23,19 @@ import lombok.*;
 @Getter
 @Setter
 public class ProblemTreeWalker extends ProblemBaseListener {
-	private ProblemSet problemset = null;
 	private final HashMap<String,List<Literal>> variables = new HashMap<>();
 	private final HashMap<String,Integer> init = new HashMap<>();
 	private final HashMap<Integer,Literal> inputs = new HashMap<>(); //ensure unique inputs
 	private final HashMap<ExpressionContext,Integer> errorids = new HashMap<>(); //lookup for the error numbers
 	private FunctionDeclarationContext mainMethod = null; 
 	private final HashMap<String,FunctionDeclarationContext> methods = new HashMap<>();
-	private Formula I = null;
-	private Formula T = null;
-	private List<Formula> P = new ArrayList<>();
+	private Cube I = null;
+	private Cube T = null;
+	private List<Cube> P = new ArrayList<>();
 	
 	public ProblemSet getProblemSet(){
-		return problemset;
+		//ProblemSet result = new ProblemSet(I, T, P.stream().map(mapper));
+		return null;
 	}
 	
 	@Override
@@ -285,6 +285,19 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 	
 	protected void build(){
 		System.out.println("Building problem set...");
+		
+		//
+		//initial state
+		I = getUniqueInputFormula();
+		I = I.and(new Cube(init.entrySet().stream().
+				map(e -> getIntValue(variables.get(e.getKey()),e.getValue())).
+				flatMap(c -> c.getClauses().stream()).
+				collect(Collectors.toSet())));
+		System.out.println("Number of clauses in initial state: "+I.getClauses().size());
+		
+		//
+		//transition relation
+		
 		int visitcount = 0;
 		assert(getMainMethod()!=null);
 		assert(getMethods()!=null);
@@ -326,12 +339,11 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 				//System.out.println("Also exploring "+dep.var().IDENTIFIER().getText());
 				toExplore.push(dep);
 			});
-		}		
-		formulae.values().stream().map(Formula::toString).map(String::length).forEach(System.out::println);
+		}	
+		
 		//TODO resolve dependencies
 		System.out.println("Reachable methods: "+visitcount);
-		
-		Cube initial = getUniqueInputFormula();
+
 		System.out.println("Finished building problem set...");
 	}
 	
@@ -345,6 +357,6 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 		return new Cube(IntStream.range(0, bits.size()).sequential().
 				mapToObj(i -> ((((value>>i)&0x1)==1)?bits.get(i):bits.get(i).not())).
 				map(Clause::new).
-				collect(Collectors.toList()));
+				collect(Collectors.toSet()));
 	}
 }
