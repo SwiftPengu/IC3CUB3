@@ -1,8 +1,11 @@
 package ic3cub3.antlr;
 
+import ic3cub3.antlr.ProblemParser.AndExpressionContext;
+import ic3cub3.antlr.ProblemParser.BooleanExpressionContext;
 import ic3cub3.antlr.ProblemParser.ExpressionContext;
 import ic3cub3.antlr.ProblemParser.FunctionDeclarationContext;
 import ic3cub3.antlr.ProblemParser.IfStatementContext;
+import ic3cub3.antlr.ProblemParser.OperandContext;
 import ic3cub3.antlr.ProblemParser.ProgramContext;
 import ic3cub3.antlr.ProblemParser.StatementContext;
 import ic3cub3.antlr.ProblemParser.VarDeclarationContext;
@@ -111,15 +114,8 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 					//check whether this is an initialisation
 					if(init.get(id)==null && ctx.assign()!=null){
 						//FIXME code breaks with arrays
-						init.put(id,Integer.parseInt(ctx.
-								assign().
-								expression().
-								andExpression(0).
-								booleanExpression(0).
-								addExpression(0).
-								mulExpression(0).
-								operand(0).
-								NUMBER().getText()));
+						int val = generateOperand(ctx.assign().expression());
+						init.put(id,val);
 						System.out.println("Initialised "+id+" to "+init.get(id));
 					}
 					break;
@@ -135,9 +131,7 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 				.andExpression(0).booleanExpression(0).addExpression(0)
 				.mulExpression(0).operand(0).staticArray().expression()) {
 			// parse any integers
-			inputs.put(Integer.parseInt(inputvalue.andExpression(0)
-					.booleanExpression(0).addExpression(0).mulExpression(0)
-					.operand(0).NUMBER().getText()),new Literal());
+			inputs.put(generateOperand(inputvalue),new Literal());
 		}
 		System.out.println("new inputs: " + inputs);
 	}
@@ -183,11 +177,16 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 		if(ctx.ifStatement()!=null){
 			return generateFormulaFromIf(ctx.ifStatement());
 		}else if(ctx.assignStatement()!=null){
-			//TODO lookup variable
-			//TODO set next() of variable
-			throw new RuntimeException("Not yet implemented"); 
+			String varname = ctx.assignStatement().var().IDENTIFIER().getText();
+			int value = generateOperand(ctx.assignStatement().expression());
+			return getIntValue(getVariables().get(varname).stream().
+			map(Literal::getPrimed).collect(Collectors.toList()),value).toFormula();
+		}else if(ctx.functionCall()!=null){
+			Literal l = new Literal();
+			return new OrFormula(l,l.not());
+			//do nothing
 		}else{
-			throw new IllegalArgumentException("Unsupported statement type");
+			throw new IllegalArgumentException("Unsupported statement type: "+ctx.getText());
 		}
 	}
 	
@@ -201,7 +200,30 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 	}
 	
 	private Formula generateFormulaFromCondition(ExpressionContext ctx){
-		throw new RuntimeException("Not yet implemented");
+		return ctx.andExpression().stream().map(this::generateFormulaFromAndContext).reduce(OrFormula::new).get();
+	}
+	
+	private Formula generateFormulaFromAndContext(AndExpressionContext ctx){
+		return ctx.booleanExpression().stream().map(this::generateFormulaFromBooleanExpressionContext).reduce(AndFormula::new).get();
+	}
+	
+	private Formula generateFormulaFromBooleanExpressionContext(BooleanExpressionContext ctx){
+		if(ctx.EQUAL()!=null && ctx.addExpression().size()>1){
+			assert(ctx.addExpression(0).mulExpression(0).operand(0).var()!=null);
+			assert(ctx.addExpression(1).mulExpression(0).operand(0).NUMBER()!=null);
+			String var = ctx.addExpression(0).mulExpression(0).operand(0).var().IDENTIFIER().getText();
+			int val = Integer.parseInt(ctx.addExpression(1).mulExpression(0).operand(0).NUMBER().getText());
+			if(var.equals("input")){
+				return inputs.get(val);
+			}else{
+				assert(variables.get(var)!=null) : var+" is not declared";
+				return getIntValue(variables.get(var),val).toFormula();
+			}
+		}else if(ctx.addExpression().size()==1){
+			return generateFormulaFromCondition(ctx.addExpression(0).mulExpression(0).operand(0).expression());
+		}else{
+			throw new RuntimeException("Not yet implemented");
+		}
 	}
 	
 	private Set<FunctionDeclarationContext> findStatementDependencies(StatementContext ctx){
@@ -231,6 +253,22 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 				result.addAll(findStatementDependencies(statement));
 			});
 			return result;
+		}
+	}
+	
+	private Integer generateOperand(ExpressionContext ctx){
+		OperandContext opc = ctx.
+				andExpression(0).
+				booleanExpression(0).
+				addExpression(0).
+				mulExpression(0).
+				operand(0);
+		if(opc.NUMBER()!=null){
+			return Integer.parseInt(opc.NUMBER().getText());
+		}else if(opc.expression()!=null){
+			return generateOperand(opc.expression());
+		}else{
+			throw new RuntimeException("Unsupported operand");
 		}
 	}
 	
@@ -289,7 +327,7 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 				toExplore.push(dep);
 			});
 		}		
-		
+		formulae.values().stream().map(Formula::toString).map(String::length).forEach(System.out::println);
 		//TODO resolve dependencies
 		System.out.println("Reachable methods: "+visitcount);
 		
@@ -303,7 +341,7 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 	 * @param value the integer value to be represented
 	 * @return a cube representing the bits of value
 	 */
-	public static Cube getIntValue(List<Literal> bits, @NonNull Integer value){
+	public static Cube getIntValue(@NonNull List<Literal> bits, @NonNull Integer value){
 		return new Cube(IntStream.range(0, bits.size()).sequential().
 				mapToObj(i -> ((((value>>i)&0x1)==1)?bits.get(i):bits.get(i).not())).
 				map(Clause::new).
