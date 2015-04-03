@@ -35,7 +35,7 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 	private final Map<String,FunctionDeclarationContext> methods = new HashMap<>();
 	private Cube I = null;
 	private Cube T = null;
-	private List<Cube> P = new ArrayList<>();
+	private List<PropertyPair> P = new ArrayList<>();
 	
 	@Override
 	public void exitFunctionDeclaration(FunctionDeclarationContext ctx) {
@@ -89,7 +89,7 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 	}
 	
 	public ProblemSet getProblemSet(){
-		return new ProblemSet(getInitial(), getTransitionRelation(), getProperties().stream().map(p -> new PropertyPair(p,p.toFormula().not().tseitinTransform())).collect(Collectors.toList()));
+		return new ProblemSet(getInitial(), getTransitionRelation(), getProperties());
 	}
 	
 	public Cube getInitial(){
@@ -102,7 +102,7 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 		return getT();
 	}
 	
-	public List<Cube> getProperties(){
+	public List<PropertyPair> getProperties(){
 		if(getP()==null || getP().size()==0)throw new IllegalStateException("P[] not initialized, execute tree walk first");
 		return getP();
 	}
@@ -203,12 +203,16 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 		return result;
 	}
 	
-	protected List<Cube> buildProblems(){
-		return errorids.entrySet().stream()
-		.sorted((a,b) -> Integer.compare(a.getValue(), b.getValue()))
-		.map(e -> generateFormulaFromCondition(e.getKey()))
-		.map(Formula::tseitinTransform)
-		.collect(Collectors.toList());
+	protected List<PropertyPair> buildProblems(){
+		return	errorids.entrySet().stream()
+				.sorted((a,b) -> Integer.compare(a.getValue(), b.getValue()))
+				.map(e -> generateFormulaFromCondition(e.getKey()))
+				.map(f -> new PropertyPair(
+						//P (bad states should not hold)
+						f.not().tseitinTransform(),
+						//~P
+						f.tseitinTransform()))
+				.collect(Collectors.toList()); 
 	}
 	
 	/**

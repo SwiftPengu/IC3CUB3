@@ -72,11 +72,11 @@ public class IC3 {
 			//Solve all proof obligations for given k
 			while(proofObligations.size()>0){
 				ProofObligation probl = proofObligations.remove();
-				printv("Attempting to prove: "+probl.getCTI()+" not reachable from level "+probl.getLevel(),0);
+				printv("Attempting to prove: "+probl.getCTI()+" not reachable from level "+probl.getLevel(),1);
 				Cube s = probl.getCTI();
 				Integer inductiveFrontier = findInductiveFrontier(probl,F,T);
 				if(inductiveFrontier==null){
-					printv("Found counterexample to P: "+s,0);
+					printv("Found counterexample to P: "+s,1);
 					printTrace(I,probl);
 					return false;
 				}else{
