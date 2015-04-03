@@ -13,9 +13,9 @@ import ic3cub3.tests.ProblemSet;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
@@ -102,8 +102,8 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 			switch(type){
 				case "int":
 					//declare the variable and allocate literals
-					List<Literal> literals = new ArrayList<>(32);
-					for(int i = 0;i<32;i++){
+					List<Literal> literals = new ArrayList<>(Integer.SIZE);
+					for(int i = 0;i<Integer.SIZE;i++){
 						literals.add(new Literal());
 					}
 					getVariables().put(id,literals);
@@ -111,7 +111,15 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 					//check whether this is an initialisation
 					if(init.get(id)==null && ctx.assign()!=null){
 						//FIXME code breaks with arrays
-						init.put(id,Integer.parseInt(ctx.assign().expression().andExpression(0).booleanExpression(0).addExpression(0).mulExpression(0).operand(0).NUMBER().getText()));
+						init.put(id,Integer.parseInt(ctx.
+								assign().
+								expression().
+								andExpression(0).
+								booleanExpression(0).
+								addExpression(0).
+								mulExpression(0).
+								operand(0).
+								NUMBER().getText()));
 						System.out.println("Initialised "+id+" to "+init.get(id));
 					}
 					break;
@@ -287,5 +295,18 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 		
 		Cube initial = getUniqueInputFormula();
 		System.out.println("Finished building problem set...");
+	}
+	
+	/**
+	 * Returns a cube, representing that the given bits are according to the given 2's complement value
+	 * @param bits a list of bits, index 0 meaning the LSB, must contain enough bits to store value
+	 * @param value the integer value to be represented
+	 * @return a cube representing the bits of value
+	 */
+	public static Cube getIntValue(List<Literal> bits, @NonNull Integer value){
+		return new Cube(IntStream.range(0, bits.size()).sequential().
+				mapToObj(i -> ((((value>>i)&0x1)==1)?bits.get(i):bits.get(i).not())).
+				map(Clause::new).
+				collect(Collectors.toList()));
 	}
 }
