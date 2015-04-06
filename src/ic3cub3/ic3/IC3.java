@@ -16,7 +16,7 @@ public class IC3 {
 		this.satsolver=satsolver;
 	}
 	
-	public boolean check(Cube I, Cube T, Cube P,Cube NP){
+	public List<ProofObligation> check(Cube I, Cube T, Cube P,Cube NP){
 			printv("I:\t"+I,2);
 			printv("T:\t"+T,2);
 			printv("P:\t"+P,2);
@@ -28,14 +28,14 @@ public class IC3 {
 		printv("Check I => P",1);
 		if(satsolver.sat(I.and(NP)).size()>0){
 			printv("I => P does not hold",1);
-			return false;
+			return Arrays.asList(new ProofObligation[]{new ProofObligation(P, 0)});
 		}else{
 			printv("I => P",1);
 		}
 		//check I ^ T => P
 		if(satsolver.sat(I.and(T).and(NP)).size()>0){
 			printv("I ^ T => P does not hold",1);
-			return false;
+			return Arrays.asList(new ProofObligation[]{new ProofObligation(P, 1)});
 		}else{
 			printv("I ^ T => P",1);
 		}
@@ -78,7 +78,7 @@ public class IC3 {
 				if(inductiveFrontier==null){
 					printv("Found counterexample to P: "+s,1);
 					printTrace(I,probl);
-					return false;
+					return probl.getProofTrace();
 				}else{
 					strengthen(s,F,T,inductiveFrontier,addedClauses);
 					
@@ -112,7 +112,7 @@ public class IC3 {
 			printv("k increased to "+k,0);
 			propagateClauses(T,F,addedClauses,k);
 			if(hasFixpoint(F)){
-				return true;
+				return null;
 			}
 		}
 	}
