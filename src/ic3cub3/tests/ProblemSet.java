@@ -2,7 +2,8 @@ package ic3cub3.tests;
 
 import ic3cub3.plf.cnf.Cube;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 
 import lombok.Data;
 

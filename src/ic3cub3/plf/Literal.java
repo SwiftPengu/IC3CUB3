@@ -1,7 +1,6 @@
 package ic3cub3.plf;
 
-import ic3cub3.plf.cnf.Clause;
-import ic3cub3.plf.cnf.TseitinCube;
+import ic3cub3.plf.cnf.*;
 
 import java.util.*;
 
@@ -144,5 +143,10 @@ public class Literal extends Formula{
 	@Override
 	public int hashCode() {
 		return getDIMACSID();
+	}
+	
+	@Override
+	public Cube toCube() {
+		return new Cube(this);
 	}
 }

@@ -1,5 +1,6 @@
 package ic3cub3.plf;
 
+import ic3cub3.plf.cnf.Cube;
 import ic3cub3.plf.cnf.TseitinCube;
 
 import java.util.Set;
@@ -67,4 +68,6 @@ public abstract class Formula {
 		result.stick();
 		return result;
 	}
+	
+	public abstract Cube toCube();
 }

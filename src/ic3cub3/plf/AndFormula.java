@@ -1,15 +1,15 @@
 package ic3cub3.plf;
 
-import ic3cub3.plf.cnf.Clause;
-import ic3cub3.plf.cnf.TseitinCube;
+import ic3cub3.plf.cnf.*;
 
 import java.util.Set;
 
 import lombok.Getter;
 
-@Getter
 public class AndFormula extends Formula{
+	@Getter
 	private final Formula left;
+	@Getter
 	private final Formula right;
 	
 	public AndFormula(Formula left,Formula right){
@@ -63,6 +63,7 @@ public class AndFormula extends Formula{
 		TseitinCube L = getLeft().toCNF();
 		TseitinCube R = getRight().toCNF();
 		
+		
 		//~l v r ~v out
 		Clause temp = new Clause();
 		temp.addLiteral(L.getTseitinOutput().not());
@@ -91,7 +92,8 @@ public class AndFormula extends Formula{
 		}
 		for(Clause c:R.getClauses()){
 			result.addClause(c);
-		}		
+		}
+
 		return result;
 	}
 
@@ -103,5 +105,12 @@ public class AndFormula extends Formula{
 		assert(rvars!=null);
 		lvars.addAll(rvars);
 		return lvars;
+	}
+	
+	@Override
+	public Cube toCube() {
+		Cube result = getLeft().toCube();
+		result = result.and(getRight().toCube());
+		return result;
 	}
 }

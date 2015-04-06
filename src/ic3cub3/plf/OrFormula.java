@@ -1,15 +1,16 @@
 package ic3cub3.plf;
 
-import ic3cub3.plf.cnf.Clause;
-import ic3cub3.plf.cnf.TseitinCube;
+import ic3cub3.plf.cnf.*;
 
 import java.util.Set;
 
 import lombok.Getter;
 
-@Getter
+
 public class OrFormula extends Formula{
+	@Getter
 	private final Formula left;
+	@Getter
 	private final Formula right;
 	
 	public OrFormula(Formula left,Formula right){
@@ -92,6 +93,7 @@ public class OrFormula extends Formula{
 		for(Clause c:R.getClauses()){
 			result.addClause(c);
 		}		
+
 		return result;
 	}
 	
@@ -103,5 +105,17 @@ public class OrFormula extends Formula{
 		assert(rvars!=null);
 		lvars.addAll(rvars);
 		return lvars;
+	}
+	
+	@Override
+	public Cube toCube() {
+		Cube result = new Cube();
+		Cube R = getRight().toCube(); 
+		getLeft().toCube().getClauses().stream().forEach(c1 ->{
+			R.getClauses().stream().forEach(c2 ->{
+				result.addClause(c1.or(c2));
+			});
+		});
+		return result;
 	}
 }
