@@ -1,17 +1,22 @@
 \documentclass[a4paper]{article}
 
+\usepackage{hyperref}
 \usepackage{parskip}
 
 \begin{document}
-\title{Solving RERS 2014 with IC3}
+\title{Solving RERS 2014 problems with IC3}
+\author{H.N. Hindriks\\h.n.hindriks@student.utwente.nl}
+\date{\today}
 \maketitle
 
 \section{Introduction}
-%IC3 intro
+This report covers the individual project performed by H.N. Hindriks, under supervision of T. van Dijk and J.C. Van der Pol, which took place during the 3rd quartile of 2014-2015.
 
-%RERS 2014 intro
+IC3 is a rather new algorithm for model checking, developed by Fabio Somenzi and Aaron Bradley \cite{Bradley2007}. The algorithm relies on providing a SAT-solver (relatively) small queries in order to construct either an inductive proof or a counterexample to induction. The algorithm is described in more detail by Bradley \cite{Bradley2011}.
 
-%Implementation overview
+The RERS challenge (which stand for Rigorous Examination of Reactive Systems), is an internation contest which are currently held annualy. During the contest participants attempt to find bugs in reactive systems of varying complexity using testing and model checking tools.
+
+The aim of the project was to acquire a better in-depth knowledge of the IC3 algorithm, while also experiencing the challenges encountered when model checking real-world-like programs.
 
 \section{Background}
 \subsection{SAT}
@@ -84,14 +89,24 @@ Furthermore, it conserves the behaviour of Minisat to report unsatisfiablity whe
 %Overview of all the checked properties from the first RERS and the results
 
 \subsection{Future Work}
-%Nieuwste versie MIC algoritme (niet alleen down (up is overigens ook al outdated)).
+Hassan et al. \cite{Hassan2013} have improved the down algorithm. This improvement supersedes an intermediate improvement by Bradley et al. \cite{Bradley2007} which defines the \emph{up} algorithm. The created Java implementation of the IC3 algorithm only implements part of the \emph{down} algorithm. As the MIC algorithm is essential to the performance of IC3, implementing the improved algorithm could yield better overall performance.
+
+The presented method for representing C programs as propositional logic formulae might very well not be the only existing method to represent such programs. Different encodings might also result in a better performance of either the used SAT-solver, or the generalisation algorithm.
+
+The C programming language can be used to solve a vast array of problems. Restricting the domain for which encodings have to be generated might allow for more general representations of problems due to knowledge on a higher level. For example checking properties on a model of Sokoban is probably more efficient in comparison to a C implementation of the game.
+
+Currently, our IC3 implementation, as well as our SAT-solver, both run on the JVM. The configuration of this JVM directly influences the performance of the program. Not much time was spent optimizing these parameters. For example, it might be worthwhile to investigate the impact of the size of the young generation (used in garbage collection). A different approach might be to implement the algorithm in C (although an implementation is already available at \url{https://github.com/arbrad/IC3ref}).
+
+
 %JVM optimizen of C code gebruiken
 %Toepassingen vinden waarin de generalisatie goed werkt
-%Kijken wat voor encodings goed werken
 %Vergelijken met BDDs en CEGAR
 %Andere methode voor SAT solven dan DPLL?
 
 \subsection{Conclusion}
 We were able to construct a working implementation of the IC3 algorithm in Java, supporting multiple SAT solvers.
+
+\bibliographystyle{plain}
+\bibliography{references}
 
 \end{document}
