@@ -1,7 +1,8 @@
 \documentclass[a4paper]{article}
-
+\usepackage[margin=3cm]{geometry}
 \usepackage{hyperref}
 \usepackage{parskip}
+\usepackage{amsmath}
 
 \begin{document}
 \title{Solving RERS 2014 problems with IC3}
@@ -12,7 +13,7 @@
 \section{Introduction}
 This report covers the individual project performed by H.N. Hindriks, under supervision of T. van Dijk and J.C. Van der Pol, which took place during the 3rd quartile of 2014-2015.
 
-IC3 is a rather new algorithm for model checking, developed by Fabio Somenzi and Aaron Bradley \cite{Bradley2007}. The algorithm relies on providing a SAT-solver (relatively) small queries in order to construct either an inductive proof or a counterexample to induction. The algorithm is described in more detail by Bradley \cite{Bradley2011}.
+IC3 is a rather new algorithm for model checking, developed by Fabio Somenzi and Aaron Bradley \cite{Bradley2007}. The algorithm relies on providing a SAT solver (relatively) small queries in order to construct either an inductive proof or a counterexample to induction. The algorithm is described in more detail by Bradley \cite{Bradley2011}.
 
 The RERS challenge (which stand for Rigorous Examination of Reactive Systems), is an internation contest which are currently held annualy. During the contest participants attempt to find bugs in reactive systems of varying complexity using testing and model checking tools.
 
@@ -22,11 +23,12 @@ The aim of the project was to acquire a better in-depth knowledge of the IC3 alg
 \subsection{SAT}
 The IC3 algorithm uses a SAT solver to learn more about the system under verification. Before introducing the IC3 algorithm, it makes sense to briefly explain some basic principles on SAT solving.
 
-Given a propositional logic formula with an arbitrary number of literals, a SAT solver attempts to find a set of truth assignments for each literal which satisfy the formula. This means that substituting the literals with their respective truth assignments results in a formula which evaluates to $\top$. This problem is known as the \emph{Satisfiability} problem. A formula for which such a truth assignment exists is called satisfiable.
+Given a propositional logic formula with an arbitrary number of literals, a SAT solver attempts to find a set of truth assignments for each literal which satisfy the formula. This means that substituting the literals with their respective truth assignments results in a formula which evaluates to $\top$.
+This problem is known as the \emph{Satisfiability} problem (or just shorthand SAT). A formula for which such a truth assignment exists is called satisfiable.
 
 \subsection{CNF}
 \subsection{Tseitin transformation}
-When converting an arbitrary formula to CNF using standard logic equivalence rules, it is possible to create formulae which are exponential in size when compared to the original formula.
+Any formula in propositional logic can be converted to CNF using DeMorgan's law, and the distributivity laws (of $\land$ and $\lor$). However, this might create formulae which are exponential in size when compared to the original formula.
 
 Using the Tseitin transformation, it is possible to convert an arbitrary formula to a formula in CNF which is not equal, but equisatisfiable to the original. This means that the new formula is satisfiable iff the original formula is satisfiable. The resulting formula is linear in size when compared to the original formula.
 
@@ -34,16 +36,30 @@ Furthermore, the Tseitin transformed formula also has a 1-to-1 correspondence wi
 
 The Tseitin transform introduces new literals for each operator. Each operator is viewed as a logic gate, which consists of some inputs, and a single output. For each operator, a literal is introduced which represents the output of a gate modelling that operator.
 
-%TODO beschrijf AND en OR conversion
+%Noot: referentie naar Wikipedia is lelijk, maar wel de meest leesbare (en correcte) bron die ik heb gevonden
+Given two inputs A, B and an output C we define the Tseitin transformation on the $\land$ and $\lor$ operations as follows \cite{Wikipedia2015}:
+
+\begin{align*}
+A \land B \approx (A \land B = C) &\Rightarrow (\lnot A \lor \lnot B \lor C) \land (A \lor \lnot C) \land (B \lor \lnot C)\\
+A \lor B \approx (A \lor B = C) &\Rightarrow (A \lor B \lor \lnot C) \land (\lnot A \lor  C) \land (\lnot B \lor   C)\\
+\end{align*}
+
+When the above transformation is recursively (using the outputs variables to refer to subformulae instead of the subformula in its entirety) applied on a formula, it is converted to a formula in CNF which is $\mathcal{O}(n)$ in size compared to the original formula.
 
 \subsection{IC3}
-IC3, which stands for 'Incremental Construction of Inductive Clauses for Indubitable Correctness', is a Model Checking algorithm which is able to construct inductive proofs and counterexamples for reachability problems.
+IC3, which stands for 'Incremental Construction of Inductive Clauses for Indubitable Correctness', is a Model Checking algorithm which is able to construct inductive proofs or counterexamples for reachability problems.
 
-%Brief description of IC3
+%IO description
+
+%Invariant description
+
+%MIC algorithm description
+
+%Counterexample generation
 
 \section{Implementation}
 \subsection{Propositional Logic Formulae and CNF}
-Two systems for representing propositional logic formulae was developed. A system to represent arbitrary propositional logic formulae, and a system to represent formulae in conjunctive normal form. Furthermore, both systems contain code to convert either system to an equisatisfiable formula in the other system.
+Two systems for representing propositional logic formulae were developed. A system to represent arbitrary propositional logic formulae, and a system to represent formulae in conjunctive normal form. Furthermore, both systems contain code to convert either system to an equisatisfiable formula in the other system.
 
 The first system supports formulae consisting of the $\lnot$,$\lor$,and $\land$ operators. It is implemented (by an object oriented structure) as a binary tree. It comes with convenience methods which also implement the $\rightarrow$ and $\leftrightarrow$ operators. Negation of the entire formula is also supported.
 
@@ -51,13 +67,15 @@ The second system represents formulae which are in CNF. A single formula is impl
 \subsubsection{Conversion}
 The conversion from the CNF system to the PLF system results in a formula which is equal under $\Leftrightarrow$. However, the conversion from the first to the second system is implemented as the Tseitin transformation, which only preserves equisatisfiability.
 
-\subsection{SAT solver}
-%intro
+\subsection{CNF conversion}
+In order to perform conversion of the two formula representation systems, the aforementioned algorithms for performing conversion to CNF had to be developed. Both the equivalence conversion and the Tseitin transormation algorithms were implemented.  The literals introduced by the Tseitin transformation are flagged as such, to enable the code which parses the result of the SAT solver to discard these variables.
+
+\subsection{SAT solvers}
 \subsubsection{Logic2CNF}
 At the beginning of the project, no formulae representing test cases were avaiable in CNF, and in order to test the semantics of IC3, a SAT solver was needed which supported arbitrary formulae. Logic2CNF is a fork of Minisat, which supports arbitrary formulae. Internally it applies the Tseitin transform algorithm, and drops the newly introduced literals from the output. It is able to find all models for a given formula, but also supports searching up to a specified maximum.
 
 \subsubsection{SAT4J}
-SAT4J is a Java implementation of the Minisat SAT solver. It supports only formulae which are in CNF. SAT4J is able to find a single model of a formula, but it is also able to find all models.
+SAT4J is a Java implementation of the Minisat SAT solver. It only supports formulae which are in CNF. SAT4J is able to find a single model of a formula, but it is also able to find all models.
 
 Furthermore, it conserves the behaviour of Minisat to report unsatisfiablity whenever a trivially unsatisfiable formula is provided to it (e.g.: $p \land \lnot p$). This enables the SAT solver to return a result early.
 
@@ -69,18 +87,63 @@ Furthermore, it conserves the behaviour of Minisat to report unsatisfiablity whe
 \subsubsection{Problem solving architecture}
 %Wat informatie over hoe problemen aan het algoritme kunnen worden gevoerd
 \subsubsection{Testcases}
-%Alle testcases uit 'Where Monolithic and Incremental Meet'
-%Hier ook wat zeggen over fout in paper?
+Three testcases were designed to test the IC3 implementation, the behaviour of the algorithm was compared to the described behaviour where applicable.
+
+Somenzi and Bradley provide two in-depth examples in \cite{Somenzi2011}.
+
+The first example (implemented in IC3WMIM\_1.java) provides the following parameters:
+\begin{align*}
+I =& (\lnot x_1 \land \lnot x_2)\\
+T(x,x') =& (x_1 \lor \lnot x_2 \lor x_2') \land (x_1 \lor x_2 \lor \lnot x_1') \land (\lnot x_1 \lor x_1') \land (\lnot x_1 \lor \lnot x_2') \land (x_2 \lor \lnot x_2') \\
+P =& (\lnot x_1 \lor x_2)
+\end{align*}
+
+These formulae above describe a system which contains a bad state which is unreachable.
+
+The second example (implemented in IC3WMIM\_2.java) from \cite{Somenzi2011} was defined differently than was shown in the provided image.
+The following formulae were formed according to Figure 2 in \cite{Somenzi2011}, which describes a transition system with a reachable bad state.
+
+\begin{align*}
+I =& (\lnot x_1 \land \lnot x_2 \land \lnot x_3)\\
+T(x,x') =& (\lnot x_2 \lor x_1') \land (\lnot x_3 \lor x_2') \land (\lnot x_1' \lor x_2) \land (\lnot x_2' \lor x_3)\\
+P =& (\lnot x_1 \lor \lnot x_2 \lor \lnot x_3)
+\end{align*}
+
+In order to better test the generation of counterexample traces, a third test case (implemented in ReachableBadState.java) was constructed, which consisted of a linear path to a bad state.
+
+\begin{align*}
+I =& (\lnot A \land \lnot B)\\
+T(x,x') =& (\lnot A \lor C) \land (\lnot A \lor D) \land (\lnot B \lor D) \land (B \lor D) \land (C \lor D)\\
+&\land (\lnot B \lor \lnot D \lor A) \land (\lnot C \lor \lnot D \lor A) \land (\lnot C \lor A \lor B)\\
+P =& (\lnot A \lor \lnot B)
+\end{align*}
 
 \subsection{Encoding} %On the encoding of problems for IC3
-\subsubsection{RERS 2014}
-%Introduction on RERS 2014
 \subsubsection{Problem structure}
-%A general overview of structure the problem files
+The RERS challenges from 2014 come in a variety of complexity. A encoding program was written to encode the problems with the lowest language complexity as propositional logic formulae representing an Initial state, a Transition relation, and a set of properties.
+
+These problems consist of C programs which contain value assignments, comparisons using equality only, and function calls.
+
+Every problem defines a set of possible inputs, and methods which alter the state of the program, according to the given input.
+In addition, every problem also defines an \texttt{errorcheck()} method, which checks for 100 possible errors using assertions. One of the goals of the challenge is to find whether these errors can occur, and what input is needed to trigger them.
+
 %Tell something about the assumptions made (or in the next section)
+
 \subsubsection{Parser implementation}
-%ANTLR4 versie van de grammatica van Jeroen Meijer en Jaco van der Pol.
-%ANTLR4 Listener tree walker voor opbouw formules
+Jeroen Meijer en Jaco van der Pol participated in the RERS 2014 challenge with the LTSmin model checking tool.
+They constructed a ANTLR3 parser grammar to generate a parser for the C programs.
+
+The grammar was first converted to ANTLR4, and any logic for LTSmin was discarded.
+ANTLR4 provides tree listener/visitor classes, which can be used to execute logic while walking over the generated abstract syntax tree generated by the generated parser.
+
+\subsubsection{Encoding structure}
+While walking the tree, the parse tree listener obtains the information needed to encode the C program for IC3.
+
+Integers are modelled as 32-bit integers. This means that for each variable $2*32$ literals are allocated ($x$ and $x'$). For instance, the first problem declares 43 integers which amount to 2752 literals.
+
+The initial state is constructed by taking all global variable declarations from the program, parsing the declared initial values, and stating that the bits of the variables are as declared. In addition, a formula is added which represent that any one (but only one) of the input variables must hold. For the first problem, this results in a formula with 1381 literals.
+%Transition relation
+%Properties
 
 \subsection{Measurements}
 \subsubsection{Description}
@@ -91,15 +154,12 @@ Furthermore, it conserves the behaviour of Minisat to report unsatisfiablity whe
 \subsection{Future Work}
 Hassan et al. \cite{Hassan2013} have improved the down algorithm. This improvement supersedes an intermediate improvement by Bradley et al. \cite{Bradley2007} which defines the \emph{up} algorithm. The created Java implementation of the IC3 algorithm only implements part of the \emph{down} algorithm. As the MIC algorithm is essential to the performance of IC3, implementing the improved algorithm could yield better overall performance.
 
-The presented method for representing C programs as propositional logic formulae might very well not be the only existing method to represent such programs. Different encodings might also result in a better performance of either the used SAT-solver, or the generalisation algorithm.
+The presented method for representing C programs as propositional logic formulae might very well not be the only existing method to represent such programs. Different encodings might also result in a better performance of either the used SAT solver, or the generalisation algorithm.
 
 The C programming language can be used to solve a vast array of problems. Restricting the domain for which encodings have to be generated might allow for more general representations of problems due to knowledge on a higher level. For example checking properties on a model of Sokoban is probably more efficient in comparison to a C implementation of the game.
 
-Currently, our IC3 implementation, as well as our SAT-solver, both run on the JVM. The configuration of this JVM directly influences the performance of the program. Not much time was spent optimizing these parameters. For example, it might be worthwhile to investigate the impact of the size of the young generation (used in garbage collection). A different approach might be to implement the algorithm in C (although an implementation is already available at \url{https://github.com/arbrad/IC3ref}).
+Currently, our IC3 implementation, as well as our SAT solver, both run on the JVM. The configuration of this JVM directly influences the performance of the program. Not much time was spent optimizing these parameters. For example, it might be worthwhile to investigate the impact of the size of the young generation (used in garbage collection). A different approach might be to implement the algorithm in C (although an implementation is already available at \url{https://github.com/arbrad/IC3ref}).
 
-
-%JVM optimizen of C code gebruiken
-%Toepassingen vinden waarin de generalisatie goed werkt
 %Vergelijken met BDDs en CEGAR
 %Andere methode voor SAT solven dan DPLL?
 
