@@ -14,10 +14,11 @@ import ic3cub3.plf.cnf.Clause;
 import ic3cub3.plf.cnf.Cube;
 import ic3cub3.runner.Runner;
 import ic3cub3.tests.ProblemSet;
+import ic3cub3.tests.ProblemSet.PropertyPair;
 
-import ic3cub3.tests.ProblemSet.*;
-
+import java.math.BigInteger;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -116,7 +117,7 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 	}
 
 	protected Cube buildInitialState(){
-		Cube result = getUniqueInputFormula();
+		Cube result = getUniqueInputCube();
 		//init all variables according to their values
 		result = result.and(new Cube(init.entrySet().stream().
 				map(e -> getIntValue(variables.get(e.getKey()),e.getValue())).
@@ -197,9 +198,17 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 		
 		//Convert the result to CNF
 		assert(formulae.get(getMainMethod())!=null);
+		System.out.println(formulae.get(getMainMethod()));
+		System.out.println("Performing Equivalence Conversion...");
+		//Cube result = formulae.get(getMainMethod()).toCube();
+		System.out.println("Conversion complete");
 		System.out.println("Performing Tseitin Conversion...");
 		Cube result = formulae.get(getMainMethod()).tseitinTransform();
-		System.out.println("Conversion complete");
+		
+		//add input transition
+		System.out.println(getUniqueInputCube());
+		result.and(getUniqueInputCube().getPrimed());
+		
 		return result;
 	}
 	
@@ -209,9 +218,9 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 				.map(e -> generateFormulaFromCondition(e.getKey()))
 				.map(f -> new PropertyPair(
 						//P (bad states should not hold)
-						f.not().tseitinTransform(),
+						f.not().toCube(),
 						//~P
-						f.tseitinTransform()))
+						f.toCube()))
 				.collect(Collectors.toList()); 
 	}
 	
@@ -219,7 +228,7 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 	 * Obtains a cube which states that only a single output should be enabled
 	 * @return
 	 */
-	protected Cube getUniqueInputFormula(){
+	protected Cube getUniqueInputCube(){
 		Collection<Literal> values = getInputs().values();
 		
 		//state that at least one output should be true
@@ -230,7 +239,7 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 			filter(b -> (a!=b)).
 			forEach(b ->{
 				//internal set usage ensures only unique clauses are added
-				result.addClause(new Clause(a,b));
+				result.addClause(new Clause(a.not(),b.not()));
 			});
 		});
 		Runner.printv("Only one input enabled: "+result,2);
@@ -433,9 +442,59 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 		}
 	}
 	
+	//TODO get trace
+	public String convertState(Cube c){
+		final Map<String,Integer> varvalues = new HashMap<>();
+		getVariables().entrySet().stream().forEach(e ->{
+			varvalues.put(e.getKey(), 0);
+		});
+		
+		System.out.println(varvalues);
+		
+		c.getClauses().stream().forEach(clause ->{
+			assert(clause.getLiterals().size()==1);
+			Literal l = clause.getLiterals().iterator().next();
+			String var = null;
+			for(Entry<String,List<Literal>> e:getVariables().entrySet()){
+				int index = -1;
+				for(int i = 0;i<e.getValue().size();i++){
+					if(e.getValue().get(i).getID()==l.getID()){
+						index=i;
+					}
+				}
+				if(index!=-1){
+					var=e.getKey();
+				}
+			}
+				
+			
+			if(var!=null){
+				int index = -1;
+				for(int i = 0;i<getVariables().get(var).size();i++){
+					if(getVariables().get(var).get(i).getID()==l.getID()){
+						index = i;
+						break;
+					}
+				}
+				assert(index!=-1);
+				BigInteger val = BigInteger.valueOf(varvalues.get(var));
+				if(l.isNegated()){
+					val.clearBit(index);
+				}else{
+					val.setBit(index);
+				}
+				varvalues.put(var, val.intValue());
+			}else{
+				System.out.println("warning, skipped over "+l);
+			}
+		});
+		
+		return varvalues.toString();
+	}
+	
 	/**
 	 * Returns a cube, representing that the given bits are according to the given 2's complement value
-	 * @param bits a list of bits, index 0 meaning the LSB, must contain enough bits to store value
+	 * @param bits a list of bits, index 0 meaning the LSB, must contain enough bits to store the value
 	 * @param value the integer value to be represented
 	 * @return a cube representing the bits of value
 	 */
