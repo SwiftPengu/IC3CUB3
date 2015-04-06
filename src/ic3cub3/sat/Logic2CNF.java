@@ -1,12 +1,14 @@
-package sat;
+package ic3cub3.sat;
+
+import ic3cub3.plf.Formula;
+import ic3cub3.plf.Literal;
+import ic3cub3.plf.cnf.Clause;
+import ic3cub3.plf.cnf.Cube;
+import ic3cub3.runner.Runner;
+import ic3cub3.runner.Settings;
 
 import java.io.*;
 import java.util.*;
-
-import plf.Formula;
-import plf.Literal;
-import runner.Runner;
-import runner.Settings;
 
 /**
  * Class which invokes Logic2CNF
@@ -16,7 +18,6 @@ import runner.Settings;
 public class Logic2CNF extends SATSolver {
 	
 	public Logic2CNF() throws IOException{
-		//TODO look for logic2cnf
 		File l2c = new File(Settings.COMMAND);
 		if(!l2c.exists())throw new RuntimeException("Logic2CNF not found at "+l2c.getAbsolutePath());
 
@@ -33,7 +34,8 @@ public class Logic2CNF extends SATSolver {
 	}
 
 	@Override
-	public List<Formula> solve(Formula f,boolean skip) {
+	public List<Cube> sat(Cube c,boolean skip) {
+		Formula f = c.toFormula();
 		try {
 			//Run Logic2CNF
 			final Process logic2cnf = Runtime.getRuntime().exec(Settings.COMMAND);
@@ -41,7 +43,7 @@ public class Logic2CNF extends SATSolver {
 			//Feed input
 			processInput(logic2cnf,f);			
 			processErrorStream(logic2cnf); //Gobble std.err
-			List<Formula> result = processOutput(logic2cnf,skip); //obtain processed output
+			List<Cube> result = processOutput(logic2cnf,skip,f.getTseitinVariables()); //obtain processed output
 			if(Runner.VERBOSE>1)System.out.println("D: "+result);
 			logic2cnf.destroy(); //Clean up Logic2CNF
 			return result;
@@ -49,17 +51,12 @@ public class Logic2CNF extends SATSolver {
 			throw new RuntimeException(e);
 		}
 	}
-
-	@Override
-	public boolean needsCNF() {
-		return false;
-	}
 	
 	private void processInput(Process logic2cnf,Formula f) {
 		PrintWriter pw = new PrintWriter(new BufferedOutputStream(logic2cnf.getOutputStream()));
 		//define variables
 		pw.print("def");
-		for(Long i:f.getVariables()){
+		for(Integer i:f.getVariables()){
 			pw.print(" x"+i);
 		}
 		pw.println(";");
@@ -85,8 +82,8 @@ public class Logic2CNF extends SATSolver {
 
 	}
 	
-	private List<Formula> processOutput(Process logic2cnf, boolean skip) {
-		List<Formula> result = new ArrayList<Formula>();
+	private List<Cube> processOutput(Process logic2cnf, boolean skip, Set<Integer> tseitinvars) {
+		List<Cube> result = new ArrayList<Cube>();
 		
 		//process results line by line
 		Scanner sc = new Scanner(logic2cnf.getInputStream());
@@ -98,21 +95,24 @@ public class Logic2CNF extends SATSolver {
 			linescan.next(); //skip line number
 			
 			//construct formula
-			Formula singleformula = null;
+			Cube singleformula = null;
 			
 			//process all variables
 			while(linescan.hasNext()){
 				String varstring = linescan.next();
 				boolean negated = varstring.charAt(0)=='~'; //test for negation
-				long varid = Long.parseLong(varstring.substring(negated?2:1));
-				if(!skip || varid%2==1){
-					Literal var = new Literal(varid,negated,false);
-					
-					//add the formula
-					if(singleformula==null){
-						singleformula = var;
-					}else{
-						singleformula = singleformula.and(var);
+				int varid = Integer.parseInt(varstring.substring(negated?2:1));
+				boolean primedvar = isPrimed(varid);
+				if(!skip || !primedvar){
+					if(!tseitinvars.contains(varid)){//discard extra introduced variables
+						Literal var = new Literal(varid-(primedvar?1:0),negated,primedvar,false);
+						
+						//add the formula
+						if(singleformula==null){
+							singleformula = new Clause(var).asCube();
+						}else{
+							singleformula = singleformula.and(new Clause(var).asCube());
+						}
 					}
 				}
 			}
@@ -121,5 +121,9 @@ public class Logic2CNF extends SATSolver {
 		}
 		sc.close();
 		return result;
+	}
+	
+	private boolean isPrimed(int varid){
+		return varid%2==0;
 	}
 }

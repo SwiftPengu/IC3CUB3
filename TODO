@@ -1,6 +1,3 @@
-Implementeer CNF conversion
--Tseitin Transform?
-
 Implementeer MIC algorithm (minimal inductive clause)
 Zoek uit hoe propagation werkt
 Counterexample generation?

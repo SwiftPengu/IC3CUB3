@@ -4,10 +4,19 @@
 .mtj.tmp/
 
 # Package Files #
-*.jar
 *.war
 *.ear
+*.jar
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
-docs/report.pdf
+/bin/
+
+#Do not commit pdfs
+*.pdf
+src/ic3cub3/antlr_gen/
+*.tokens
+*BaseListener.java
+*Lexer.java
+src/ic3cub3/antlr/ProblemParser.java
+src/ic3cub3/antlr/ProblemListener.java
