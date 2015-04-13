@@ -57,17 +57,7 @@ public class IC3 {
 			Set<Clause> addedClauses = new HashSet<Clause>();
 			
 			//test Fk ^ T ^ ~p'
-			List<Cube> result = satsolver.sat(F.get(k).and(T).and(NPPrime),true);
-			if(result.size()>0){
-				printv("F_k ^ T ^ ~p' satisfiable for k="+k,1);
-				
-				//obtain counterexample S and S'
-				Cube s = result.get(0);
-				printv("s: "+s,1);
-				proofObligations.add(new ProofObligation(s, k-1,new ProofObligation(NP,k)));
-			}else{
-				printv("P is inductive",0);
-			}
+			testPInductive(F,T,k,NP,NPPrime,proofObligations);
 			
 			//Solve all proof obligations for given k
 			while(proofObligations.size()>0){
@@ -81,28 +71,7 @@ public class IC3 {
 					return probl.getProofTrace();
 				}else{
 					strengthen(s,F,T,inductiveFrontier,addedClauses);
-					
-					//'aggressively' check if the CTI is resolved in the first non-inductive frontier
-					//int nextFrontier = inductiveFrontier.level+1;
-					boolean ctiStillExists = satsolver.sat(F.get(probl.getLevel()).and(T).and(probl.getCTI().getPrimed()),true).size()>0;
-					if(ctiStillExists){
-						printv("CTI still exists",1);
-						//cti is not yet resolved, so attempt to resolve it again
-						proofObligations.add(probl);
-						//if the possibility of predecessors of s exists, check for such states
-						if(inductiveFrontier<k-1){
-							
-							//find a predecessor state
-							//That is, a solution to Fi+1 ^ T => s
-							printv("Finding a predecessor of s from level "+(inductiveFrontier+1),3);
-							List<Cube> predecessors = satsolver.sat(F.get(inductiveFrontier+1).and(T).and(probl.getCTI().getPrimed()),true);
-							printv("Predecessors: "+predecessors,3);
-							assert(predecessors.size()>0) : "Error: no predecessors of s for inductive ~s";
-							Cube t = predecessors.get(0);
-							proofObligations.add(new ProofObligation(t, inductiveFrontier,probl));
-						}
-					}
-					
+					checkCTIResolved(F,probl,inductiveFrontier,k,T,proofObligations);					
 				}
 			}
 			
@@ -114,6 +83,20 @@ public class IC3 {
 			if(hasFixpoint(F)){
 				return null;
 			}
+		}
+	}
+	
+	private void testPInductive(List<Cube> F, Cube T,int k,Cube NP, Cube NPPrime, PriorityQueue<ProofObligation> proofObligations){
+		List<Cube> result = satsolver.sat(F.get(k).and(T).and(NPPrime),true);
+		if(result.size()>0){
+			printv("F_k ^ T ^ ~p' satisfiable for k="+k,1);
+			
+			//obtain counterexample S and S'
+			Cube s = result.get(0);
+			printv("s: "+s,1);
+			proofObligations.add(new ProofObligation(s, k-1,new ProofObligation(NP,k)));
+		}else{
+			printv("P is inductive",0);
 		}
 	}
 
@@ -153,6 +136,26 @@ public class IC3 {
 				printv("F"+i+" becomes: "+F.get(i),1);
 			}else{
 				printv("F"+i+" remains unchanged",1);
+			}
+		}
+	}
+	
+	private void checkCTIResolved(List<Cube> F, ProofObligation probl, int inductiveFrontier, int k,Cube T, PriorityQueue<ProofObligation> proofObligations){
+		boolean ctiStillExists = satsolver.sat(F.get(probl.getLevel()).and(T).and(probl.getCTI().getPrimed()),true).size()>0;
+		if(ctiStillExists){
+			printv("CTI still exists",1);
+			//cti is not yet resolved, so attempt to resolve it again
+			proofObligations.add(probl);
+			//if the possibility of predecessors of s exists, check for such states
+			if(inductiveFrontier<k-1){	
+				//find a predecessor state
+				//That is, a solution to Fi+1 ^ T => s
+				printv("Finding a predecessor of s from level "+(inductiveFrontier+1),3);
+				List<Cube> predecessors = satsolver.sat(F.get(inductiveFrontier+1).and(T).and(probl.getCTI().getPrimed()),true);
+				printv("Predecessors: "+predecessors,3);
+				assert(predecessors.size()>0) : "Error: no predecessors of s for inductive ~s";
+				Cube t = predecessors.get(0);
+				proofObligations.add(new ProofObligation(t, inductiveFrontier,probl));
 			}
 		}
 	}
