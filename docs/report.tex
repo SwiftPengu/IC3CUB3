@@ -35,11 +35,13 @@ The aim of the project was to acquire a better in-depth knowledge of the IC3 alg
 The IC3 algorithm uses a SAT solver to learn more about the system under verification. Before introducing the IC3 algorithm, it makes sense to briefly explain some basic principles on SAT solving.
 
 Given a propositional logic formula with an arbitrary number of literals, a SAT solver attempts to find a set of truth assignments for each literal which satisfy the formula. This means that substituting the literals with their respective truth assignments results in a formula which evaluates to $\top$.
-This problem is known as the \emph{Satisfiability} problem (or just shorthand SAT). A formula for which such a truth assignment exists is called satisfiable.
+This problem is known as the \emph{Satisfiability} problem (or just shorthand SAT). A formula for which such a truth assignment exists is called satisfiable. Likewise, a formula for which such a truth assignment does not exist, is called unsatisfiable.
 
 \subsection{CNF}
+A propositional logic formula is in Conjunctive Normal Form when it consists of a conjunction of clauses. Every propositional logic formula can be converted to an equivalent formula in CNF. See section \ref{sec:ic3_testcases} for some examples of formulae in CNF.
+
 \subsection{Tseitin transformation}
-Any formula in propositional logic can be converted to CNF using DeMorgan's law, and the distributivity laws (of $\land$ and $\lor$). However, this might create formulae which are exponential in size when compared to the original formula.
+Any formula in propositional logic can be converted to CNF by using DeMorgan's law and the distributivity laws (of $\land$ and $\lor$). However, this might create formulae which are exponential in size when compared to the original formula.
 
 Using the Tseitin transformation, it is possible to convert an arbitrary formula to a formula in CNF which is not equal, but equisatisfiable to the original. This means that the new formula is satisfiable iff the original formula is satisfiable. The resulting formula is linear in size when compared to the original formula.
 
@@ -60,9 +62,21 @@ When the above transformation is recursively (using the outputs variables to ref
 \subsection{IC3}
 IC3, which stands for 'Incremental Construction of Inductive Clauses for Indubitable Correctness', is a Model Checking algorithm which is able to construct inductive proofs or counterexamples for reachability problems.
 
-%IO description
+\subsubsection{The algorithm}
+%A description of the algorithm
+A description of the algorithm
+
 \subsubsection{Invariants}
 %Invariant description
+After applying BMC for $k=0$ and $k=1$, the following four invariants hold for the duration of the IC3 algorithm \cite{Bradley2011}:
+
+\setcounter{equation}{0}
+\begin{align}
+I &\Rightarrow F_0\\
+F_i &\Rightarrow F_{i+1} & 0 \leq i < k\\
+F_i &\Rightarrow P & 0 \leq i \leq k\\
+F_i \land T &\Rightarrow F_{i+1}' & 0 \leq i < k
+\end{align}
 
 \subsubsection{The Minimal Inductive (sub)Clause algorithm}
 The Minimal Inductive Clause algorithm, whil will from this point on be referred to as MIC, plays a very important role in the IC3 algorithm. The MIC algorithm takes a negated counterexample to induction (the negated cube of literals becomes a single clause), and attempts to reduce its size. The resulting clause is minimal, and inductive (reachable) to a given frontier set.
@@ -79,7 +93,6 @@ Note that it is not nessecary to implement the MIC algorithm, the negation of th
 
 The simplest algorithm (after the 'algorithm' described in the previous paragraph), is documented as the \emph{down} algorithm. Which behaves as follows:
 
-\newpage
 \begin{lstlisting}[mathescape,language=Java]
 down($I$,$T$,$F_i$,$s$){
   q = $\lnot s$;
@@ -133,16 +146,17 @@ At the beginning of the project, no formulae representing test cases were avaiab
 \subsubsection{SAT4J}
 SAT4J is a Java implementation of the Minisat SAT solver. It only supports formulae which are in CNF. SAT4J is able to find a single model of a formula, but it is also able to find all models.
 
-Furthermore, it conserves the behaviour of Minisat to report unsatisfiablity whenever a trivially unsatisfiable formula is provided to it (e.g.: $p \land \lnot p$). This enables the SAT solver to return a result early.
+Furthermore, it conserves the behaviour of Minisat to report unsatisfiablity whenever a trivially unsatisfiable formula is provided to it (e.g.: $p \land \lnot p \Leftrightarrow \bot$). This enables the SAT solver to return a result early.
 
 \subsection{IC3}
-\subsubsection{Overview}
-%Beschrijving implementatie main loop en invariants
-\subsubsection{The MIC algorithm}
-%Down algoritme
+The IC3 algorithm was implemented in Java. The algorithm itself consists of a single class of less than 300 lines of code.
+
 \subsubsection{Problem solving architecture}
 %Wat informatie over hoe problemen aan het algoritme kunnen worden gevoerd
+%+Latere extensie die gemaakt is: mogelijkheid om counterexample uit te lezen
+
 \subsubsection{Testcases}
+\label{sec:ic3_testcases}
 Three testcases were designed to test the IC3 implementation, the behaviour of the algorithm was compared to the described behaviour where applicable.
 
 Somenzi and Bradley provide two in-depth examples in \cite{Somenzi2011}.
@@ -212,7 +226,12 @@ Hassan et al. \cite{Hassan2013} have improved the down algorithm. This improveme
 
 The presented method for representing C programs as propositional logic formulae might very well not be the only existing method to represent such programs. Different encodings might also result in a better performance of either the used SAT solver, or the generalisation algorithm.
 
-The C programming language can be used to solve a vast array of problems. Restricting the domain for which encodings have to be generated might allow for more general representations of problems due to knowledge on a higher level. For example checking properties on a model of Sokoban is probably more efficient in comparison to a C implementation of the game.
+The C programming language can be used to solve a vast array of problems. %DUH!
+Restricting the domain for which encodings have to be generated might allow for more general representations of problems due to knowledge on a higher level. For example checking properties on a model of Sokoban is probably more efficient in comparison to a C implementation of the game.
+
+While Minisat is a popular SAT solver, different SAT solvers might have different performance characteristics.
+
+The SAT solvers might also be optimized for use with the IC3 algorithm. For instance, the IC3 algorithm often issues SAT queries which are equivalent to earlier queries. Furthermore, there is also some overlap on parts of the formulae (for example, the transition relation $T$ will often be part of a SAT query) provided in the query.
 
 Currently, our IC3 implementation, as well as our SAT solver, both run on the JVM. The configuration of this JVM directly influences the performance of the program. Not much time was spent optimizing these parameters. For example, it might be worthwhile to investigate the impact of the size of the young generation (used in garbage collection). A different approach might be to implement the algorithm in C (although an implementation is already available at \url{https://github.com/arbrad/IC3ref}).
 
