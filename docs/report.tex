@@ -3,6 +3,17 @@
 \usepackage{hyperref}
 \usepackage{parskip}
 \usepackage{amsmath}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstdefinestyle{customjava}{
+language=Java,
+commentstyle=\itshape\color{green!40!black},
+numbers=left,
+frame=single,
+}
+
+\lstset{style=customjava}
 
 \begin{document}
 \title{Solving RERS 2014 problems with IC3}
@@ -50,12 +61,57 @@ When the above transformation is recursively (using the outputs variables to ref
 IC3, which stands for 'Incremental Construction of Inductive Clauses for Indubitable Correctness', is a Model Checking algorithm which is able to construct inductive proofs or counterexamples for reachability problems.
 
 %IO description
-
+\subsubsection{Invariants}
 %Invariant description
 
-%MIC algorithm description
+\subsubsection{The Minimal Inductive (sub)Clause algorithm}
+The Minimal Inductive Clause algorithm, whil will from this point on be referred to as MIC, plays a very important role in the IC3 algorithm. The MIC algorithm takes a negated counterexample to induction (the negated cube of literals becomes a single clause), and attempts to reduce its size. The resulting clause is minimal, and inductive (reachable) to a given frontier set.
 
-%Counterexample generation
+The algorithm takes as input:
+\begin{itemize}
+\item $I$, the initial state
+\item $T$, the transition relation
+\item $s$, a counterexample to induction
+\item $F_i$, with $i=0 \ldots k$, a frontier set for which $F \land T \rightarrow \lnot s'$ is satisfiable
+\end{itemize}
+
+Note that it is not nessecary to implement the MIC algorithm, the negation of the counterexample is already inductive. However, not doing so effectively only removes a single state from the search. While, in many cases, the MIC algorithm will remove many more states from the search.
+
+The simplest algorithm (after the 'algorithm' described in the previous paragraph), is documented as the \emph{down} algorithm. Which behaves as follows:
+
+\newpage
+\begin{lstlisting}[mathescape,language=Java]
+down($I$,$T$,$F_i$,$s$){
+  q = $\lnot s$;
+  reduced = false;
+  do{
+  	reduced = false;
+  	//attempt to drop a literal from q
+  	for($l_i \in q$){
+	  	$\hat{q} = q\setminus l_i$ 
+	  	//test initiation
+	  	if(!sat($I \land \lnot \hat{q}$)){
+	  		//test whether $\hat{q}$ is inductive
+	  		if(sat($F_i \land \hat{q} \land T \Rightarrow \hat{q}'$)){
+	  			reduced = true;
+	  			//restart the algorithm on $\hat{q}$
+	  			q = $\hat{q}$;
+	  			break;
+			}	  		
+	  	}
+  	}
+  }while(reduced);
+  return q;
+}
+\end{lstlisting}
+
+Informally, the \emph{down} algorithm drops a literal from $\lnot s$, tests whether $\lnot s$ remains inductive, and if so, repeats the process.
+
+The resulting clause is then minimal (no more literals can be dropped), and is used afterwards by the IC3 algorithm to strengthen the frontier sets.
+
+\subsubsection{Generating Counterexamples}
+A counterexample is a trace to the reachable bad state. A trace can be seen as a sequence of states. As IC3 can only deal with propositional logic formulae, 'state' refers to the CNF representation of that state.
+%Generation of proof obligations
 
 \section{Implementation}
 \subsection{Propositional Logic Formulae and CNF}
