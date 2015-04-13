@@ -32,6 +32,7 @@ public class IC3 {
 		}else{
 			printv("I => P",1);
 		}
+		
 		//check I ^ T => P
 		if(satsolver.sat(I.and(T).and(NP)).size()>0){
 			printv("I ^ T => P does not hold",1);
