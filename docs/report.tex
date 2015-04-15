@@ -1,8 +1,9 @@
 \documentclass[a4paper]{article}
-\usepackage[margin=3cm]{geometry}
+\usepackage[margin=3.5cm]{geometry}
 \usepackage{hyperref}
 \usepackage{parskip}
 \usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{listings}
 \usepackage{xcolor}
 
@@ -26,7 +27,7 @@ This report covers the individual project performed by H.N. Hindriks, under supe
 
 IC3 is a rather new algorithm for model checking, developed by Fabio Somenzi and Aaron Bradley \cite{Bradley2007}. The algorithm relies on providing a SAT solver (relatively) small queries in order to construct either an inductive proof or a counterexample to induction. The algorithm is described in more detail by Bradley \cite{Bradley2011}.
 
-The RERS challenge (which stand for Rigorous Examination of Reactive Systems), is an internation contest which are currently held annualy. During the contest participants attempt to find bugs in reactive systems of varying complexity using testing and model checking tools.
+The RERS challenge (which stand for Rigorous Examination of Reactive Systems), is an international contest which is currently held annualy. During the contest participants attempt to find bugs in reactive systems of varying complexity using testing and model checking tools.
 
 The aim of the project was to acquire a better in-depth knowledge of the IC3 algorithm, while also experiencing the challenges encountered when model checking real-world-like programs.
 
@@ -62,13 +63,23 @@ When the above transformation is recursively (using the outputs variables to ref
 \subsection{IC3}
 IC3, which stands for 'Incremental Construction of Inductive Clauses for Indubitable Correctness', is a Model Checking algorithm which is able to construct inductive proofs or counterexamples for reachability problems.
 
-\subsubsection{The algorithm}
-%A description of the algorithm
-A description of the algorithm
+The algorithm has three cubes as input:
+\begin{itemize}
+\item $I$, the initial state
+\item $T(s,s')$, the transition relation
+\item $P$, the property which should hold in all states
+\end{itemize}
+
+In the following sections, a single apostrophe will denote the 'next' state of literals, as defined by $T$.
+
+The algorithm give as output either one of the following:
+\begin{itemize}
+\item An \emph{inductive strengthening}, a frontier set for which $F \land T \Rightarrow F'$ and $F \Rightarrow P$ hold.
+\item A \emph{counterexample trace}, which is a trace which leads to a state where $\lnot P$ holds.
+\end{itemize}
 
 \subsubsection{Invariants}
-%Invariant description
-After applying BMC for $k=0$ and $k=1$, the following four invariants hold for the duration of the IC3 algorithm \cite{Bradley2011}:
+After applying Bounded Model Checking for $k=0$ and $k=1$, the following four invariants hold for the duration of the IC3 algorithm \cite{Bradley2011}:
 
 \setcounter{equation}{0}
 \begin{align}
@@ -78,8 +89,62 @@ F_i &\Rightarrow P & 0 \leq i \leq k\\
 F_i \land T &\Rightarrow F_{i+1}' & 0 \leq i < k
 \end{align}
 
+These four invariants define frontier sets $F_0 \ldots F_k$. A single frontier set $F_i$ overapproximates all states from the transition system, which are reachable in $i$ steps or less.
+
+During the execution of the IC3 algorithm, the value of $k$ is increased, which introduces more frontier sets. The algorithm also strengthens the frontier sets when spurious (unreachable) bad states are found.
+
+\subsubsection{Initialization}
+The algorithm starts by setting up an environment in which the aforementioned invariants hold. This is done by proving that the following formulae hold (using BMC):
+
+\begin{align*}
+I&\Rightarrow P' & k=0\\
+I \land T &\Rightarrow P' & k=1\\
+\end{align*}
+
+When one of the above formulae is disproven, the algorithm can immediately return a counterexample trace of length 0 or 1. When the formulae are proven, the algorithm initializes the following values:
+\begin{align*}
+k &= 1\\
+F_0 &= I\\
+F_1 &= P
+\end{align*}
+
+The IC3 algorithm maintains a priority queue, which maintains the proof obligations. These proof obligations are generated during the execution of the algorithm.
+
+\subsubsection{Main algorithm}
+The main part of the algorithm loops until either an inductive strengthening, or a counterexample trace is found.
+
+The algorithm starts by testing whether $F_k$ is an inductive strengthening by checking the unsatisfiability of $F_k \land T \Rightarrow P'$ (queried as sat$(F_k \land T \land \lnot P')$).
+
+When this is not the case, the SAT solver returns a state $s \in F_k$, from which $\lnot P$ can be reached ($s \land T \Rightarrow \lnot P'$). The state $s$ is added to the proof obligation queue, and the refining phase of the algorithm is initiated.
+
+\subsubsection{Refining phase}
+The refining phase of the IC3 algorithm consists of a loop in which the frontier sets are refined in order to eliminate spurious counterexample traces. The loop runs until all counterexamples have been eliminated, or a real counterexample is found.
+
+For each proof obligation we have a level $l \in \mathbb{Z}$ and a bad state $s \in F_l$, for which it holds that $s \land T \Rightarrow \lnot P'$. Even though we have $s \in F_l$, it might be the case that $s$ is actually unreachable, meaning that $F_l$ is too weak.
+
+%Dit 'largest' concept is nog wat vaag in deze tekst
+In order to prove this, the algorithm attempts to find the largest (highest index) frontier set $F_{ind}$ for which $F_{ind} \land \lnot s \land T \Rightarrow \lnot s'$ is satisfiable.
+
+When $F_{ind}$ is not found, it means that $s$ is reachable from $I$, and a counterexample trace is returned. In the case that $F_{ind}$ is found, we attempt to refine $F_{ind} \ldots F_k$ by strenghtening the frontier sets.
+
+\subsubsection{Strenghtening}
+From this point, we have a frontier set $F_i$ from which the bad state $s$ cannot be reached. We first invoke the MIC algorithm (described in section \ref{sec:MIC}) with parameters $\lnot s, F_i$, to obtain a minimal inductive subclause $c$ (for which $F_i \land c \land T \Rightarrow \lnot s'$ holds). The clause $c$ is then added to all frontier sets $F_0 \ldots F_i$.
+
+We now verify whether we have resolved the initial counterexample. When this is the case, we continue with the algorithm by increasing $k$. However, when the counterexample is not yet resolved, this must mean that a predecessor state $t \in F_i$ exists, which is able to reach $s$ ($t \land T \Rightarrow s$). We query the SAT solver to obtain such a state by finding a model for $F_{i} \land T \land s'$. We add this state to the proof obligation queue with priority $i$, and return to the beginning of the refining loop.
+
+\subsubsection{Increasing $k$}
+When the refining phase ends, this means that all counterexamples were refuted by strenghtening all involved frontier sets. We know %(do we?)
+that $\lnot P$ is unreachable within $k$ steps.
+
+We now increase the value of $k$, and initialize the new $F_k$ with $P$.
+However, we also retain our previously gathered knowledge about the transition system by \emph{propagating clauses}. Recall the second invariant, it can also be expressed as $Clauses(F_i) \subseteq Clauses(F_{i+1})$. This means that all frontier sets $F_0 \ldots F_{k-1}$, we should take every clause $c$ for which $c \in F_i \land c\notin F_{i+1}$ holds, and add $c$ to $F_{i+1}$.
+
+Now all invariants hold, and we attempt to see whether we have found an inductive strengthening (a fixpoint, where $\exists i. F_i \land T \Rightarrow F_{i+1}$). This however, is evaluated syntactically in favor of semantically (by querying the SAT solver), by checking whether $\exists i. Clauses(F_i) = Clauses(F_{i+1})$. When such an inductive strenghtening is found, it is returned, and the algorithm is done.
+
+\newpage
 \subsubsection{The Minimal Inductive (sub)Clause algorithm}
-The Minimal Inductive Clause algorithm, whil will from this point on be referred to as MIC, plays a very important role in the IC3 algorithm. The MIC algorithm takes a negated counterexample to induction (the negated cube of literals becomes a single clause), and attempts to reduce its size. The resulting clause is minimal, and inductive (reachable) to a given frontier set.
+\label{sec:MIC}
+The Minimal Inductive Clause algorithm, which we will refer to as MIC, plays a very important role in the IC3 algorithm. The MIC algorithm takes a negated counterexample to induction (the negated cube of literals becomes a single clause), and attempts to reduce its size. The resulting clause is minimal, and inductive (reachable) to a given frontier set.
 
 The algorithm takes as input:
 \begin{itemize}
@@ -91,8 +156,10 @@ The algorithm takes as input:
 
 Note that it is not nessecary to implement the MIC algorithm, the negation of the counterexample is already inductive. However, not doing so effectively only removes a single state from the search. While, in many cases, the MIC algorithm will remove many more states from the search.
 
-The simplest algorithm (after the 'algorithm' described in the previous paragraph), is documented as the \emph{down} algorithm. Which behaves as follows:
+The simplest algorithm (after the 'algorithm' described in the previous paragraph), is documented as the \emph{down} algorithm. Which behaves as described in figure \ref{fig:down}.
 
+\begin{figure}
+\centering
 \begin{lstlisting}[mathescape,language=Java]
 down($I$,$T$,$F_i$,$s$){
   q = $\lnot s$;
@@ -117,6 +184,9 @@ down($I$,$T$,$F_i$,$s$){
   return q;
 }
 \end{lstlisting}
+\caption{The down algorithm}
+\label{fig:down}
+\end{figure}
 
 Informally, the \emph{down} algorithm drops a literal from $\lnot s$, tests whether $\lnot s$ remains inductive, and if so, repeats the process.
 

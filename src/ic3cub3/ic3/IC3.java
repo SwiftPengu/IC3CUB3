@@ -93,7 +93,7 @@ public class IC3 {
 						if(inductiveFrontier<k-1){
 							
 							//find a predecessor state
-							//That is, a solution to Fi+1 ^ T => s
+							//That is, a solution to Fi+1 ^ T ^ s'
 							printv("Finding a predecessor of s from level "+(inductiveFrontier+1),3);
 							List<Cube> predecessors = satsolver.sat(F.get(inductiveFrontier+1).and(T).and(probl.getCTI().getPrimed()),true);
 							printv("Predecessors: "+predecessors,3);
@@ -149,6 +149,7 @@ public class IC3 {
 		for(int i = 1;i<=inductiveFrontier+1 && i<F.size();i++){
 			if(!F.get(i).getClauses().contains(c)){
 				printv("F"+i+" was: "+F.get(i),1);
+				//replaces F_i, might be improved
 				F.set(i, F.get(i).and(c));
 				printv("F"+i+" becomes: "+F.get(i),1);
 			}else{
