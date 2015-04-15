@@ -211,9 +211,8 @@ The first system supports formulae consisting of the $\lnot$,$\lor$,and $\land$ 
 The second system represents formulae which are in CNF. A single formula is implemented as a cube, a set clauses. A clause is implemented as a set of literals. For example, the formula $(p \land (q \lor \lnot r))$ is represented as $\{\{p\},\{q,\lnot r\}\}$.
 
 \subsubsection{Conversion}
-The conversion from the CNF system to the PLF system results in a formula which is equal under $\Leftrightarrow$. However, the conversion from the first to the second system is implemented as the Tseitin transformation, which only preserves equisatisfiability.
+The (trivial) conversion from formulae in CNF system to formulae in PLF preservers equality ($\Leftrightarrow$). However, the conversion from the first to the second system is implemented by multiple methods.
 
-\subsection{CNF conversion}
 In order to perform conversion of the two formula representation systems, the aforementioned algorithms for performing conversion to CNF had to be developed. Both the equivalence conversion and the Tseitin transormation algorithms were implemented.  The literals introduced by the Tseitin transformation are flagged as such, to enable the code which parses the result of the SAT solver to discard these variables.
 
 \subsection{SAT solvers}
@@ -231,6 +230,9 @@ The IC3 algorithm was implemented in Java. The algorithm itself consists of a si
 \subsubsection{Problem solving architecture}
 %Wat informatie over hoe problemen aan het algoritme kunnen worden gevoerd
 %+Latere extensie die gemaakt is: mogelijkheid om counterexample uit te lezen
+
+\subsubsection{The IC3 algorithm}
+%Hoe is het algoritme geïmplementeerd
 
 \subsubsection{Testcases}
 \label{sec:ic3_testcases}
@@ -260,8 +262,8 @@ In order to better test the generation of counterexample traces, a third test ca
 
 \begin{align*}
 I =& (\lnot A \land \lnot B)\\
-T(x,x') =& (\lnot A \lor C) \land (\lnot A \lor D) \land (\lnot B \lor D) \land (B \lor D) \land (C \lor D)\\
-&\land (\lnot B \lor \lnot D \lor A) \land (\lnot C \lor \lnot D \lor A) \land (\lnot C \lor A \lor B)\\
+T(x,x') =& (\lnot A \lor A') \land (\lnot A \lor B') \land (\lnot B \lor B') \land (B \lor B') \land (C \lor D)\\
+&\land (\lnot B \lor \lnot B' \lor A) \land (\lnot A' \lor \lnot B' \lor A) \land (\lnot A' \lor A \lor B)\\
 P =& (\lnot A \lor \lnot B)
 \end{align*}
 
