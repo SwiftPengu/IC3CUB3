@@ -132,6 +132,7 @@ In order to prove this, the algorithm attempts to find the largest (highest inde
 When $F_{ind}$ is not found, it means that $s$ is reachable from $I$, and a counterexample trace is returned. In the case that $F_{ind}$ is found, we attempt to refine $F_{ind} \ldots F_k$ by strenghtening the frontier sets.
 
 \subsubsection{Strenghtening}
+\label{sec:ic3_str}
 From this point, we have a frontier set $F_i$ from which the bad state $s$ cannot be reached. We first invoke the MIC algorithm (described in section \ref{sec:MIC}) with parameters $\lnot s, F_i$, to obtain a minimal inductive subclause $c$ (for which $F_i \land c \land T \Rightarrow \lnot s'$ holds). The clause $c$ is then added to all frontier sets $F_0 \ldots F_i$.
 
 We now verify whether we have resolved the initial counterexample. When this is the case, we continue with the algorithm by increasing $k$. However, when the counterexample is not yet resolved, this must mean that a predecessor state $t \in F_i$ exists, form which $s$ is reachable ($t \land T \Rightarrow s$). We query the SAT solver to obtain such a state by finding a model for $F_{i} \land T \land s'$. We add this state to the proof obligation queue with priority $i$, and return to the beginning of the refining loop.
@@ -198,7 +199,8 @@ The resulting clause is then minimal (no more literals can be dropped), and is u
 
 \subsubsection{Generating Counterexamples}
 A counterexample is a trace to the reachable bad state. A trace can be seen as a sequence of states. As IC3 can only deal with propositional logic formulae, 'state' refers to the CNF representation of that state.
-%Generation of proof obligations
+
+As mentioned in section \ref{sec:ic3_str}, elimination of a bad state $s$ may depend on other bad states $t$ from which $s$ is reachable. This induces to a chain of dependent bad states. As soon as (part of) this chain is reachable from $I$, the chain is a counterexample trace.
 
 \section{Implementation}
 \subsection{Propositional Logic Formulae and CNF}
