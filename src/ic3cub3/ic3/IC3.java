@@ -160,6 +160,7 @@ public class IC3 {
 
 	private void propagateClauses(Cube T,List<Cube> F,
 			Set<Clause> addedClauses,int k) {
+		//TODO don't check for inductie, but assert it
 		//Propagate clauses
 		printv("Propagating clauses: "+addedClauses,1);
 		for(Clause clause:addedClauses){

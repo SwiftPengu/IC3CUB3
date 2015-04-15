@@ -232,7 +232,15 @@ The IC3 algorithm was implemented in Java. The algorithm itself consists of a si
 %+Latere extensie die gemaakt is: mogelijkheid om counterexample uit te lezen
 
 \subsubsection{The IC3 algorithm}
-%Hoe is het algoritme geïmplementeerd
+In order to improve readability of the code, the IC3 algorithm is split up in multiple methods as shown below:
+
+\begin{itemize}
+\item \texttt{check()}, runs the IC3 algorithm on a given transition system and property.
+\item \texttt{findInductiveFrontier()}, finds the largest inductive frontier given a proof obligation and $F_0 \ldots F_k$.
+\item \texttt{strenghten()}, strengthens $F_1 \ldots F_{ind+1}$ given an inductive frontier	, uses the MIC algorithm for more efficient strenghtening.
+\item \texttt{propagateClauses()}, propagates earlier discovered clauses forward
+\item \texttt{hasFixpoint()}, checks whether a set of frontier sets contains a fixpoint, that is, whether $Clauses(F_i) = Clauses(F_{i+1})$ for some $i$.
+\end{itemize}
 
 \subsubsection{Testcases}
 \label{sec:ic3_testcases}
