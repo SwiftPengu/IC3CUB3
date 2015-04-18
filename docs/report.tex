@@ -7,6 +7,7 @@
 \usepackage{listings}
 \usepackage{algorithm}
 \usepackage{xcolor}
+\usepackage{tabularx}
 
 \lstdefinestyle{customjava}{
 language=Java,
@@ -201,6 +202,8 @@ A counterexample is a trace to the reachable bad state. A trace can be seen as a
 
 As mentioned in section \ref{sec:ic3_str}, elimination of a bad state $s$ may depend on other bad states $t$ from which $s$ is reachable. This induces to a chain of dependent bad states. As soon as (part of) this chain is reachable from $I$, the chain is a counterexample trace.
 
+
+\newpage
 \section{Implementation}
 \subsection{Propositional Logic Formulae and CNF}
 Two systems for representing propositional logic formulae were developed. A system to represent arbitrary propositional logic formulae, and a system to represent formulae in conjunctive normal form. Furthermore, both systems contain code to convert either system to an equisatisfiable formula in the other system.
@@ -258,7 +261,7 @@ Three testcases were designed to test the IC3 implementation, the behaviour of t
 
 Somenzi and Bradley provide two in-depth examples in \cite{Somenzi2011}.
 
-The first example (implemented in IC3WMIM\_1.java) provides the following parameters:
+The first example (implemented in \texttt{IC3WMIM\_1.java}) provides the following parameters:
 \begin{align*}
 I =& (\lnot x_1 \land \lnot x_2)\\
 T(x,x') =& (x_1 \lor \lnot x_2 \lor x_2') \land (x_1 \lor x_2 \lor \lnot x_1') \land (\lnot x_1 \lor x_1') \land (\lnot x_1 \lor \lnot x_2') \land (x_2 \lor \lnot x_2') \\
@@ -267,7 +270,7 @@ P =& (\lnot x_1 \lor x_2)
 
 These formulae above describe a system which contains a bad state which is unreachable.
 
-The second example (implemented in IC3WMIM\_2.java) from \cite{Somenzi2011} was defined differently than was shown in the provided image.
+The second example (implemented in \texttt{IC3WMIM\_2.java}) from \cite{Somenzi2011} was defined differently than was shown in the provided image.
 The following formulae were formed according to Figure 2 in \cite{Somenzi2011}, which describes a transition system with a reachable bad state.
 
 \begin{align*}
@@ -276,7 +279,7 @@ T(x,x') =& (\lnot x_2 \lor x_1') \land (\lnot x_3 \lor x_2') \land (\lnot x_1' \
 P =& (\lnot x_1 \lor \lnot x_2 \lor \lnot x_3)
 \end{align*}
 
-In order to better test the generation of counterexample traces, a third test case (implemented in ReachableBadState.java) was constructed, which consisted of a linear path to a bad state.
+In order to better test the generation of counterexample traces, a third test case (implemented in \texttt{ReachableBadState.java}) was constructed, which consisted of a linear path to a bad state.
 
 \begin{align*}
 I =& (\lnot A \land \lnot B)\\
@@ -285,7 +288,9 @@ T(x,x') =& (\lnot A \lor A') \land (\lnot A \lor B') \land (\lnot B \lor B') \la
 P =& (\lnot A \lor \lnot B)
 \end{align*}
 
-\subsection{Encoding} %On the encoding of problems for IC3
+\subsection{Encoding}
+Due to time limitations, and errors in the initial encoding design. The design for the documented encoding was not correctly implemented.
+
 \subsubsection{Problem structure}
 The RERS challenges from 2014 come in a variety of complexity. A encoding program was written to encode the problems with the lowest language complexity as propositional logic formulae representing an Initial state, a Transition relation, and a set of properties.
 
@@ -311,32 +316,64 @@ Integers are modelled as 32-bit integers. This means that for each variable $2*3
 The initial state is constructed by taking all global variable declarations from the program, parsing the declared initial values, and stating that the bits of the variables are as declared. In addition, a formula is added which represent that any one (but only one) of the input variables must hold. For the first problem, this results in a formula with 1381 literals.
 %Transition relation
 %Properties
+%
+\subsubsection{Encoding structure as parser rules}
 
+\newpage
 \subsection{Measurements}
-\subsubsection{Description}
-%What and how did we measure
-\subsubsection{Results}
-%Overview of all the checked properties from the first RERS and the results
+Without a correctly functioning encoder for the RERS problems, we were not able to measure the performance of IC3 for large problems.
+
+For the tests, all output was disabled, to only test the performance of the algorithm. At the start of each test, the main thread was put to sleep for 5 seconds \footnote{using \texttt{Thread.sleep()}}, in order to allow the profiler and the JVM to start without influence the measurements.
+
+\paragraph{Timing}
+The timing measurements were performed by letting the algorithm run each test case n=10000 times. The program then printed the difference in milliseconds between the start and the end time.
+
+\paragraph{Memory} The memory usage was measured using the VisualVM profiler. As the real memory usage cannot be measured due to the memory allocation characteristics of Java, the measured memory usage serves only as an indication. To migitate this behaviour, we explicitly call the garbage collector \footnote{By invoking \texttt{System.gc()}} before each call of \texttt{ic3.check()}. Given that garbage collection takes more time, we ran each test case only n=1000 times.
+
+
+We used the following JVM parameters (start the JVM in server mode, with a maximum heap size of 3GB):
+
+\texttt{java -server -Xmx3g [filename]}
+
+An overview of all the measurements can be found in table \ref{tab:measurements}.
+
+\begin{table}
+\begin{tabularx}{\linewidth}{lllXl}
+Test & P holds & Time needed & Average time per execution & Average heap size\\\hline
+IC3WMIM 1 & yes & 856 ms & 85.6 $\mu$s & 4.1 MB\\
+IC3WMIM 2 & no & 19430 ms & 1.94 ms & 3.7 MB\\
+ReachableBadState & no & 18188 ms & 1.82 ms & 4.7 MB
+\end{tabularx}
+\label{tab:measurements}
+\caption{Measurement results}
+\end{table}
 
 \subsection{Future Work}
-Hassan et al. \cite{Hassan2013} have improved the down algorithm. This improvement supersedes an intermediate improvement by Bradley et al. \cite{Bradley2007} which defines the \emph{up} algorithm. The created Java implementation of the IC3 algorithm only implements part of the \emph{down} algorithm. As the MIC algorithm is essential to the performance of IC3, implementing the improved algorithm could yield better overall performance.
-
-The presented method for representing C programs as propositional logic formulae might very well not be the only existing method to represent such programs. Different encodings might also result in a better performance of either the used SAT solver, or the generalisation algorithm.
-
-The C programming language can be used to solve a vast array of problems. %DUH!
-Restricting the domain for which encodings have to be generated might allow for more general representations of problems due to knowledge on a higher level. For example checking properties on a model of Sokoban is probably more efficient in comparison to a C implementation of the game.
-
-While Minisat is a popular SAT solver, different SAT solvers might have different performance characteristics.
-
+\subsubsection{IC3}
 The SAT solvers might also be optimized for use with the IC3 algorithm. For instance, the IC3 algorithm often issues SAT queries which are equivalent to earlier queries. Furthermore, there is also some overlap on parts of the formulae (for example, the transition relation $T$ will often be part of a SAT query) provided in the query.
+
+The IC3 algorithm shows similarities with abstraction (CEGAR), symbolic (BDDs), and BMC model checking algorithms. Perhaps combining IC3 with these techniques (for instance, implementing the MIC algorithm using BDDs) will lead to an improvement in performance.
+
+\subsubsection{Implementation}
+We failed to implement the encoder for the RERS problems. However, the design shows that it should be possbile. Implementing this encoder will allow for measurements of IC3 for larger problems.
+
+Hassan et al. \cite{Hassan2013} have improved the down algorithm. This improvement supersedes an intermediate improvement by Bradley et al. \cite{Bradley2007} which defines the \emph{up} algorithm. The created Java implementation of the IC3 algorithm only implements part of the \emph{down} algorithm. As the MIC algorithm is essential to the performance of IC3, implementing the improved algorithm could yield better overall performance.
 
 Currently, our IC3 implementation, as well as our SAT solver, both run on the JVM. The configuration of this JVM directly influences the performance of the program. Not much time was spent optimizing these parameters. For example, it might be worthwhile to investigate the impact of the size of the young generation (used in garbage collection). A different approach might be to implement the algorithm in C (although an implementation is already available at \url{https://github.com/arbrad/IC3ref}).
 
-%Vergelijken met BDDs en CEGAR
-%Andere methode voor SAT solven dan DPLL?
+While Minisat is a popular SAT solver, different SAT solvers might have different performance characteristics. Also, using a compiled SAT solver using JNI will definitely improve performance.
+
+The presented method for representing C programs as propositional logic formulae very probably is not the only existing method in existence to represent such programs. Different encodings might also result in a better performance of either the used SAT solver, or the generalisation algorithm.
+
+\subsubsection{Encodings}
+The C programming language can be used to solve a vast array of problems. %DUH!
+Restricting the domain for which encodings have to be generated might allow for more general representations of problems due to knowledge on a higher level. For example checking properties on a model of Sokoban is probably more efficient in comparison to a C implementation of the game.
+
+The current encoding algorithm already removes unreachable methods. However, unused variables (those which are only read/written in reachable code) are not removed. This will result in a smaller representation. Also, the 32 allocated literals per integer are not always used (for instance in booleans). Detecting these boundaries might decrease the representation size and the total amount of literals used. 
 
 \subsection{Conclusion}
 We were able to construct a working implementation of the IC3 algorithm in Java, supporting multiple SAT solvers.
+Unfortunately there was not enough time left to implement the RERS problem encoding scheme in order to test the algorithm on a real example.
 
 \bibliographystyle{plain}
 \bibliography{references}
