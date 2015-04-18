@@ -232,12 +232,12 @@ public class IC3 {
 		assert(satsolver.sat(F.and(notcex).and(T).and(cex.getPrimed())).size()==0) : "MIC: ~cex is not inductive on F";
 		
 		Clause result = notcex.clone(); //~s is the maximum inductive clause, return this if all else fails
-		ArrayList<Literal> literals = new ArrayList<Literal>(result.getLiterals());
-		//visit literals in random order
-		Collections.shuffle(literals);
+		
+		//The code below is rather awkward due to Java preventing removal of items 
+		//from lists which are being iterated on.
 		
 		//drop a literal
-		for (Literal l:literals){
+		for (Literal l:result.getLiterals()){
 			boolean copiedold = true; //result might have been refined in the meantime
 			Clause rhat = new Clause(); //result - l
 			for(Literal newlit:result.getLiterals()){
