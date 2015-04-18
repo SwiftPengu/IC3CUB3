@@ -48,7 +48,7 @@
     </target>
     <target name="run" depends="build">
         <java classname="ic3cub3.runner.Runner" failonerror="true" fork="yes">
-            <jvmarg line="-server -Xmx3g"/>
+            <jvmarg line="-server"/>
             <classpath refid="IC3CUB3.classpath"/>
         </java>
     </target>

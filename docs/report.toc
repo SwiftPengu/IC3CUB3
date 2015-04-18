@@ -1,0 +1,43 @@
+\contentsline {section}{\numberline {1}Introduction}{1}{section.1}
+\contentsline {section}{\numberline {2}Background}{3}{section.2}
+\contentsline {subsection}{\numberline {2.1}SAT}{3}{subsection.2.1}
+\contentsline {subsection}{\numberline {2.2}CNF}{3}{subsection.2.2}
+\contentsline {subsection}{\numberline {2.3}Tseitin transformation}{3}{subsection.2.3}
+\contentsline {subsection}{\numberline {2.4}IC3}{4}{subsection.2.4}
+\contentsline {subsubsection}{\numberline {2.4.1}Invariants}{4}{subsubsection.2.4.1}
+\contentsline {subsubsection}{\numberline {2.4.2}Initialization}{4}{subsubsection.2.4.2}
+\contentsline {subsubsection}{\numberline {2.4.3}Main algorithm}{5}{subsubsection.2.4.3}
+\contentsline {subsubsection}{\numberline {2.4.4}Refining phase}{5}{subsubsection.2.4.4}
+\contentsline {subsubsection}{\numberline {2.4.5}Strenghtening}{5}{subsubsection.2.4.5}
+\contentsline {subsubsection}{\numberline {2.4.6}Increasing $k$}{6}{subsubsection.2.4.6}
+\contentsline {subsubsection}{\numberline {2.4.7}The Minimal Inductive (sub)Clause algorithm}{6}{subsubsection.2.4.7}
+\contentsline {subsubsection}{\numberline {2.4.8}Generating Counterexamples}{6}{subsubsection.2.4.8}
+\contentsline {section}{\numberline {3}Implementation}{7}{section.3}
+\contentsline {subsection}{\numberline {3.1}Propositional Logic Formulae and CNF}{7}{subsection.3.1}
+\contentsline {subsubsection}{\numberline {3.1.1}Conversion}{7}{subsubsection.3.1.1}
+\contentsline {subsection}{\numberline {3.2}SAT solvers}{8}{subsection.3.2}
+\contentsline {subsubsection}{\numberline {3.2.1}Logic2CNF}{8}{subsubsection.3.2.1}
+\contentsline {subsubsection}{\numberline {3.2.2}SAT4J}{8}{subsubsection.3.2.2}
+\contentsline {subsection}{\numberline {3.3}Problem solving architecture}{8}{subsection.3.3}
+\contentsline {subsection}{\numberline {3.4}The IC3 algorithm}{9}{subsection.3.4}
+\contentsline {subsection}{\numberline {3.5}Testcases}{9}{subsection.3.5}
+\contentsline {subsection}{\numberline {3.6}Encoding}{10}{subsection.3.6}
+\contentsline {subsubsection}{\numberline {3.6.1}Problem structure}{10}{subsubsection.3.6.1}
+\contentsline {subsubsection}{\numberline {3.6.2}Parser implementation}{10}{subsubsection.3.6.2}
+\contentsline {subsubsection}{\numberline {3.6.3}Encoding structure}{10}{subsubsection.3.6.3}
+\contentsline {paragraph}{Initial state}{10}{section*.2}
+\contentsline {paragraph}{Transition relation}{11}{section*.3}
+\contentsline {paragraph}{Assignment statements}{11}{section*.4}
+\contentsline {paragraph}{If-then statements}{11}{section*.5}
+\contentsline {paragraph}{Conditions}{12}{section*.6}
+\contentsline {paragraph}{Function calls}{12}{section*.7}
+\contentsline {paragraph}{Properties}{12}{section*.8}
+\contentsline {subsection}{\numberline {3.7}Measurements}{12}{subsection.3.7}
+\contentsline {paragraph}{Timing}{12}{section*.9}
+\contentsline {paragraph}{Memory}{13}{section*.10}
+\contentsline {subsection}{\numberline {3.8}Future Work}{13}{subsection.3.8}
+\contentsline {subsubsection}{\numberline {3.8.1}IC3}{13}{subsubsection.3.8.1}
+\contentsline {subsubsection}{\numberline {3.8.2}Implementation}{13}{subsubsection.3.8.2}
+\contentsline {subsubsection}{\numberline {3.8.3}Encodings}{14}{subsubsection.3.8.3}
+\contentsline {subsection}{\numberline {3.9}Conclusion}{14}{subsection.3.9}
+\contentsline {section}{\numberline {A}Compiling and running the project}{15}{appendix.A}

@@ -32,6 +32,10 @@ The RERS challenge (which stands for Rigorous Examination of Reactive Systems), 
 
 The aim of the project was to acquire a better in-depth knowledge of the IC3 algorithm, while also experiencing the challenges encountered when model checking real-world-like programs.
 
+\newpage
+\tableofcontents
+
+\newpage
 \section{Background}
 \subsection{SAT}
 The IC3 algorithm uses a SAT solver to learn more about the system under verification. Before introducing the IC3 algorithm, it makes sense to briefly explain some basic principles on SAT solving.
@@ -64,7 +68,6 @@ A \lor B \approx (A \lor B = C) &\Rightarrow (A \lor B \lor \lnot C) \land (\lno
 
 When the above transformation is recursively applied on a formula, it is converted to a formula in CNF which is $\mathcal{O}(n)$ in size compared to the original formula.
 
-\newpage
 \subsection{IC3}
 IC3, which stands for 'Incremental Construction of Inductive Clauses for Indubitable Correctness', is a Model Checking algorithm which is able to construct inductive proofs or counterexamples for reachability problems.
 
@@ -94,12 +97,12 @@ F_i &\Rightarrow P & 0 \leq i \leq k\\
 F_i \land T &\Rightarrow F_{i+1}' & 0 \leq i < k
 \end{align}
 
-These four invariants define frontier sets $F_0 \ldots F_k$. A single frontier set $F_i$ overapproximates all states from the transition system, which are reachable in $i$ steps or less.
+These four invariants define frontier sets $F_0 \ldots F_k$. A single frontier set $F_i$ overapproximates all states from the transition system reachable within $i$ steps or less.
 
 During the execution of the IC3 algorithm, the value of $k$ is increased, and consequently more more frontier sets are introduced. The algorithm also strengthens the frontier sets when spurious (unreachable) bad states are found.
 
 \subsubsection{Initialization}
-The algorithm starts by setting up an environment in which the aforementioned invariants hold. This is done by proving that the following formulae hold (using BMC):
+The algorithm is initialized by setting up an environment in which the aforementioned invariants hold. This is done by proving that the following formulae hold (using BMC):
 
 \begin{align*}
 I&\Rightarrow P' & k=0\\
@@ -107,7 +110,7 @@ I \land T &\Rightarrow P' & k=1\\
 \end{align*}
 
 \newpage
-When one of the aforementioned formulae is disproven, the algorithm can immediately return a counterexample trace of length 0 or 1. When the formulae are proven, the algorithm initializes the following values:
+When one of the aforementioned formulae is disproven, the algorithm can immediately return a counterexample trace with a length of either 0 or 1. When the formulae hold, the algorithm initializes the following values:
 \begin{align*}
 k &= 1\\
 F_0 &= I\\
@@ -207,7 +210,7 @@ As mentioned in section \ref{sec:ic3_str}, elimination of a bad state $s$ may de
 \newpage
 \section{Implementation}
 \subsection{Propositional Logic Formulae and CNF}
-Two systems for representing propositional logic formulae were developed. A system to represent arbitrary propositional logic formulae, and a system to represent formulae in conjunctive normal form. Furthermore, both systems contain code to convert either system to an equisatisfiable formula in the other system.
+IC3 relies on using logic formula for representing transition systems and properties. To use these formula internally, we designed two systems for representing propositional logic. A system to represent arbitrary propositional logic formulae, and a system to represent formulae in conjunctive normal form. Furthermore, both systems contain code to convert either system to an equisatisfiable formula in the other system.
 
 The first system supports formulae consisting of the $\lnot$,$\lor$,and $\land$ operators. It is implemented (by an object oriented structure) as a binary tree. It comes with convenience methods which also implement the $\rightarrow$ and $\leftrightarrow$ operators. Negation of the entire formula is also supported.
 
@@ -227,10 +230,7 @@ SAT4J is a Java implementation of the Minisat SAT solver. It only supports formu
 
 Furthermore, it conserves the behaviour of Minisat to report unsatisfiablity whenever a trivially unsatisfiable formula is provided to it (e.g.: $p \land \lnot p \Leftrightarrow \bot$). This enables the SAT solver to return a result early.
 
-\subsection{IC3}
-The IC3 algorithm was implemented in Java. The algorithm itself consists of a two classes of approximately 300 lines of code.
-
-\subsubsection{Problem solving architecture}
+\subsection{Problem solving architecture}
 The IC3 algorithm requires a very specific input format. To facilitate the bootstrapping process (e.g. feeding problems to the algorithm), the \texttt{ProblemSet} class was created. This class is used as a container for the formulae describing the transition system, and formulae describing (possibly multiple) properties. The class also contains a shortcut to automatically check all defined properties in the problem set.
 
 To run the IC3 algorithm on an arbitrary transition system for a set of properties, the following steps must be performed:
@@ -243,8 +243,9 @@ To run the IC3 algorithm on an arbitrary transition system for a set of properti
 \item Execute \texttt{check(ic3)} on the ProblemSet.
 \end{enumerate}
 
-\subsubsection{The IC3 algorithm}
-In order to improve readability of the code, the IC3 algorithm is split up in multiple methods as shown below:
+\newpage
+\subsection{The IC3 algorithm}
+The IC3 algorithm was implemented in Java. The algorithm itself consists of a two classes of approximately 300 lines of code. In order to improve readability of the code, the IC3 algorithm is split up in multiple methods as shown below:
 
 \begin{itemize}
 \item \texttt{check()}, runs the IC3 algorithm on a given transition system and property.
@@ -256,7 +257,7 @@ In order to improve readability of the code, the IC3 algorithm is split up in mu
 \item \texttt{down()}, tests whether a clause is inductive relative to a given frontier set \footnote{The \texttt{down()} algorithm can also find smaller inductive clauses based on counterexamples to induction, this is the reason why \texttt{MIC} and \texttt{down} methods have been split up. However, this optimization has not been implemented.}
 \end{itemize}
 
-\subsubsection{Testcases}
+\subsection{Testcases}
 \label{sec:ic3_testcases}
 Three testcases were designed to test the IC3 implementation, the behaviour of the algorithm was compared with the described behaviour (if any).
 
@@ -290,6 +291,7 @@ P =& (\lnot A \lor \lnot B)
 \end{align*}
 
 \subsection{Encoding}
+\label{sec:enc}
 Due to time limitations, and errors in the initial encoding design. The design for the documented encoding was not correctly implemented.
 
 \subsubsection{Problem structure}
@@ -318,7 +320,6 @@ The initial state is constructed by taking all global variable declarations from
 \paragraph{Transition relation}
 Before generating the transition relation, the program first analysis the call structure of the program. The program constructs a dependency graph\footnote{Here lies an assumption that all dependencies can be resolved bottom-up. This means that infinite call loops or recursive algorithms are not supported.} and then generates propositional logic formulae for all functions in a bottom-up manner. The reason for this being, that formulae for function calls are inlined.
 
-\newpage
 In a function, the following language elements may occur:
 \begin{itemize}
 \item \texttt{if-then} statements\footnote{no else statements}
@@ -335,7 +336,7 @@ We also make the following assumptions on the code:
 Formulae from multiple statements within the same scope are concatenated using the $\land$ operator. This makes these statements interchangeable, which might cause incorrect behaviour, unless the aforementioned assumptions hold.
 
 \paragraph{Assignment statements}
-Before generating code for assignment statements, we need to make sure that we correctly define behaviour when variables are not assigned in some iteration. When we fail to do this, the SAT solver will happily choose a random value which will quickly lead to incorrect behaviour. To this end, program introduces new literals for each variable. These literals denote whether a variable was changed.
+Before generating code for assignment statements, we need to make sure that we correctly define behaviour when variables are not assigned in a iteration. When we fail to do this, the SAT solver will happily choose a arbitrary value which will quickly lead to incorrect conclusions drawn by the IC3 algorithm. To this end, program introduces new literals for each variable. These literals denote whether a variable was changed.
 
 At the beginning of the transition formula, we add a formula denoting that when a variable is not assigned, its next value must be equivalent to its old value. This formula is of the form:
 \begin{align*}
@@ -378,10 +379,10 @@ We are now able to construct formulae for all mentioned statements, except for f
 When this procedure finishes, we have generated a formula for the top-level function, and therefore have a representation for the entire program.
 
 \paragraph{Properties}
-The properties are obtained from the \texttt{errorCheck()} function. These properties simply consist of conditions. We encode these conditions as separate formulae, as described earlier in this section. Note that \texttt{errorCheck()} describes formulae for bad states, while IC3 checks whether a property always holds. To this end, we negate the formulae for the properties.
+The properties are obtained from the \texttt{errorCheck()} function. These properties consist of assertions represented by conditions. We encode these conditions as described earlier in this section, however we feed them as a property to the \texttt{ProblemSet}. Note that \texttt{errorCheck()} describes formulae for bad states, while IC3 checks whether a property always holds. To this end, we negate the formulae for the properties.
 
 \subsection{Measurements}
-Without a correctly functioning encoder for the RERS problems, we were not able to measure the performance of IC3 for large problems.
+Without a correctly functioning encoder (see section \ref{sec:enc}) for the RERS problems, we were not able to measure the performance of IC3 for large problems.
 
 For the tests, all output was disabled, to only test the performance of the algorithm. At the start of each test, the main thread was put to sleep for 5 seconds \footnote{using \texttt{Thread.sleep()}}, in order to allow the profiler and the JVM to start without influence the measurements.
 
@@ -425,7 +426,6 @@ While Minisat is a popular SAT solver, different SAT solvers might have differen
 
 The presented method for representing C programs as propositional logic formulae very probably is not the only existing method in existence to represent such programs. Different encodings might also result in a better performance of either the used SAT solver, or the generalisation algorithm.
 
-\newpage
 \subsubsection{Encodings}
 The C programming language can be used to solve a vast array of problems. %DUH!
 Restricting the domain for which encodings have to be generated might allow for more general representations of problems due to knowledge on a higher level. For example checking properties on a model of Sokoban is probably more efficient in comparison to a C implementation of the game.
@@ -433,8 +433,7 @@ Restricting the domain for which encodings have to be generated might allow for 
 The current encoding algorithm already removes unreachable methods. However, unused variables (those which are only read/written in reachable code) are not removed. This will result in a smaller representation. Also, the 32 allocated literals per integer are not always used (for instance in booleans). Detecting these boundaries might decrease the representation size and the total amount of literals used. 
 
 \subsection{Conclusion}
-We were able to construct a working implementation of the IC3 algorithm in Java, supporting multiple SAT solvers.
-Unfortunately there was not enough time left to implement the RERS problem encoding scheme in order to test the algorithm on a real example.
+We were able to construct a working implementation of the IC3 algorithm in Java, supporting multiple SAT solvers. We also designed an encoding scheme in order to verify RERS problems with the IC3 algorithm. Unfortunately there was not enough time left to correctly implement the RERS problem encoding scheme and test the algorithm with a larger test case.
 
 \bibliographystyle{plain}
 \bibliography{references}
