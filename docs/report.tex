@@ -300,8 +300,6 @@ These problems consist of C programs which contain value assignments, comparison
 Every problem defines a set of possible inputs, and methods which alter the state of the program, according to the given input.
 In addition, every problem also defines an \texttt{errorcheck()} method, which checks for 100 possible errors using assertions. One of the goals of the challenge is to find whether these errors can occur, and what input is needed to trigger them.
 
-%Tell something about the assumptions made (or in the next section)
-
 \subsubsection{Parser implementation}
 Jeroen Meijer and Jaco van der Pol participated in the RERS 2014 challenge with the LTSmin model checker.
 They constructed a ANTLR3 parser grammar to generate a parser for the C programs.
@@ -314,9 +312,10 @@ While walking the tree, the parse tree listener obtains the information needed t
 
 Integers are modelled as 32-bit integers (two's complement). This means that for each variable $2*32$ literals are allocated ($x$ and $x'$). For instance, the first problem declares 43 integers which amount to 2752 literals.
 
+\paragraph{Initial state}
 The initial state is constructed by taking all global variable declarations from the program, parsing the declared initial values, and stating that the bits of the variables are as declared. In addition, a formula is added which represent that any one (but only one) of the input variables must hold. For the first problem, this results in a formula with 1381 literals.
 
-%Transition relation
+\paragraph{Transition relation}
 Before generating the transition relation, the program first analysis the call structure of the program. The program constructs a dependency graph\footnote{Here lies an assumption that all dependencies can be resolved bottom-up. This means that infinite call loops or recursive algorithms are not supported.} and then generates propositional logic formulae for all functions in a bottom-up manner. The reason for this being, that formulae for function calls are inlined.
 
 \newpage
@@ -352,12 +351,20 @@ T(x,x') =& \ldots \land (c_a \rightarrow l_a) \land \ldots\\
 \end{align*}
 
 \paragraph{If-then statements}
+If-then statements consist of a condition and a body. If-then statements are encoded as follows:
+
+\begin{align*}
+T(x,x') = \ldots \land (\text{ condition } \rightarrow \text{ statements }) \land \ldots
+\end{align*}
 
 \paragraph{Conditions}
 We assume that the conditions in the program only consist of equality checks of the form 'variable==value'. We can encode this by stating that the literals representing the variable have the corresponding two's complement encoding for the value. For example, we can encode that the boolean variable $a$ is equal to 1 with the following formula:
+
 \begin{align*}
 \ldots \land l_a \land \ldots
 \end{align*}
+
+Multiple conditions might be concatenated by (boolean) $\land$ and $\lor$ operators. We already have code which supports this, which means that we can directly encode these operators according to their definition.
 
 \paragraph{Function calls}
 We are now able to construct formulae for all mentioned statements, except for function calls. However, we assumed that the function call graph can be resolved. This means, that for every function call, it is either possible to generate code for it, or to inline the already generated code. We always have the following choices:
@@ -370,11 +377,9 @@ We are now able to construct formulae for all mentioned statements, except for f
 
 When this procedure finishes, we have generated a formula for the top-level function, and therefore have a representation for the entire program.
 
-%Properties
+\paragraph{Properties}
+The properties are obtained from the \texttt{errorCheck()} function. These properties simply consist of conditions. We encode these conditions as separate formulae, as described earlier in this section. Note that \texttt{errorCheck()} describes formulae for bad states, while IC3 checks whether a property always holds. To this end, we negate the formulae for the properties.
 
-\subsubsection{Encoding structure as parser rules}
-
-\newpage
 \subsection{Measurements}
 Without a correctly functioning encoder for the RERS problems, we were not able to measure the performance of IC3 for large problems.
 
@@ -412,7 +417,7 @@ The IC3 algorithm shows similarities with abstraction (CEGAR), symbolic (BDDs), 
 \subsubsection{Implementation}
 We failed to implement the encoder for the RERS problems. However, the design shows that it should be possbile. Implementing this encoder will allow for measurements of IC3 for larger problems.
 
-Hassan et al. \cite{Hassan2013} have improved the down algorithm. This improvement supersedes an intermediate improvement by Bradley et al. \cite{Bradley2007} which defines the \emph{up} algorithm. The created Java implementation of the IC3 algorithm only implements part of the \emph{down} algorithm. As the MIC algorithm is essential to the performance of IC3, implementing the improved algorithm could yield better overall performance.
+Hassan et al. \cite{Hassan2013} have improved the \texttt{down} algorithm. This improvement supersedes an intermediate improvement by Bradley et al. \cite{Bradley2007} which defines the \emph{up} algorithm. The created Java implementation of the IC3 algorithm only implements part of the \emph{down} algorithm. As the MIC algorithm is essential to the performance of IC3, implementing the improved algorithm could yield better overall performance.
 
 Currently, our IC3 implementation, as well as our SAT solver, both run on the JVM. The configuration of this JVM directly influences the performance of the program. Not much time was spent optimizing these parameters. For example, it might be worthwhile to investigate the impact of the size of the young generation (used in garbage collection). A different approach might be to implement the algorithm in C (although an implementation is already available at \url{https://github.com/arbrad/IC3ref}).
 
@@ -420,6 +425,7 @@ While Minisat is a popular SAT solver, different SAT solvers might have differen
 
 The presented method for representing C programs as propositional logic formulae very probably is not the only existing method in existence to represent such programs. Different encodings might also result in a better performance of either the used SAT solver, or the generalisation algorithm.
 
+\newpage
 \subsubsection{Encodings}
 The C programming language can be used to solve a vast array of problems. %DUH!
 Restricting the domain for which encodings have to be generated might allow for more general representations of problems due to knowledge on a higher level. For example checking properties on a model of Sokoban is probably more efficient in comparison to a C implementation of the game.
@@ -432,5 +438,27 @@ Unfortunately there was not enough time left to implement the RERS problem encod
 
 \bibliographystyle{plain}
 \bibliography{references}
+
+\newpage
+\appendix
+\section{Compiling and running the project}
+The program must be compiled with the Java JDK, with a version $\geq 8$. The program has the following dependencies (all included in the lib folder):
+\begin{itemize}
+\item SAT4J
+\item Antlr4
+\item Lombok
+\end{itemize}
+
+The code can be built with the provided ant script. This is done by issuing the following command from the root directory of the project:
+
+\texttt{ant build}
+
+To create a runnable .jar file, run the following command from the root directory of the project:
+
+\texttt{ant jar}
+
+It is also possible to run the testcases using the following command:
+
+\texttt{ant run}
 
 \end{document}
