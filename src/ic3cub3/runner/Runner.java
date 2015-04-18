@@ -9,6 +9,10 @@ import ic3cub3.tests.actual.*;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+/**
+ * Bootstrapping class
+ *
+ */
 public class Runner {
 	public static int VERBOSE = 0;
 

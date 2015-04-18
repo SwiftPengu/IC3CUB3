@@ -24,6 +24,9 @@ import java.util.stream.IntStream;
 
 import lombok.*;
 
+/**
+ * Class for encoding the RERS challenge programs as transition systems and properties suitable for IC3
+ */
 @Setter(value=AccessLevel.PROTECTED) @Getter(value=AccessLevel.PROTECTED)
 public class ProblemTreeWalker extends ProblemBaseListener {
 	private final Map<String,List<Literal>> variables = new HashMap<>();
@@ -217,9 +220,9 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 				.sorted((a,b) -> Integer.compare(a.getValue(), b.getValue()))
 				.map(e -> generateFormulaFromCondition(e.getKey()))
 				.map(f -> PropertyPair.of(
-						f.not().toCube(),
+						f.not().toEquivalentCube(),
 						//~P
-						f.toCube()))
+						f.toEquivalentCube()))
 				.collect(Collectors.toList()); 
 	}
 	

@@ -6,7 +6,11 @@ import java.util.*;
 
 import lombok.Getter;
 
+/**
+ * A class representing a boolean literal
+ */
 public class Literal extends Formula{
+	/* Used for unique literals */
 	private static int LITCOUNT = 1;
 	
 	private final int id;
@@ -32,6 +36,9 @@ public class Literal extends Formula{
 		this(id,false);
 	}
 	
+	/**
+	 * Instantiates a non-negated, non-tseitin, non-primed unique literal
+	 */
 	public Literal(){
 		this(LITCOUNT);
 		LITCOUNT+=2;
@@ -146,7 +153,7 @@ public class Literal extends Formula{
 	}
 	
 	@Override
-	public Cube toCube() {
+	public Cube toEquivalentCube() {
 		return new Cube(this);
 	}
 }

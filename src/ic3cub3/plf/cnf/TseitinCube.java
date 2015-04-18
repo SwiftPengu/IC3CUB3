@@ -5,6 +5,9 @@ import ic3cub3.plf.*;
 import java.util.ArrayList;
 import java.util.Collection;
 
+/**
+ *	A class representing a Cube which is obtained from a Tseitin transformation
+ */
 public class TseitinCube extends Cube {
 	private Literal tseitinliteral;
 	

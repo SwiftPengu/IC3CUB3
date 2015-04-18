@@ -11,6 +11,9 @@ import org.sat4j.core.VecInt;
 import org.sat4j.minisat.SolverFactory;
 import org.sat4j.specs.*;
 
+/**
+ * A wrapper for the SAT4J port of Minisat
+ */
 public class SAT4J extends SATSolver{
 	private ISolver solver;
 	private static final ArrayList<Cube> UNSAT = new ArrayList<Cube>(); //UNSAT constant

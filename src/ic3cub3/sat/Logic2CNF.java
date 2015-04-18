@@ -11,10 +11,9 @@ import java.io.*;
 import java.util.*;
 
 /**
- * Class which invokes Logic2CNF
- * @author Rick Hindriks
- *
+ * A wrapper for Logic2CNF
  */
+@Deprecated
 public class Logic2CNF extends SATSolver {
 	
 	public Logic2CNF() throws IOException{

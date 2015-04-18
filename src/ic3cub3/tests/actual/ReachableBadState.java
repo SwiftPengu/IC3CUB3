@@ -5,7 +5,10 @@ import ic3cub3.plf.cnf.Clause;
 import ic3cub3.plf.cnf.Cube;
 import ic3cub3.tests.ProblemSet;
 
-// 00 -> 01 -> 10 -> 11 (bad)
+/**
+ * A testcase which models a reachable bad state
+ * 00 -> 01 -> 10 -> 11 (bad)
+ */
 public class ReachableBadState extends ProblemSet{
 	private static final Literal A = new Literal();
 	private static final Literal B = new Literal();

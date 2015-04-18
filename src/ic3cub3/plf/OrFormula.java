@@ -6,7 +6,9 @@ import java.util.Set;
 
 import lombok.Getter;
 
-
+/**
+ * A class representing the logical OR of two other formulae
+ */
 public class OrFormula extends Formula{
 	@Getter
 	private final Formula left;
@@ -108,10 +110,10 @@ public class OrFormula extends Formula{
 	}
 	
 	@Override
-	public Cube toCube() {
+	public Cube toEquivalentCube() {
 		Cube result = new Cube();
-		Cube R = getRight().toCube(); 
-		getLeft().toCube().getClauses().stream().forEach(c1 ->{
+		Cube R = getRight().toEquivalentCube(); 
+		getLeft().toEquivalentCube().getClauses().stream().forEach(c1 ->{
 			R.getClauses().stream().forEach(c2 ->{
 				result.addClause(c1.or(c2));
 			});

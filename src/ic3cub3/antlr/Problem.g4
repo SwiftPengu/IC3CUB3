@@ -4,6 +4,8 @@ options{
 	language=Java;
 }
 
+//Grammar used for parsing C programs
+
 ////
 //Parser rules
 ////

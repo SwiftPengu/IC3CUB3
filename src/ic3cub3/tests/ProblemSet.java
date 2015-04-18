@@ -9,8 +9,7 @@ import java.util.List;
 import lombok.Data;
 
 /**
- * Class which contains multiple properties and their negation
- *
+ * Class representing a transition system, along with multiple properties and their negation
  */
 @Data
 public class ProblemSet {
@@ -39,6 +38,9 @@ public class ProblemSet {
 		});
 	}
 
+	/**
+	 * A class representing a property and its negation
+	 */
 	@Data(staticConstructor = "of")
 	public static class PropertyPair{
 		private final Cube property;

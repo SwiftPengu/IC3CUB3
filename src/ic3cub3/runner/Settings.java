@@ -4,7 +4,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
 
-
+/**
+ *	Class used to store settings in a file 
+ */
+@Deprecated
 public class Settings {
 	public static final String SETTINGSFILE = "settings.dat";
 	public static final Set<Long> EMPTY_SET = Collections.emptySet();

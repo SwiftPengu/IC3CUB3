@@ -5,6 +5,9 @@ import ic3cub3.plf.cnf.TseitinCube;
 
 import java.util.Set;
 
+/**
+ * A class representing a formula in propositional logic
+ */
 public abstract class Formula {
 	public Formula and(Formula f){
 		assert(f!=null);
@@ -69,5 +72,9 @@ public abstract class Formula {
 		return result;
 	}
 	
-	public abstract Cube toCube();
+	/**
+	 * Converts this formula to an equivalent formula in CNF
+	 * @return a cube representation with the same models as this formula
+	 */
+	public abstract Cube toEquivalentCube();
 }

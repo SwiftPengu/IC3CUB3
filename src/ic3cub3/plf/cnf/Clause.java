@@ -8,6 +8,9 @@ import java.util.stream.Stream;
 
 import lombok.Getter;
 
+/**
+ *	A class representing a disjunction of literals
+ */
 @Getter
 public class Clause {
 	private final Set<Literal> literals;

@@ -4,6 +4,9 @@ import ic3cub3.plf.cnf.Cube;
 
 import java.util.List;
 
+/**
+ * A class representing an arbitrary CNF SAT solver
+ */
 public abstract class SATSolver {
 	/**
 	 * Feeds the given formula to a SAT solver, and returns a satisfiable interpretation if it exists

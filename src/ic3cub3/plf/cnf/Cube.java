@@ -7,6 +7,9 @@ import java.util.stream.Collectors;
 
 import lombok.Getter;
 
+/**
+ *  A class representing a conjunction of clauses
+ */
 @Getter
 public class Cube {
 	private final Set<Clause> clauses;

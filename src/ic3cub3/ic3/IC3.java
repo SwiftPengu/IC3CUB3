@@ -9,6 +9,10 @@ import ic3cub3.sat.SATSolver;
 
 import java.util.*;
 
+/**
+ * Class which implements the IC3 algorithm
+ *
+ */
 public class IC3 {
 	private final SATSolver satsolver;
 	

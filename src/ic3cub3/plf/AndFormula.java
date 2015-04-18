@@ -6,6 +6,9 @@ import java.util.Set;
 
 import lombok.Getter;
 
+/**
+ * A class representing the logical AND of two other formulae
+ */
 public class AndFormula extends Formula{
 	@Getter
 	private final Formula left;
@@ -108,9 +111,9 @@ public class AndFormula extends Formula{
 	}
 	
 	@Override
-	public Cube toCube() {
-		Cube result = getLeft().toCube();
-		result = result.and(getRight().toCube());
+	public Cube toEquivalentCube() {
+		Cube result = getLeft().toEquivalentCube();
+		result = result.and(getRight().toEquivalentCube());
 		return result;
 	}
 }
