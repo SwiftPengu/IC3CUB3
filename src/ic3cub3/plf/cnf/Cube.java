@@ -4,7 +4,6 @@ import ic3cub3.plf.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import lombok.Getter;
 
@@ -73,10 +72,9 @@ public class Cube {
 	}
 
 	public Cube and(Cube f) {
-		return new Cube(Stream.concat(
-				f.getClauses().stream(), 
-				this.getClauses().stream()).
-					collect(Collectors.toSet()));
+		Cube result = new Cube(getClauses());
+		result.getClauses().addAll(f.getClauses());
+		return result;
 	}
 
 	public Cube and(Clause c) {

@@ -20,3 +20,9 @@ src/ic3cub3/antlr_gen/
 *Lexer.java
 src/ic3cub3/antlr/ProblemParser.java
 src/ic3cub3/antlr/ProblemListener.java
+*.exe
+*.out
+*.bbl
+*.blg
+*.bak
+*.gz(busy)

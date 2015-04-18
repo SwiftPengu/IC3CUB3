@@ -1,70 +1,324 @@
 \documentclass[a4paper]{article}
-
+\usepackage[margin=3.5cm]{geometry}
+\usepackage{hyperref}
 \usepackage{parskip}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstdefinestyle{customjava}{
+language=Java,
+commentstyle=\itshape\color{green!40!black},
+numbers=left,
+frame=single,
+}
+
+\lstset{style=customjava}
 
 \begin{document}
-\title{Solving RERS 2014 with IC3}
+\title{Solving RERS 2014 problems with IC3}
+\author{H.N. Hindriks\\h.n.hindriks@student.utwente.nl}
+\date{\today}
 \maketitle
 
 \section{Introduction}
-%IC3 intro
+This report covers the individual project performed by H.N. Hindriks, under supervision of T. van Dijk and J.C. Van der Pol, which took place during the 3rd quartile of 2014-2015.
 
-%RERS 2014 intro
+IC3 is a rather new algorithm for model checking, developed by Fabio Somenzi and Aaron Bradley \cite{Bradley2007}. The algorithm relies on providing a SAT solver (relatively) small queries in order to construct either an inductive proof or a counterexample to induction. The algorithm is described in more detail by Bradley \cite{Bradley2011}.
 
-%Implementation overview
+The RERS challenge (which stands for Rigorous Examination of Reactive Systems), is an international contest currently held annualy. During the contest participants attempt to find bugs in reactive systems of varying complexity using testing and model checking tools.
+
+The aim of the project was to acquire a better in-depth knowledge of the IC3 algorithm, while also experiencing the challenges encountered when model checking real-world-like programs.
 
 \section{Background}
 \subsection{SAT}
 The IC3 algorithm uses a SAT solver to learn more about the system under verification. Before introducing the IC3 algorithm, it makes sense to briefly explain some basic principles on SAT solving.
 
-Given a propositional logic formula with an arbitrary number of literals, a SAT solver attempts to find a set of truth assignments for each literal which satisfy the formula. This means that substituting the literals with their respective truth assignments results in a formula which evaluates to $\top$. This problem is known as the \emph{Satisfiability} problem. A formula for which such a truth assignment exists is called satisfiable.
+An arbitrary propositional logic formula is called \emph{satisfiable} when there exists an assignment of all the literals in the formula which satisfy the formula (also referred to as a model). This means that substituting the literals with their respective truth assignments results in the formula to be evaluated to $\top$.
+
+This problem is known as the \emph{Satisfiability} problem (or just shorthand SAT). A formula for which such a truth assignment exists is called satisfiable. Likewise, a formula for which such a truth assignment does not exist, is called unsatisfiable.
+
+A SAT solver is a piece of software, which is able to decide whether a formula is satisfiable. When this is the case, most SAT solvers also return a proof in the form of a model.
 
 \subsection{CNF}
+A propositional logic formula is in Conjunctive Normal Form when it consists of a conjunction of clauses. Every propositional logic formula can be converted to an equivalent formula in CNF. See section \ref{sec:ic3_testcases} for some examples of formulae in CNF.
+
 \subsection{Tseitin transformation}
-When converting an arbitrary formula to CNF using standard logic equivalence rules, it is possible to create formulae which are exponential in size when compared to the original formula.
+Any formula in propositional logic can be converted to CNF by using DeMorgan's law and the distributivity laws (of $\land$ and $\lor$). However, this might create formulae which are exponential in size when compared to the original formula.
 
 Using the Tseitin transformation, it is possible to convert an arbitrary formula to a formula in CNF which is not equal, but equisatisfiable to the original. This means that the new formula is satisfiable iff the original formula is satisfiable. The resulting formula is linear in size when compared to the original formula.
 
 Furthermore, the Tseitin transformed formula also has a 1-to-1 correspondence with satisfiable assignments to the original formula. This means that a satisfiable assignment of the converted formula is easily transformed to a satisfiable assignment of the original formula.
 
-The Tseitin transform introduces new literals for each operator. Each operator is viewed as a logic gate, which consists of some inputs, and a single output. For each operator, a literal is introduced which represents the output of a gate modelling that operator.
+The Tseitin transform introduces new literals for each operator. Each operator is viewed as a logic gate, consisting of some inputs, and a single output. For each operator, a literal is introduced to represent the output of a gate modelling that operator.
 
-%TODO beschrijf AND en OR conversion
+%Noot: referentie naar Wikipedia is lelijk, maar wel de meest leesbare (en correcte) bron die ik heb gevonden
+Given two inputs A, B and an output C we define the Tseitin transformation on the $\land$ and $\lor$ operations as follows \cite{Wikipedia2015}:
+
+\begin{align*}
+A \land B \approx (A \land B = C) &\Rightarrow (\lnot A \lor \lnot B \lor C) \land (A \lor \lnot C) \land (B \lor \lnot C)\\
+A \lor B \approx (A \lor B = C) &\Rightarrow (A \lor B \lor \lnot C) \land (\lnot A \lor  C) \land (\lnot B \lor   C)\\
+\end{align*}
+
+When the above transformation is recursively applied on a formula, it is converted to a formula in CNF which is $\mathcal{O}(n)$ in size compared to the original formula.
 
 \subsection{IC3}
-IC3, which stands for ... %Inductive Clauses Indubitable Correctness
-%Brief description of IC3
+IC3, which stands for 'Incremental Construction of Inductive Clauses for Indubitable Correctness', is a Model Checking algorithm which is able to construct inductive proofs or counterexamples for reachability problems.
+
+The algorithm has three cubes as input:
+\begin{itemize}
+\item $I$, the initial state
+\item $T(s,s')$, the transition relation
+\item $P$, the property which should hold in all states
+\end{itemize}
+
+In the following sections, a single apostrophe will denote the 'next' state of literals, as defined by $T$.
+
+The algorithm returns as output either one of the following:
+\begin{itemize}
+\item An \emph{inductive strengthening}, a frontier set for which $F \land T \Rightarrow F'$ and $F \Rightarrow P$ hold.
+\item A \emph{counterexample trace}, leading to a state where $\lnot P$ holds.
+\end{itemize}
+
+\subsubsection{Invariants}
+After applying Bounded Model Checking for $k=0$ and $k=1$, the following four invariants hold for the duration of the IC3 algorithm \cite{Bradley2011}:
+
+\setcounter{equation}{0}
+\begin{align}
+I &\Rightarrow F_0\\
+F_i &\Rightarrow F_{i+1} & 0 \leq i < k\\
+F_i &\Rightarrow P & 0 \leq i \leq k\\
+F_i \land T &\Rightarrow F_{i+1}' & 0 \leq i < k
+\end{align}
+
+These four invariants define frontier sets $F_0 \ldots F_k$. A single frontier set $F_i$ overapproximates all states from the transition system, which are reachable in $i$ steps or less.
+
+During the execution of the IC3 algorithm, the value of $k$ is increased, and consequently more more frontier sets are introduced. The algorithm also strengthens the frontier sets when spurious (unreachable) bad states are found.
+
+\subsubsection{Initialization}
+The algorithm starts by setting up an environment in which the aforementioned invariants hold. This is done by proving that the following formulae hold (using BMC):
+
+\begin{align*}
+I&\Rightarrow P' & k=0\\
+I \land T &\Rightarrow P' & k=1\\
+\end{align*}
+
+When one of the above formulae is disproven, the algorithm can immediately return a counterexample trace of length 0 or 1. When the formulae are proven, the algorithm initializes the following values:
+\begin{align*}
+k &= 1\\
+F_0 &= I\\
+F_1 &= P
+\end{align*}
+
+%Eventueel bijzetten waarop gesorteerd wordt, of verderop
+The IC3 algorithm keeps track of all remaining proof obligations using a priority queue. These proof obligations are generated during the execution of the algorithm. The proof obligations are removed from the queue in the order of dependency, resolving some proof obligations might resolve other proof obligations.
+
+\subsubsection{Main algorithm}
+The main part of the algorithm loops until either an inductive strengthening, or a counterexample trace is found.
+
+The algorithm starts by testing whether $F_k$ is an inductive strengthening by checking the unsatisfiability of $F_k \land T \Rightarrow P'$ (queried as sat$(F_k \land T \land \lnot P')$).
+
+When this is not the case, the SAT solver returns a state $s \in F_k$, from which $\lnot P$ can be reached ($s \land T \Rightarrow \lnot P'$). The state $s$ is added to the proof obligation queue, and the refining phase of the algorithm is initiated.
+
+\subsubsection{Refining phase}
+The refining phase of the IC3 algorithm consists of a loop which refines the frontier sets in order to eliminate spurious counterexample traces. The loop runs until all counterexamples have been eliminated, or a real counterexample is found.
+
+For each proof obligation we have a level $l \in \mathbb{Z}$ and a bad state $s \in F_l$, for which it holds that $s \land T \Rightarrow \lnot P'$. Even though we have $s \in F_l$, it might be the case that $s$ is actually unreachable, meaning that $F_l$ is too weak.
+
+%Dit 'largest' concept is nog wat vaag in deze tekst
+In order to prove this, the algorithm attempts to find the largest (highest index) frontier set $F_{ind}$ for which $F_{ind} \land \lnot s \land T \Rightarrow \lnot s'$ is satisfiable.
+
+When $F_{ind}$ is not found, it means that $s$ is reachable from $I$, and a counterexample trace is returned. In the case that $F_{ind}$ is found, we attempt to refine $F_{ind} \ldots F_k$ by strenghtening the frontier sets.
+
+\subsubsection{Strenghtening}
+\label{sec:ic3_str}
+From this point, we have a frontier set $F_i$ from which the bad state $s$ cannot be reached. We first invoke the MIC algorithm (described in section \ref{sec:MIC}) with parameters $\lnot s, F_i$, to obtain a minimal inductive subclause $c$ (for which $F_i \land c \land T \Rightarrow \lnot s'$ holds). The clause $c$ is then added to all frontier sets $F_0 \ldots F_i$.
+
+We now verify whether we have resolved the initial counterexample. When this is the case, we continue with the algorithm by increasing $k$. However, when the counterexample is not yet resolved, this must mean that a predecessor state $t \in F_i$ exists, form which $s$ is reachable ($t \land T \Rightarrow s$). We query the SAT solver to obtain such a state by finding a model for $F_{i} \land T \land s'$. We add this state to the proof obligation queue with priority $i$, and return to the beginning of the refining loop.
+
+\subsubsection{Increasing $k$}
+When the refining phase ends, this means that all counterexamples were refuted by strenghtening all involved frontier sets. We know %(do we?)
+that $\lnot P$ is unreachable within $k$ steps.
+
+We now increase the value of $k$, and initialize the new $F_k$ with $P$.
+However, we also retain our previously gathered knowledge about the transition system by \emph{propagating clauses}. Recall the second invariant ($F_i \Rightarrow F_{i+1}$) , we can also express it as $Clauses(F_i) \subseteq Clauses(F_{i+1})$. This means that for all frontier sets $F_0 \ldots F_{k-1}$, we must take every clause $c$ for which $c \in F_i \land c\notin F_{i+1}$ holds, and add $c$ to $F_{i+1}$.
+
+Now all invariants hold, and we attempt to see whether we have found an inductive strengthening (a fixpoint, where $\exists i. F_i \land T \Rightarrow F_{i+1}$). This however, is evaluated syntactically in favor of semantically (by querying the SAT solver), by checking whether $\exists i. Clauses(F_i) = Clauses(F_{i+1})$. When such an inductive strenghtening is found, it is returned, and the algorithm is done.
+
+\newpage
+\subsubsection{The Minimal Inductive (sub)Clause algorithm}
+\label{sec:MIC}
+The Minimal Inductive Clause algorithm, to which we will refer as the MIC algorithm, plays a very important role in the IC3 algorithm. The MIC algorithm takes a negated counterexample to induction (the negated cube of literals becomes a single clause), and attempts to reduce its size. The resulting clause is minimal, and inductive (reachable) to a given frontier set.
+
+The algorithm takes as input:
+\begin{itemize}
+\item $I$, the initial state
+\item $T$, the transition relation
+\item $s$, a counterexample to induction
+\item $F_i$, with $i=0 \ldots k$, a frontier set for which $F \land T \rightarrow \lnot s'$ is satisfiable
+\end{itemize}
+
+Note that it is not nessecary to implement the MIC algorithm, the negation of the counterexample is already inductive. However, not doing so effectively only removes a single state from the search. While, in many cases, the MIC algorithm will remove many more states from the search.
+
+The simplest algorithm (after the 'algorithm' described in the previous paragraph), is documented as the \emph{down} algorithm, which behaves as described in figure \ref{fig:down}.
+
+\begin{figure}
+\centering
+\begin{lstlisting}[mathescape,language=Java]
+down($I$,$T$,$F_i$,$s$){
+  q = $\lnot s$;
+  reduced = false;
+  do{
+  	reduced = false;
+  	//attempt to drop a literal from q
+  	for($i=0 \ldots |q|-1$ && !reduced){
+  		$l_i$ = $q$[$i$];
+	  	$\hat{q} = q\setminus l_i$ 
+	  	//test initiation
+	  	if(!sat($I \land \lnot \hat{q}$)){
+	  		//test whether $\hat{q}$ is inductive
+	  		if(sat($F_i \land \hat{q} \land T \Rightarrow \hat{q}'$)){
+	  			reduced = true;
+	  			//restart the algorithm on $\hat{q}$
+	  			q = $\hat{q}$;
+			}	  		
+	  	}
+  	}
+  }while(reduced);
+  return q;
+}
+\end{lstlisting}
+\caption{The down algorithm}
+\label{fig:down}
+\end{figure}
+
+Informally, the \emph{down} algorithm drops a literal from $\lnot s$, tests whether $\lnot s$ remains inductive, and if so, repeats the process.
+
+The resulting clause is then minimal (no more literals can be dropped), and is used afterwards by the IC3 algorithm to strengthen the frontier sets.
+
+\subsubsection{Generating Counterexamples}
+A counterexample is a trace to the reachable bad state. A trace can be seen as a sequence of states. As IC3 can only deal with propositional logic formulae, 'state' refers to the CNF representation of that state.
+
+As mentioned in section \ref{sec:ic3_str}, elimination of a bad state $s$ may depend on other bad states $t$ from which $s$ is reachable. This induces to a chain of dependent bad states. As soon as (part of) this chain is reachable from $I$, the chain is a counterexample trace.
 
 \section{Implementation}
 \subsection{Propositional Logic Formulae and CNF}
-Two systems for representing propositional logic formulae was developed. A system to represent arbitrary propositional logic formulae, and a system to represent formulae in conjunctive normal form. Furthermore, both systems contain code to convert either system to an equisatisfiable formula in the other system.
+Two systems for representing propositional logic formulae were developed. A system to represent arbitrary propositional logic formulae, and a system to represent formulae in conjunctive normal form. Furthermore, both systems contain code to convert either system to an equisatisfiable formula in the other system.
 
 The first system supports formulae consisting of the $\lnot$,$\lor$,and $\land$ operators. It is implemented (by an object oriented structure) as a binary tree. It comes with convenience methods which also implement the $\rightarrow$ and $\leftrightarrow$ operators. Negation of the entire formula is also supported.
 
 The second system represents formulae which are in CNF. A single formula is implemented as a cube, a set clauses. A clause is implemented as a set of literals. For example, the formula $(p \land (q \lor \lnot r))$ is represented as $\{\{p\},\{q,\lnot r\}\}$.
+
 \subsubsection{Conversion}
 The conversion from the CNF system to the PLF system results in a formula which is equal under $\Leftrightarrow$. However, the conversion from the first to the second system is implemented as the Tseitin transformation, which only preserves equisatisfiability.
 
-\subsection{SAT solver}
-%intro
+\subsection{CNF conversion}
+In order to perform conversion of the two formula representation systems, the aforementioned algorithms for performing conversion to CNF had to be developed. Both the equivalence conversion and the Tseitin transormation algorithms were implemented.  The literals introduced by the Tseitin transformation are flagged as such, to enable the code which parses the result of the SAT solver to discard these variables.
+
+\subsection{SAT solvers}
 \subsubsection{Logic2CNF}
 At the beginning of the project, no formulae representing test cases were avaiable in CNF, and in order to test the semantics of IC3, a SAT solver was needed which supported arbitrary formulae. Logic2CNF is a fork of Minisat, which supports arbitrary formulae. Internally it applies the Tseitin transform algorithm, and drops the newly introduced literals from the output. It is able to find all models for a given formula, but also supports searching up to a specified maximum.
 
 \subsubsection{SAT4J}
-SAT4J is a Java implementation of the Minisat SAT solver. It supports only formulae which are in CNF. SAT4J is able to find a single model of a formula, but it is also able to find all models.
+SAT4J is a Java implementation of the Minisat SAT solver. It only supports formulae which are in CNF. SAT4J is able to find a single model of a formula, but it is also able to find all models.
 
-Furthermore, it conserves the behaviour of Minisat to report unsatisfiablity whenever a trivially unsatisfiable formula is provided to it (e.g.: $p \land \lnot p$). This enables the SAT solver to exit early.
+Furthermore, it conserves the behaviour of Minisat to report unsatisfiablity whenever a trivially unsatisfiable formula is provided to it (e.g.: $p \land \lnot p \Leftrightarrow \bot$). This enables the SAT solver to return a result early.
 
 \subsection{IC3}
-\subsubsection{Overview}
-%Beschrijving main loop
-\subsubsection{The MIC algorithm}
-%Down algoritme
+The IC3 algorithm was implemented in Java. The algorithm itself consists of a single class of less than 300 lines of code.
+
 \subsubsection{Problem solving architecture}
 %Wat informatie over hoe problemen aan het algoritme kunnen worden gevoerd
+%+Latere extensie die gemaakt is: mogelijkheid om counterexample uit te lezen
+
 \subsubsection{Testcases}
-%Alle testcases uit 'Where Monolithic and Incremental Meet'
+\label{sec:ic3_testcases}
+Three testcases were designed to test the IC3 implementation, the behaviour of the algorithm was compared to the described behaviour where applicable.
+
+Somenzi and Bradley provide two in-depth examples in \cite{Somenzi2011}.
+
+The first example (implemented in IC3WMIM\_1.java) provides the following parameters:
+\begin{align*}
+I =& (\lnot x_1 \land \lnot x_2)\\
+T(x,x') =& (x_1 \lor \lnot x_2 \lor x_2') \land (x_1 \lor x_2 \lor \lnot x_1') \land (\lnot x_1 \lor x_1') \land (\lnot x_1 \lor \lnot x_2') \land (x_2 \lor \lnot x_2') \\
+P =& (\lnot x_1 \lor x_2)
+\end{align*}
+
+These formulae above describe a system which contains a bad state which is unreachable.
+
+The second example (implemented in IC3WMIM\_2.java) from \cite{Somenzi2011} was defined differently than was shown in the provided image.
+The following formulae were formed according to Figure 2 in \cite{Somenzi2011}, which describes a transition system with a reachable bad state.
+
+\begin{align*}
+I =& (\lnot x_1 \land \lnot x_2 \land \lnot x_3)\\
+T(x,x') =& (\lnot x_2 \lor x_1') \land (\lnot x_3 \lor x_2') \land (\lnot x_1' \lor x_2) \land (\lnot x_2' \lor x_3)\\
+P =& (\lnot x_1 \lor \lnot x_2 \lor \lnot x_3)
+\end{align*}
+
+In order to better test the generation of counterexample traces, a third test case (implemented in ReachableBadState.java) was constructed, which consisted of a linear path to a bad state.
+
+\begin{align*}
+I =& (\lnot A \land \lnot B)\\
+T(x,x') =& (\lnot A \lor C) \land (\lnot A \lor D) \land (\lnot B \lor D) \land (B \lor D) \land (C \lor D)\\
+&\land (\lnot B \lor \lnot D \lor A) \land (\lnot C \lor \lnot D \lor A) \land (\lnot C \lor A \lor B)\\
+P =& (\lnot A \lor \lnot B)
+\end{align*}
 
 \subsection{Encoding} %On the encoding of problems for IC3
+\subsubsection{Problem structure}
+The RERS challenges from 2014 come in a variety of complexity. A encoding program was written to encode the problems with the lowest language complexity as propositional logic formulae representing an Initial state, a Transition relation, and a set of properties.
+
+These problems consist of C programs which contain value assignments, comparisons using equality only, and function calls.
+
+Every problem defines a set of possible inputs, and methods which alter the state of the program, according to the given input.
+In addition, every problem also defines an \texttt{errorcheck()} method, which checks for 100 possible errors using assertions. One of the goals of the challenge is to find whether these errors can occur, and what input is needed to trigger them.
+
+%Tell something about the assumptions made (or in the next section)
+
+\subsubsection{Parser implementation}
+Jeroen Meijer en Jaco van der Pol participated in the RERS 2014 challenge with the LTSmin model checking tool.
+They constructed a ANTLR3 parser grammar to generate a parser for the C programs.
+
+The grammar was first converted to ANTLR4, and any logic for LTSmin was discarded.
+ANTLR4 provides tree listener/visitor classes, which can be used to execute logic while walking over the generated abstract syntax tree generated by the generated parser.
+
+\subsubsection{Encoding structure}
+While walking the tree, the parse tree listener obtains the information needed to encode the C program for IC3.
+
+Integers are modelled as 32-bit integers. This means that for each variable $2*32$ literals are allocated ($x$ and $x'$). For instance, the first problem declares 43 integers which amount to 2752 literals.
+
+The initial state is constructed by taking all global variable declarations from the program, parsing the declared initial values, and stating that the bits of the variables are as declared. In addition, a formula is added which represent that any one (but only one) of the input variables must hold. For the first problem, this results in a formula with 1381 literals.
+%Transition relation
+%Properties
+
+\subsection{Measurements}
+\subsubsection{Description}
+%What and how did we measure
+\subsubsection{Results}
+%Overview of all the checked properties from the first RERS and the results
+
+\subsection{Future Work}
+Hassan et al. \cite{Hassan2013} have improved the down algorithm. This improvement supersedes an intermediate improvement by Bradley et al. \cite{Bradley2007} which defines the \emph{up} algorithm. The created Java implementation of the IC3 algorithm only implements part of the \emph{down} algorithm. As the MIC algorithm is essential to the performance of IC3, implementing the improved algorithm could yield better overall performance.
+
+The presented method for representing C programs as propositional logic formulae might very well not be the only existing method to represent such programs. Different encodings might also result in a better performance of either the used SAT solver, or the generalisation algorithm.
+
+The C programming language can be used to solve a vast array of problems. %DUH!
+Restricting the domain for which encodings have to be generated might allow for more general representations of problems due to knowledge on a higher level. For example checking properties on a model of Sokoban is probably more efficient in comparison to a C implementation of the game.
+
+While Minisat is a popular SAT solver, different SAT solvers might have different performance characteristics.
+
+The SAT solvers might also be optimized for use with the IC3 algorithm. For instance, the IC3 algorithm often issues SAT queries which are equivalent to earlier queries. Furthermore, there is also some overlap on parts of the formulae (for example, the transition relation $T$ will often be part of a SAT query) provided in the query.
+
+Currently, our IC3 implementation, as well as our SAT solver, both run on the JVM. The configuration of this JVM directly influences the performance of the program. Not much time was spent optimizing these parameters. For example, it might be worthwhile to investigate the impact of the size of the young generation (used in garbage collection). A different approach might be to implement the algorithm in C (although an implementation is already available at \url{https://github.com/arbrad/IC3ref}).
+
+%Vergelijken met BDDs en CEGAR
+%Andere methode voor SAT solven dan DPLL?
+
+\subsection{Conclusion}
+We were able to construct a working implementation of the IC3 algorithm in Java, supporting multiple SAT solvers.
+
+\bibliographystyle{plain}
+\bibliography{references}
 
 \end{document}

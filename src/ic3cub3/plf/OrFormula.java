@@ -1,7 +1,6 @@
 package ic3cub3.plf;
 
-import ic3cub3.plf.cnf.Clause;
-import ic3cub3.plf.cnf.TseitinCube;
+import ic3cub3.plf.cnf.*;
 
 import java.util.Set;
 
@@ -13,8 +12,6 @@ public class OrFormula extends Formula{
 	private final Formula left;
 	@Getter
 	private final Formula right;
-	
-	private TseitinCube tsl,tsr;
 	
 	public OrFormula(Formula left,Formula right){
 		assert(left!=null);
@@ -64,39 +61,25 @@ public class OrFormula extends Formula{
 		//(l v r v ~out) ^ (~a v c) ^ (~b v c)
 		Literal output = new Literal(true);
 		TseitinCube result = new TseitinCube(output);
-		Thread t1 = new Thread(new Runnable(){
-			public void run(){
-				tsl = getLeft().toCNF();
-			}
-		});
-		Thread t2 = new Thread(new Runnable(){
-			public void run(){
-				tsr = getRight().toCNF();
-			}
-		});
-		t1.start();
-		t2.start();
-		try{
-		t1.join();
-		t2.join();
-		}catch(InterruptedException e){}
+		TseitinCube L = getLeft().toCNF();
+		TseitinCube R = getRight().toCNF();
 		
 		//l v r v ~out
 		Clause temp = new Clause();
-		temp.addLiteral(tsl.getTseitinOutput());
-		temp.addLiteral(tsr.getTseitinOutput());
+		temp.addLiteral(L.getTseitinOutput());
+		temp.addLiteral(R.getTseitinOutput());
 		temp.addLiteral(output.not());
 		result.addClause(temp);
 		
 		// ~a v c
 		temp = new Clause();
-		temp.addLiteral(tsl.getTseitinOutput().not());
+		temp.addLiteral(L.getTseitinOutput().not());
 		temp.addLiteral(output);
 		result.addClause(temp);
 		
 		//~b v c
 		temp = new Clause();
-		temp.addLiteral(tsr.getTseitinOutput().not());
+		temp.addLiteral(R.getTseitinOutput().not());
 		temp.addLiteral(output);
 		result.addClause(temp);
 		
@@ -104,14 +87,13 @@ public class OrFormula extends Formula{
 		//result.addLiteral(output);
 
 		//add all clauses from L and R
-		for(Clause c:tsl.getClauses()){
+		for(Clause c:L.getClauses()){
 			result.addClause(c);
 		}
-		for(Clause c:tsr.getClauses()){
+		for(Clause c:R.getClauses()){
 			result.addClause(c);
 		}		
-		tsl = null;
-		tsr = null;
+
 		return result;
 	}
 	
@@ -123,5 +105,17 @@ public class OrFormula extends Formula{
 		assert(rvars!=null);
 		lvars.addAll(rvars);
 		return lvars;
+	}
+	
+	@Override
+	public Cube toCube() {
+		Cube result = new Cube();
+		Cube R = getRight().toCube(); 
+		getLeft().toCube().getClauses().stream().forEach(c1 ->{
+			R.getClauses().stream().forEach(c2 ->{
+				result.addClause(c1.or(c2));
+			});
+		});
+		return result;
 	}
 }
