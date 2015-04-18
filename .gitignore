@@ -23,4 +23,5 @@ src/ic3cub3/antlr/ProblemListener.java
 *.bbl
 *.blg
 *.bak
+*.toc
 *.gz(busy)

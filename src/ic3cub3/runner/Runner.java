@@ -3,7 +3,7 @@ package ic3cub3.runner;
 import ic3cub3.ic3.IC3;
 import ic3cub3.sat.SAT4J;
 import ic3cub3.sat.SATSolver;
-import ic3cub3.tests.*;
+import ic3cub3.tests.ProblemSet;
 import ic3cub3.tests.actual.*;
 
 import java.io.FileNotFoundException;
