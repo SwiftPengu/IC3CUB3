@@ -210,7 +210,7 @@ The first system supports formulae consisting of the $\lnot$,$\lor$,and $\land$ 
 The second system represents formulae which are in CNF. A single formula is implemented as a cube, a set clauses. A clause is implemented as a set of literals. For example, the formula $(p \land (q \lor \lnot r))$ is represented as $\{\{p\},\{q,\lnot r\}\}$.
 
 \subsubsection{Conversion}
-The (trivial) conversion from formulae in CNF system to formulae in PLF preservers equality ($\Leftrightarrow$). However, the conversion from the first to the second system is implemented by multiple methods.
+The (trivial) conversion from formulae in CNF system to formulae in PLF preserves equality ($\Leftrightarrow$). However, the conversion from the first to the second system is implemented by multiple methods.
 
 In order to perform conversion of the two formula representation systems, the aforementioned algorithms for performing conversion to CNF had to be developed. Both the equivalence conversion and the Tseitin transormation algorithms were implemented.  The literals introduced by the Tseitin transformation are flagged as such, to enable the code which parses the result of the SAT solver to discard these variables.
 
@@ -224,11 +224,20 @@ SAT4J is a Java implementation of the Minisat SAT solver. It only supports formu
 Furthermore, it conserves the behaviour of Minisat to report unsatisfiablity whenever a trivially unsatisfiable formula is provided to it (e.g.: $p \land \lnot p \Leftrightarrow \bot$). This enables the SAT solver to return a result early.
 
 \subsection{IC3}
-The IC3 algorithm was implemented in Java. The algorithm itself consists of a single class of less than 300 lines of code.
+The IC3 algorithm was implemented in Java. The algorithm itself consists of a two classes of approximately 300 lines of code.
 
 \subsubsection{Problem solving architecture}
-%Wat informatie over hoe problemen aan het algoritme kunnen worden gevoerd
-%+Latere extensie die gemaakt is: mogelijkheid om counterexample uit te lezen
+The IC3 algorithm requires a very specific input format. To facilitate the bootstrapping process (e.g. feeding problems to the algorithm), the \texttt{ProblemSet} class was created. This class is used as a container for the formulae describing the transition system, and formulae describing (possibly multiple) properties. The class also contains a shortcut to automatically check all defined properties in the problem set.
+
+To run the IC3 algorithm on an arbitrary transition system for a set of properties, the following steps must be performed:
+\begin{enumerate}
+\item Obtain a transition system.
+\item Obtain properties to be checked on that transition system.
+\item Convert the transition system and properties to a representation in propositional logic.
+\item Collect the specification of the transition system in a ProblemSet.
+\item Instantiate the IC3 class with a SAT solver.
+\item Execute \texttt{check(ic3)} on the ProblemSet.
+\end{enumerate}
 
 \subsubsection{The IC3 algorithm}
 In order to improve readability of the code, the IC3 algorithm is split up in multiple methods as shown below:
@@ -239,13 +248,13 @@ In order to improve readability of the code, the IC3 algorithm is split up in mu
 \item \texttt{strenghten()}, strengthens $F_1 \ldots F_{ind+1}$ given an inductive frontier	, uses the MIC algorithm for more efficient strenghtening.
 \item \texttt{propagateClauses()}, propagates earlier discovered clauses forward
 \item \texttt{hasFixpoint()}, checks whether a set of frontier sets contains a fixpoint, that is, whether $Clauses(F_i) = Clauses(F_{i+1})$ for some $i$.
-%MIC
-%Down
+\item \texttt{MIC()}, obtains a minimal inductive clause given a bad state and a frontier set from which it is not inductive.
+\item \texttt{Down()}, tests whether a clause is inductive relative to a given frontier set \footnote{The \texttt{down()} algorithm can also find smaller inductive clauses based on counterexamples to induction, this is the reason why \texttt{MIC} and \texttt{down} methods have been split up. However, this optimization has not been implemented.}
 \end{itemize}
 
 \subsubsection{Testcases}
 \label{sec:ic3_testcases}
-Three testcases were designed to test the IC3 implementation, the behaviour of the algorithm was compared to the described behaviour where applicable.
+Three testcases were designed to test the IC3 implementation, the behaviour of the algorithm was compared with the described behaviour (if any).
 
 Somenzi and Bradley provide two in-depth examples in \cite{Somenzi2011}.
 
