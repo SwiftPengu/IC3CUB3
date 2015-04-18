@@ -5,13 +5,13 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{listings}
+\usepackage{algorithm}
 \usepackage{xcolor}
 
 \lstdefinestyle{customjava}{
 language=Java,
 commentstyle=\itshape\color{green!40!black},
-numbers=left,
-frame=single,
+numbers=none,
 }
 
 \lstset{style=customjava}
@@ -161,10 +161,11 @@ The algorithm takes as input:
 
 Note that it is not nessecary to implement the MIC algorithm, the negation of the counterexample is already inductive. However, not doing so effectively only removes a single state from the search. While, in many cases, the MIC algorithm will remove many more states from the search.
 
-The simplest algorithm (after the 'algorithm' described in the previous paragraph), is documented as the \emph{down} algorithm, which behaves as described in figure \ref{fig:down}.
+The simplest algorithm (after the 'algorithm' described in the previous paragraph), is documented as the \emph{down} algorithm, which behaves as described in algorithm \ref{alg:down}.
 
-\begin{figure}
-\centering
+\begin{algorithm}
+\caption{The down algorithm}
+\label{alg:down}
 \begin{lstlisting}[mathescape,language=Java]
 down($I$,$T$,$F_i$,$s$){
   q = $\lnot s$;
@@ -189,9 +190,7 @@ down($I$,$T$,$F_i$,$s$){
   return q;
 }
 \end{lstlisting}
-\caption{The down algorithm}
-\label{fig:down}
-\end{figure}
+\end{algorithm}
 
 Informally, the \emph{down} algorithm drops a literal from $\lnot s$, tests whether $\lnot s$ remains inductive, and if so, repeats the process.
 
@@ -240,6 +239,8 @@ In order to improve readability of the code, the IC3 algorithm is split up in mu
 \item \texttt{strenghten()}, strengthens $F_1 \ldots F_{ind+1}$ given an inductive frontier	, uses the MIC algorithm for more efficient strenghtening.
 \item \texttt{propagateClauses()}, propagates earlier discovered clauses forward
 \item \texttt{hasFixpoint()}, checks whether a set of frontier sets contains a fixpoint, that is, whether $Clauses(F_i) = Clauses(F_{i+1})$ for some $i$.
+%MIC
+%Down
 \end{itemize}
 
 \subsubsection{Testcases}
