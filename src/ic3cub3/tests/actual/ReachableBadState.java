@@ -3,56 +3,31 @@ package ic3cub3.tests.actual;
 import ic3cub3.plf.Literal;
 import ic3cub3.plf.cnf.Clause;
 import ic3cub3.plf.cnf.Cube;
-import ic3cub3.tests.TestProblem;
+import ic3cub3.tests.*;
 
 // 00 -> 01 -> 10 -> 11 (bad)
-public class ReachableBadState implements TestProblem{
-	private final Literal A,B,C,D;
-	
-	public ReachableBadState(boolean debug) {
-		A = new Literal();
-		B = new Literal();
-		if(debug)System.out.println(String.format("x1: %s, x2: %s",A,B));
-		C = A.getPrimed();
-		D = B.getPrimed();
-	}
+public class ReachableBadState extends ProblemSet{
+	private static final Literal A = new Literal();
+	private static final Literal B = new Literal();
+	private static final Literal Ap = A.getPrimed();
+	private static final Literal Bp = B.getPrimed();
 	
 	public ReachableBadState() {
-		this(false);
+		//I
+		super(new Cube(A.not(),B.not()),
+				//T
+				new Cube(
+						new Clause(A.not(),Ap),
+						new Clause(A.not(),Bp),
+						new Clause(B.not(),Ap),
+						new Clause(B,Bp),
+						new Clause(Ap,Bp),
+						new Clause(B.not(),Bp.not(),A),
+						new Clause(Ap.not(),Bp.not(),A),
+						new Clause(Ap.not(),A,B)
+						),
+				//P
+				PropertyPair.of(new Clause(A.not(),B.not()).asCube(),
+						new Cube(A,B)));
 	}
-	
-	@Override
-	public Cube getInitial() {
-		return new Cube(A.not(),B.not());
-	}
-
-	@Override
-	public Cube getTransition() {
-		return new Cube(
-				new Clause(A.not(),C),
-				new Clause(A.not(),D),
-				new Clause(B.not(),C),
-				new Clause(B,D),
-				new Clause(C,D),
-				new Clause(B.not(),D.not(),A),
-				new Clause(C.not(),D.not(),A),
-				new Clause(C.not(),A,B)
-				);
-	}
-
-	@Override
-	public Cube getProperty() {
-		return new Clause(A.not(),B.not()).asCube();
-	}
-
-	@Override
-	public Cube getNegatedProperty() {
-		return new Cube(A,B);
-	}
-
-	@Override
-	public boolean getExpectedResult() {
-		return false;
-	}
-
 }

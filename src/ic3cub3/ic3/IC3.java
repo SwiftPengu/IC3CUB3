@@ -168,7 +168,7 @@ public class IC3 {
 
 	private void propagateClauses(Cube T,List<Cube> F,
 			Set<Clause> addedClauses,int k) {
-		//TODO don't check for inductie, but assert it
+		//TODO don't check for induction, but assert it (when allowed)
 		//Propagate clauses
 		printv("Propagating clauses: "+addedClauses,1);
 		for(Clause clause:addedClauses){
@@ -282,12 +282,13 @@ public class IC3 {
 	}
 	
 	public static void printTrace(Cube I,ProofObligation probl) {
-		System.out.println("Trace to ~P: ");
-		System.out.print("I");
+		printv("Trace to ~P: ",0);
+		StringBuilder s = new StringBuilder();
+		s.append("I");
 		for(ProofObligation po:probl.getProofTrace()){
-			System.out.println(" --> ");
-			System.out.print(po.getCTI());
+			s.append(" --> \n");
+			s.append(po.getCTI());
 		}
-		System.out.println();
+		printv(s.toString(),0);
 	}
 }

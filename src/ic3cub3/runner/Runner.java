@@ -1,20 +1,19 @@
 package ic3cub3.runner;
 
-import ic3cub3.antlr.ParserHelper;
 import ic3cub3.ic3.IC3;
-import ic3cub3.ic3.ProofObligation;
 import ic3cub3.sat.SAT4J;
 import ic3cub3.sat.SATSolver;
-import ic3cub3.tests.ProblemSet;
+import ic3cub3.tests.*;
+import ic3cub3.tests.actual.*;
 
-import java.io.*;
-import java.util.List;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public class Runner {
-	public static int VERBOSE = 1;
+	public static int VERBOSE = 0;
 
 	public static void main(String[] args) throws FileNotFoundException, IOException {
-		ParserHelper ph = new ParserHelper();
+		/*ParserHelper ph = new ParserHelper();
 		ProblemSet problems = ph.parse(new File("src/ic3cub3/rersproblems/problemtest.c"));
 		
 		System.out.println("Starting with model checking...");
@@ -27,17 +26,17 @@ public class Runner {
 			System.exit(0);
 		}
 		
-		System.out.println("Done");
+		System.out.println("Done");*/
 		
-		/*Problem[] tests = new Problem[]{new IC3WMIM_1(),new IC3WMIM_2(), new ReachableBadState(true)};
-		Problem pr = tests[0];
-		long time = System.currentTimeMillis();
+		ProblemSet[] problems = new ProblemSet[]{new IC3WMIM_1(), new IC3WMIM_2(), new ReachableBadState()};
 		SATSolver solver = new SAT4J();
 		IC3 ic3 = new IC3(solver);
-		ic3.check(pr.getInitial(), pr.getTransition(), pr.getProperty(),
-				pr.getNegatedProperty());
+		long time = System.currentTimeMillis();
+		for(ProblemSet ps:problems){
+			ps.check(ic3);
+		}
 		System.out.println(String.format("Time needed: %dms",
-				System.currentTimeMillis() - time));*/
+				System.currentTimeMillis() - time));
 	}
 	
 	public static void printv(Object s, int minverbosity){
