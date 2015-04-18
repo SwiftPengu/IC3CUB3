@@ -12,8 +12,6 @@
 hs_err_pid*
 /bin/
 
-#Do not commit pdfs
-*.pdf
 src/ic3cub3/antlr_gen/
 *.tokens
 *BaseListener.java
