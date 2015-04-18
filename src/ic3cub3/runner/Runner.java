@@ -31,12 +31,14 @@ public class Runner {
 		ProblemSet[] problems = new ProblemSet[]{new IC3WMIM_1(), new IC3WMIM_2(), new ReachableBadState()};
 		SATSolver solver = new SAT4J();
 		IC3 ic3 = new IC3(solver);
-		long time = System.currentTimeMillis();
 		for(ProblemSet ps:problems){
-			ps.check(ic3);
+			long time = System.currentTimeMillis();
+			for(int i = 0;i<1000;i++){
+				ps.check(ic3);
+			}
+			System.out.println(String.format("Time needed: %dms",
+					System.currentTimeMillis() - time));
 		}
-		System.out.println(String.format("Time needed: %dms",
-				System.currentTimeMillis() - time));
 	}
 	
 	public static void printv(Object s, int minverbosity){

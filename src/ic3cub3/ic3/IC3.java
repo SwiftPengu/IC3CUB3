@@ -201,7 +201,7 @@ public class IC3 {
 	 */
 	public boolean hasFixpoint(List<Cube> F) {
 		for(int f1 = 0;f1<F.size()-1;f1++){
-			int f2 = f1+ 1;
+			int f2 = f1 + 1;
 			//compare the two formulae
 			boolean equal = F.get(f1).equals(F.get(f2));
 			if(equal){
