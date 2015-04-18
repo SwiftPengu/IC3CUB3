@@ -16,6 +16,10 @@ public class ProblemSet {
 	private final Cube initial;
 	private final Cube transition;
 	private final List<PropertyPair> properties;
+
+	public ProblemSet(Cube initial,Cube transition, Cube P, Cube NP){
+		this(initial,transition,Arrays.asList(new PropertyPair[]{PropertyPair.of(P,NP)}));
+	}
 	
 	public ProblemSet(Cube initial,Cube transition, PropertyPair property){
 		this(initial,transition,Arrays.asList(new PropertyPair[]{property}));
@@ -27,14 +31,9 @@ public class ProblemSet {
 		this.properties = properties;
 	}
 
-	@Data
+	@Data(staticConstructor = "of")
 	public static class PropertyPair{
 		private final Cube property;
 		private final Cube negatedProperty;
-		
-		public PropertyPair(Cube p, Cube np){
-			this.property = p;
-			this.negatedProperty=np;
-		}
 	}
 }

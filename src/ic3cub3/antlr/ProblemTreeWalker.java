@@ -216,8 +216,7 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 		return	errorids.entrySet().stream()
 				.sorted((a,b) -> Integer.compare(a.getValue(), b.getValue()))
 				.map(e -> generateFormulaFromCondition(e.getKey()))
-				.map(f -> new PropertyPair(
-						//P (bad states should not hold)
+				.map(f -> PropertyPair.of(
 						f.not().toCube(),
 						//~P
 						f.toCube()))
@@ -430,7 +429,7 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 					
 					//check whether this is an initialisation
 					if(init.get(id)==null && ctx.assign()!=null){
-						//FIXME code breaks with arrays
+						//TODO code breaks with arrays
 						int val = generateOperand(ctx.assign().expression());
 						init.put(id,val);
 						System.out.println("Initialised "+id+" to "+init.get(id));

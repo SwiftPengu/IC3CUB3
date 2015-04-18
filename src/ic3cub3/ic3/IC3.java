@@ -16,6 +16,14 @@ public class IC3 {
 		this.satsolver=satsolver;
 	}
 	
+	/**
+	 * Runs the IC3 algorithm to determine whether P holds in a TS defined by the initial state I and transition relation T
+	 * @param I the initial state
+	 * @param T the transition relation (with 'primed' literals for next() values)
+	 * @param P the property which should always hold
+	 * @param NP the negation of P
+	 * @return null when the property holds, or a trace (reachable from I) to NP
+	 */
 	public List<ProofObligation> check(Cube I, Cube T, Cube P,Cube NP){
 			printv("I:\t"+I,2);
 			printv("T:\t"+T,2);
@@ -268,7 +276,7 @@ public class IC3 {
 			printv(rhat+" is inductive!",2);
 			return rhat;
 		}else{
-			//TODO use counterexample to refine rhat (rhat = rhat without literals not in ~cex
+			//TODO use counterexample to refine rhat (rhat = rhat without literals not in ~cex = keep only literals in cex))
 			return null;
 		}
 	}
