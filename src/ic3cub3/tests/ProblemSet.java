@@ -1,5 +1,6 @@
 package ic3cub3.tests;
 
+import ic3cub3.ic3.IC3;
 import ic3cub3.plf.cnf.Cube;
 
 import java.util.Arrays;
@@ -29,6 +30,13 @@ public class ProblemSet {
 		this.initial = initial;
 		this.transition= transition;
 		this.properties = properties;
+	}
+	
+	public void check(IC3 ic3){
+		getProperties().forEach(pp -> {
+			ic3.check(getInitial(), getTransition(),
+					pp.getProperty(), pp.getNegatedProperty());
+		});
 	}
 
 	@Data(staticConstructor = "of")
