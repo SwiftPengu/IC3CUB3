@@ -17,7 +17,7 @@ public class Clause {
 
 	public Clause(Collection<Literal> literals) {
 		// assert(literals.size()>0);
-		this.literals = new HashSet<Literal>();
+		this.literals = new HashSet<>();
 		this.literals.addAll(literals);
 	}
 
@@ -26,7 +26,7 @@ public class Clause {
 	}
 
 	public Clause() {
-		this(new LinkedList<Literal>());
+		this(new LinkedList<>());
 	}
 
 	public void addLiteral(Literal l) {
@@ -102,11 +102,7 @@ public class Clause {
 	
 	@Override
 	public boolean equals(Object obj) {
-		if(obj instanceof Clause){
-			return equals((Clause)obj);
-		}else{
-			return false;
-		}
+		return obj instanceof Clause && equals((Clause) obj);
 	}
 
 	public boolean equals(Clause c) {

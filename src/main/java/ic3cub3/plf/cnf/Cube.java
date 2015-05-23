@@ -16,7 +16,7 @@ public class Cube {
 
 	public Cube(Collection<Clause> clauses) {
 		// assert(literals.size()>0);
-		this.clauses = new HashSet<Clause>();
+		this.clauses = new HashSet<>();
 		this.clauses.addAll(clauses);
 	}
 
@@ -28,7 +28,7 @@ public class Cube {
 	 * Creates a cube representing a consecutive AND of all the provided
 	 * literals
 	 * 
-	 * @param literals
+	 * @param literals the literals in this cube
 	 */
 	public Cube(Literal... literals) {
 		this();
@@ -36,7 +36,7 @@ public class Cube {
 	}
 
 	public Cube() {
-		this(new LinkedList<Clause>());
+		this(new LinkedList<>());
 	}
 
 	public void addClause(Clause... l) {
@@ -67,10 +67,8 @@ public class Cube {
 	}
 
 	public Set<Integer> getVariables() {
-		HashSet<Integer> result = new HashSet<Integer>();
-		getClauses().forEach(c ->{
-			result.addAll(c.getVariables());
-		});
+		HashSet<Integer> result = new HashSet<>();
+		getClauses().forEach(c -> result.addAll(c.getVariables()));
 		return result;
 	}
 
@@ -120,11 +118,7 @@ public class Cube {
 	
 	@Override
 	public boolean equals(Object obj) {
-		if(obj instanceof Cube){
-			return equals((Cube)obj);
-		}else{
-			return false;
-		}
+		return obj instanceof Cube && equals((Cube) obj);
 	}
 
 	public boolean equals(Cube c) {

@@ -40,7 +40,7 @@ public class IC3 {
 		printv("Check I => P",1);
 		if(satsolver.sat(I.and(NP)).size()>0){
 			printv("I => P does not hold",1);
-			return Arrays.asList(new ProofObligation[]{new ProofObligation(P, 0)});
+			return Collections.singletonList(new ProofObligation(P, 0));
 		}else{
 			printv("I => P",1);
 		}
@@ -48,13 +48,13 @@ public class IC3 {
 		//check I ^ T => P
 		if(satsolver.sat(I.and(T).and(NP)).size()>0){
 			printv("I ^ T => P does not hold",1);
-			return Arrays.asList(new ProofObligation[]{new ProofObligation(P, 1)});
+			return Collections.singletonList(new ProofObligation(P, 1));
 		}else{
 			printv("I ^ T => P",1);
 		}
 		
 		//init frontier sets
-		List<Cube> F = new ArrayList<Cube>();
+		List<Cube> F = new ArrayList<>();
 		F.add(I);//F0 = I
 		int k = 1;
 		F.add(P);//F1 = P
@@ -63,11 +63,11 @@ public class IC3 {
 		Cube NPPrime = NP.getPrimed();
 		
 		//Start checking
-		PriorityQueue<ProofObligation> proofObligations = new PriorityQueue<ProofObligation>();
+		PriorityQueue<ProofObligation> proofObligations = new PriorityQueue<>();
 		
 		//We either give a counterexample, or prove that P holds
 		while(true){
-			Set<Clause> addedClauses = new HashSet<Clause>();
+			Set<Clause> addedClauses = new HashSet<>();
 			
 			//test Fk ^ T ^ ~p'
 			testPInductive(F,T,k,NP,NPPrime,proofObligations);
@@ -80,7 +80,7 @@ public class IC3 {
 				Integer inductiveFrontier = findInductiveFrontier(probl,F,T);
 				if(inductiveFrontier==null){
 					printv("Found counterexample to P: "+s,1);
-					printTrace(I,probl);
+					printTrace(probl);
 					return probl.getProofTrace();
 				}else{
 					strengthen(s,F,T,inductiveFrontier,addedClauses);
@@ -126,7 +126,7 @@ public class IC3 {
 			if(cex.size()==0){ //no counterexample
 				printv("~s is inductive at i="+i,1);
 				result = i;
-				return result;
+				break;
 			}else{
 				printv("~s not inductive at i="+i,1);
 			}
@@ -227,7 +227,6 @@ public class IC3 {
 		
 	/**
 	 * Finds a minimally inductive clause relative to F (F ^ T ^ ~result => ~result') given a negated counterexample
-	 * @param notcex the negated counterexample
 	 * @param F the frontier set which the result should be relatively inductive to
 	 * @return a minimally inductive clause which is inductive relative to F
 	 */
@@ -289,7 +288,7 @@ public class IC3 {
 		}
 	}
 	
-	public static void printTrace(Cube I,ProofObligation probl) {
+	public static void printTrace(ProofObligation probl) {
 		printv("Trace to ~P: ",0);
 		StringBuilder s = new StringBuilder();
 		s.append("I");

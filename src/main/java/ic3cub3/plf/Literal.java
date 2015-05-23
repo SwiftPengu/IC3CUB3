@@ -42,11 +42,11 @@ public class Literal extends Formula{
 	public Literal(){
 		this(LITCOUNT);
 		LITCOUNT+=2;
-		
+
 	}
 	
 	public Literal(boolean tseitin){
-		this(LITCOUNT,false,false,true);
+		this(LITCOUNT,false,false,tseitin);
 		LITCOUNT+=2;
 	}
 
@@ -62,7 +62,7 @@ public class Literal extends Formula{
 	
 	@Override
 	public Set<Integer> getVariables() {
-		HashSet<Integer> result = new HashSet<Integer>();
+		HashSet<Integer> result = new HashSet<>();
 		result.add(getID());
 		return result;
 	}
@@ -83,7 +83,7 @@ public class Literal extends Formula{
 	
 	/**
 	 * Obtains the official id (not the internal id)
-	 * @return
+	 * @return the id of this literal or id+1 when getPrimed() holds
 	 */
 	public int getID(){
 		return primed?this.id+1:this.id;
@@ -115,14 +115,12 @@ public class Literal extends Formula{
 
 	@Override
 	public TseitinCube toCNF() {
-		TseitinCube result = new TseitinCube(this, new ArrayList<Clause>(1));
-		//result.addLiteral(this);
-		return result;
+		return new TseitinCube(this, new ArrayList<>(1));
 	}
 	
 	@Override
 	public Set<Integer> getTseitinVariables() {
-		HashSet<Integer> result = new HashSet<Integer>();
+		HashSet<Integer> result = new HashSet<>();
 		if(isTseitin()){
 			result.add(getID());
 		}
@@ -136,11 +134,7 @@ public class Literal extends Formula{
 	
 	@Override
 	public boolean equals(Object obj) {
-		if(obj instanceof Literal){
-			return equals((Literal)obj);
-		}else{
-			return false;
-		}
+		return obj instanceof Literal && equals((Literal) obj);
 	}
 	
 	public boolean equals(Literal l){

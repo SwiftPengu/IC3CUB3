@@ -61,10 +61,10 @@ public class AndFormula extends Formula{
 	@Override
 	public TseitinCube toCNF() {
 		//(~l v ~r v out) ^ (a v ~c) ^ (b v ~c)
-		Literal output = new Literal(true);
-		TseitinCube result = new TseitinCube(output);
-		TseitinCube L = getLeft().toCNF();
-		TseitinCube R = getRight().toCNF();
+		final Literal output = new Literal(true);
+		final TseitinCube result = new TseitinCube(output);
+		final TseitinCube L = getLeft().toCNF();
+		final TseitinCube R = getRight().toCNF();
 		
 		
 		//~l v r ~v out

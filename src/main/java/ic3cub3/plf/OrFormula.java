@@ -101,8 +101,8 @@ public class OrFormula extends Formula{
 	
 	@Override
 	public Set<Integer> getTseitinVariables() {
-		Set<Integer> lvars = getLeft().getTseitinVariables();
-		Set<Integer> rvars = getRight().getTseitinVariables();
+		final Set<Integer> lvars = getLeft().getTseitinVariables();
+		final Set<Integer> rvars = getRight().getTseitinVariables();
 		assert(lvars!=null);
 		assert(rvars!=null);
 		lvars.addAll(rvars);
@@ -111,13 +111,11 @@ public class OrFormula extends Formula{
 	
 	@Override
 	public Cube toEquivalentCube() {
-		Cube result = new Cube();
-		Cube R = getRight().toEquivalentCube(); 
-		getLeft().toEquivalentCube().getClauses().stream().forEach(c1 ->{
-			R.getClauses().stream().forEach(c2 ->{
-				result.addClause(c1.or(c2));
-			});
-		});
+		final Cube result = new Cube();
+		final Cube R = getRight().toEquivalentCube();
+		getLeft().toEquivalentCube().getClauses().stream().forEach(
+				c1 -> R.getClauses().stream().forEach(
+						c2 -> result.addClause(c1.or(c2))));
 		return result;
 	}
 }

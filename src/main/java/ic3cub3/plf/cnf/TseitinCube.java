@@ -21,7 +21,7 @@ public class TseitinCube extends Cube {
 	}
 	
 	public TseitinCube(Literal outputlit){
-		this(outputlit,new ArrayList<Clause>(0));
+		this(outputlit,new ArrayList<>(0));
 	}
 	
 	public Literal getTseitinOutput(){
@@ -32,11 +32,6 @@ public class TseitinCube extends Cube {
 	public Formula toFormula() {
 		//States that the output of this formula should be true
 		return new AndFormula(super.toFormula(),getTseitinOutput());
-	}
-	
-	public Formula toNegatedFormula() {
-		//States that the output of this formula should be false
-		return new AndFormula(super.toFormula(),getTseitinOutput().not());
 	}
 	
 	public void negate(){

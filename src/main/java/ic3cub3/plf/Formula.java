@@ -25,10 +25,6 @@ public abstract class Formula {
 	
 	public abstract Set<Integer> getTseitinVariables();
 	
-	public Set<Integer> getPrimedVariables(){
-		return getPrimed().getVariables();
-	}
-	
 	public abstract String getLogic2CNFString();
 	
 	/**

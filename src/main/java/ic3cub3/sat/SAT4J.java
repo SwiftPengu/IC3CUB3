@@ -16,7 +16,7 @@ import org.sat4j.specs.*;
  */
 public class SAT4J extends SATSolver{
 	private ISolver solver;
-	private static final ArrayList<Cube> UNSAT = new ArrayList<Cube>(); //UNSAT constant
+	private static final ArrayList<Cube> UNSAT = new ArrayList<>(); //UNSAT constant
 	
 	public SAT4J(ISolver solver){
 		this.solver=solver;
@@ -69,7 +69,7 @@ public class SAT4J extends SATSolver{
 						}
 					}
 				}
-				return Arrays.asList(new Cube[]{result});
+				return Collections.singletonList(result);
 			}else{
 				return UNSAT;
 			}

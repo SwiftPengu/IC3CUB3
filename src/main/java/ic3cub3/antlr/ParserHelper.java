@@ -1,15 +1,15 @@
 package ic3cub3.antlr;
 
 import ic3cub3.tests.ProblemSet;
-
-import java.io.*;
-
 import lombok.Getter;
-
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 @Getter
 public class ParserHelper {
@@ -19,7 +19,7 @@ public class ParserHelper {
 		generator = new ProblemTreeWalker();
 	}
 	
-	public ProblemSet parse(File f) throws FileNotFoundException, IOException{
+	public ProblemSet parse(File f) throws IOException{
         ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(f));
         ProblemLexer lexer = new ProblemLexer(input);
         ProblemParser parser = new ProblemParser(new CommonTokenStream(lexer));

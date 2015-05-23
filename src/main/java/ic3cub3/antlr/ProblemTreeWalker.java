@@ -168,9 +168,7 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 				
 				//add dependencies to the exploration stack
 				currentdependencies.stream().filter(dep -> (formulae.get(dep)==null))
-				.forEach(dep ->{
-					toExplore.push(dep);
-				});
+				.forEach(toExplore::push);
 			}
 		}	
 		System.out.println("Reachable methods: "+visitcount);
@@ -178,9 +176,7 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 		//Update dependencies (until all dependencies are satisfied)
 		do{
 			//remove all satisfied dependencies
-			dependencies.entrySet().stream().forEach(e->{
-				e.getValue().retainAll(dependencies.keySet());
-			});
+			dependencies.entrySet().stream().forEach(e-> e.getValue().retainAll(dependencies.keySet()));
 			
 			//get all resolvable dependencies
 			dependencies.entrySet().stream().filter(e -> (e.getValue().size()==0))
@@ -191,12 +187,10 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 				assert(formulae.get(e.getKey())!=null);
 			})
 			.collect(Collectors.toSet())
-			.forEach(e -> {
-				dependencies.remove(e.getKey());
-			});
+			.forEach(e -> dependencies.remove(e.getKey()));
 		}
 		//the number of unsatisfied dependencies (in the set of the map) is >0
-		while(dependencies.values().stream().flatMap(s -> s.stream()).count()>0);
+		while(dependencies.values().stream().flatMap(Collection::stream).count()>0);
 		System.out.println("All method dependencies resolved");
 		
 		//Convert the result to CNF
@@ -228,7 +222,7 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 	
 	/**
 	 * Obtains a cube which states that only a single output should be enabled
-	 * @return
+	 * @return a cube representing that only a single output is enabled at any given time
 	 */
 	protected Cube getUniqueInputCube(){
 		Collection<Literal> values = getInputs().values();
@@ -236,14 +230,12 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 		//state that at least one output should be true
 		Cube result = new Cube(new Clause(values.stream().
 				collect(Collectors.toSet())));
-		values.forEach(a ->{
-			values.stream().
-			filter(b -> (a!=b)).
-			forEach(b ->{
-				//internal set usage ensures only unique clauses are added
-				result.addClause(new Clause(a.not(),b.not()));
-			});
-		});
+		values.forEach(a -> values.stream().
+        filter(b -> (a != b)).
+        forEach(b -> {
+			//internal set usage ensures only unique clauses are added
+			result.addClause(new Clause(a.not(), b.not()));
+		}));
 		Runner.printv("Only one input enabled: "+result,2);
 		return result;
 	}
@@ -276,9 +268,8 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 			}
 		}else{
 			HashSet<FunctionDeclarationContext> result = new HashSet<>();
-			ctx.closedCompoundStatement().compoundStatement().statement().forEach(statement ->{
-				result.addAll(findStatementDependencies(statement));
-			});
+			ctx.closedCompoundStatement().compoundStatement().statement().forEach(
+					statement -> result.addAll(findStatementDependencies(statement)));
 			return result;
 		}
 	}
@@ -347,7 +338,7 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 	private Formula generateSingleMethodFormula(
 			FunctionDeclarationContext method, Map<FunctionDeclarationContext,Formula> methodFormulae) {
 		if(methodFormulae==null)System.out.println("Independent method: "+method.var().IDENTIFIER().getText());
-		Collection<StatementContext> statements = new HashSet<StatementContext>();
+		Collection<StatementContext> statements = new HashSet<>();
 		if(method.statement().closedCompoundStatement()!=null){
 			statements.addAll(method.statement().
 					closedCompoundStatement().
@@ -378,7 +369,7 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 				return new OrFormula(l,l.not());
 			default:
 				if(methodFormulae!=null){
-					Map<String,Formula> namedMethods = methodFormulae.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey().var().getText(), entry -> entry.getValue()));
+					Map<String,Formula> namedMethods = methodFormulae.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey().var().getText(), Entry::getValue));
 					if(namedMethods.containsKey(fname)){
 						return namedMethods.get(fname);
 					}
@@ -447,9 +438,7 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 	//TODO get trace
 	public String convertState(Cube c){
 		final Map<String,Integer> varvalues = new HashMap<>();
-		getVariables().entrySet().stream().forEach(e ->{
-			varvalues.put(e.getKey(), 0);
-		});
+		getVariables().entrySet().stream().forEach(e -> varvalues.put(e.getKey(), 0));
 		
 		System.out.println(varvalues);
 		
