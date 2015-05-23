@@ -25,3 +25,5 @@ src/ic3cub3/antlr/ProblemListener.java
 *.toc
 *.gz(busy)
 IC3CUB3.zip
+
+target/
