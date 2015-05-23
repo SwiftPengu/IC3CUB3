@@ -7,7 +7,7 @@
     <path id="IC3CUB3.classpath">
         <pathelement location="bin"/>
         <pathelement location="lib/org.sat4j.core.jar"/>
-        <pathelement location="lib/antlr-4.4-complete.jar"/>
+        <pathelement location="lib/antlr-runtime-4.5.jar"/>
         <pathelement location="lib/lombok.jar"/>
     </path>
     <target name="init">
