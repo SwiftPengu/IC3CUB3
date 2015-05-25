@@ -29,28 +29,28 @@ public class IC3 {
 	 * @return null when the property holds, or a trace (reachable from I) to NP
 	 */
 	public List<ProofObligation> check(Cube I, Cube T, Cube P,Cube NP){
-			printv("I:\t"+I,2);
-			printv("T:\t"+T,2);
-			printv("P:\t"+P,2);
-			printv("NP:\t",2);
+			printv(() -> "I:\t"+I,2);
+			printv(() -> "T:\t"+T,2);
+			printv(() -> "P:\t"+P,2);
+			printv(() -> "NP:\t",2);
 		//
 		// Establish invariants
 		
 		//check I => P
-		printv("Check I => P",1);
+		printv(() -> "Check I => P",1);
 		if(satsolver.sat(I.and(NP)).size()>0){
-			printv("I => P does not hold",1);
+			printv(() -> "I => P does not hold",1);
 			return Collections.singletonList(new ProofObligation(P, 0));
 		}else{
-			printv("I => P",1);
+			printv(() -> "I => P",1);
 		}
 		
 		//check I ^ T => P
 		if(satsolver.sat(I.and(T).and(NP)).size()>0){
-			printv("I ^ T => P does not hold",1);
+			printv(() -> "I ^ T => P does not hold",1);
 			return Collections.singletonList(new ProofObligation(P, 1));
 		}else{
-			printv("I ^ T => P",1);
+			printv(() -> "I ^ T => P",1);
 		}
 		
 		//init frontier sets
@@ -75,11 +75,11 @@ public class IC3 {
 			//Solve all proof obligations for given k
 			while(proofObligations.size()>0){
 				ProofObligation probl = proofObligations.remove();
-				printv("Attempting to prove: "+probl.getCTI()+" not reachable from level "+probl.getLevel(),1);
+				printv(() -> "Attempting to prove: "+probl.getCTI()+" not reachable from level "+probl.getLevel(),1);
 				Cube s = probl.getCTI();
 				Integer inductiveFrontier = findInductiveFrontier(probl,F,T);
 				if(inductiveFrontier==null){
-					printv("Found counterexample to P: "+s,1);
+					printv(() -> "Found counterexample to P: "+s,1);
 					printTrace(probl);
 					return probl.getProofTrace();
 				}else{
@@ -91,7 +91,8 @@ public class IC3 {
 			//No more counterexamples, and no solution yet, so increase k.
 			k++;
 			F.add(P); //Fk = P
-			printv("k increased to "+k,0);
+			final String debug = "k increased to "+k;
+			printv(() -> debug,0);
 			propagateClauses(T,F,addedClauses,k);
 			if(hasFixpoint(F)){
 				return null;
@@ -102,14 +103,14 @@ public class IC3 {
 	private void testPInductive(List<Cube> F, Cube T,int k,Cube NP, Cube NPPrime, PriorityQueue<ProofObligation> proofObligations){
 		List<Cube> result = satsolver.sat(F.get(k).and(T).and(NPPrime),true);
 		if(result.size()>0){
-			printv("F_k ^ T ^ ~p' satisfiable for k="+k,1);
+			printv(() -> "F_k ^ T ^ ~p' satisfiable for k="+k,1);
 			
 			//obtain counterexample S and S'
 			Cube s = result.get(0);
-			printv("s: "+s,1);
+			printv(() -> "s: "+s,1);
 			proofObligations.add(new ProofObligation(s, k-1,new ProofObligation(NP,k)));
 		}else{
-			printv("P is inductive",0);
+			printv(() -> "P is inductive",0);
 		}
 	}
 
@@ -120,15 +121,16 @@ public class IC3 {
 		Cube sPrime = s.getPrimed();
 		Clause nots = s.not();
 		for(int i = probl.getLevel();i>=probl.getLevel()-2 && i>=0;i--){
+			final int icap = i;
 			Cube Fi = F.get(i);
-			printv("Check ~s "+nots+" inductive at F"+i+";" +F.get(i)+" ^ "+nots+" ^ "+"T"+" ^ "+sPrime,1);
+			printv(() -> "Check ~s "+nots+" inductive at F"+icap+";" +F.get(icap)+" ^ "+nots+" ^ "+"T"+" ^ "+sPrime,1);
 			List<Cube> cex = satsolver.sat(Fi.and(nots).and(T).and(sPrime));
 			if(cex.size()==0){ //no counterexample
-				printv("~s is inductive at i="+i,1);
+				printv(() -> "~s is inductive at i="+icap,1);
 				result = i;
 				break;
 			}else{
-				printv("~s not inductive at i="+i,1);
+				printv(() -> "~s not inductive at i="+icap,1);
 			}
 		}
 		return result;
@@ -138,18 +140,19 @@ public class IC3 {
 	private void strengthen(Cube S,List<Cube> F, Cube T,Integer inductiveFrontier,Set<Clause> addedClauses) {
 		//first obtain a minimal inductive subclause
 		Clause c = MIC(S, F.get(0), T, F.get(inductiveFrontier));
-		printv("MIC: "+c,1);
+		printv(() -> "MIC: "+c,1);
 		
 		addedClauses.add(c);
 		//add c to F1..Fi+1
 		for(int i = 1;i<=inductiveFrontier+1 && i<F.size();i++){
+			final int icap = i;
 			if(!F.get(i).getClauses().contains(c)){
-				printv("F"+i+" was: "+F.get(i),1);
+				printv(() -> "F"+icap+" was: "+F.get(icap),1);
 				//replaces F_i, might be improved
 				F.set(i, F.get(i).and(c));
-				printv("F"+i+" becomes: "+F.get(i),1);
+				printv(() -> "F"+icap+" becomes: "+F.get(icap),1);
 			}else{
-				printv("F"+i+" remains unchanged",1);
+				printv(() -> "F"+icap+" remains unchanged",1);
 			}
 		}
 	}
@@ -157,16 +160,16 @@ public class IC3 {
 	private void checkCTIResolved(List<Cube> F, ProofObligation probl, int inductiveFrontier, int k,Cube T, PriorityQueue<ProofObligation> proofObligations){
 		boolean ctiStillExists = satsolver.sat(F.get(probl.getLevel()).and(T).and(probl.getCTI().getPrimed()),true).size()>0;
 		if(ctiStillExists){
-			printv("CTI still exists",1);
+			printv(() -> "CTI still exists",1);
 			//cti is not yet resolved, so attempt to resolve it again
 			proofObligations.add(probl);
 			//if the possibility of predecessors of s exists, check for such states
 			if(inductiveFrontier<k-1){	
 				//find a predecessor state
 				//That is, a solution to Fi+1 ^ T => s
-				printv("Finding a predecessor of s from level "+(inductiveFrontier+1),3);
+				printv(() -> "Finding a predecessor of s from level "+(inductiveFrontier+1),3);
 				List<Cube> predecessors = satsolver.sat(F.get(inductiveFrontier+1).and(T).and(probl.getCTI().getPrimed()),true);
-				printv("Predecessors: "+predecessors,3);
+				printv(() -> "Predecessors: "+predecessors,3);
 				assert(predecessors.size()>0) : "Error: no predecessors of s for inductive ~s";
 				Cube t = predecessors.get(0);
 				proofObligations.add(new ProofObligation(t, inductiveFrontier,probl));
@@ -178,7 +181,7 @@ public class IC3 {
 			Set<Clause> addedClauses,int k) {
 		//TODO don't check for induction, but assert it (when allowed)
 		//Propagate clauses
-		printv("Propagating clauses: "+addedClauses,1);
+		printv(() -> "Propagating clauses: "+addedClauses,1);
 		for(Clause clause:addedClauses){
 			//check whether clause can be propagated (F_i ^ T  => c') satisfiable
 			//<=> F_i ^ T ^ ~c' unsat
@@ -187,14 +190,15 @@ public class IC3 {
 				Cube nextfrontier = F.get(i+1);
 				Cube notcprime = clause.getPrimed().not();
 				if(!nextfrontier.getClauses().contains(clause)){
-					printv(String.format("Test if %s can be propagated from %s(%d) to %s(%d)\n", clause,frontier,i,nextfrontier,i+1),1);
+					final int icap = i;
+					printv(() -> String.format("Test if %s can be propagated from %s(%d) to %s(%d)\n", clause,frontier,icap,nextfrontier,icap+1),1);
 					boolean canbepropagated = satsolver.sat(frontier.and(clause).and(T).and(notcprime)).size()==0;
 					if(canbepropagated){
 						nextfrontier.addClause(clause);
 						//TODO simplify new frontier
-						printv("Yes",1);
+						printv(() -> "Yes",1);
 					}else{
-						printv("No",1);
+						printv(() -> "No",1);
 					}
 				}
 				
@@ -213,12 +217,13 @@ public class IC3 {
 			//compare the two formulae
 			boolean equal = F.get(f1).equals(F.get(f2));
 			if(equal){
-				printv(String.format("Fixpoint found at F%d and F%d, TS |= P",f1,f2),0);
-				printv(F.get(f1),0);
+				final int f1cap = f1;
+				printv(() -> String.format("Fixpoint found at F%d and F%d, TS |= P",f1cap,f2),0);
+				printv(() -> F.get(f1cap),0);
 				return true;
 			}
 		}
-		printv("No fixpoint: "+F,1);
+		printv(() -> "No fixpoint: "+F,1);
 		return false;
 		
 		//implementation which asks the SAT solver:
@@ -233,9 +238,9 @@ public class IC3 {
 	public Clause MIC(final Cube cex,final Cube I,final Cube T,final Cube F){
 		//assert notcex is inductive (F ^ ~s ^ T => ~s') satisfiable
 		// <=> ~(F ^ ~s ^ T => ~s') <=> (F ^ ~s ^ T ^ s') unsatisfiable
-		printv("MIC on: "+cex,1);
+		printv(() -> "MIC on: "+cex,1);
 		Clause notcex = cex.not();
-		printv(notcex,2);
+		printv(() -> notcex,2);
 		assert(satsolver.sat(F.and(notcex).and(T).and(cex.getPrimed())).size()==0) : "MIC: ~cex is not inductive on F";
 		
 		Clause result = notcex.clone(); //~s is the maximum inductive clause, return this if all else fails
@@ -269,10 +274,10 @@ public class IC3 {
 	
 	public Clause down(Clause rhat,Cube I,Cube T, Cube Fi){
 		Cube notrhat = rhat.not();
-		printv("Down on: "+rhat,2);
+		printv(() -> "Down on: "+rhat,2);
 		//test initiation (are bad states reachable from I?): ~(I => rhat) unsat <=> I ^ ~rhat satisfiable
 		if(satsolver.sat(I.and(notrhat)).size()>0){
-			printv("Initiation failed",2);
+			printv(() -> "Initiation failed",2);
 			return null;
 		}
 		
@@ -280,7 +285,7 @@ public class IC3 {
 		//test consecution (attempt to obtain an unsat proof for ~(Fi ^ rhat ^ T => rhat') <=> Fi ^ rhat ^ T ^ ~rhat'
 		List<? extends Cube> counterexamples = satsolver.sat(Fi.and(T).and(rhat).and(notrhat.getPrimed()),true);
 		if(counterexamples.size()==0){
-			printv(rhat+" is inductive!",2);
+			printv(() -> rhat+" is inductive!",2);
 			return rhat;
 		}else{
 			//TODO use counterexample to refine rhat (rhat = rhat without literals not in ~cex = keep only literals in cex))
@@ -289,13 +294,13 @@ public class IC3 {
 	}
 	
 	public static void printTrace(ProofObligation probl) {
-		printv("Trace to ~P: ",0);
+		printv(() -> "Trace to ~P: ",0);
 		StringBuilder s = new StringBuilder();
 		s.append("I");
 		for(ProofObligation po:probl.getProofTrace()){
 			s.append(" --> \n");
 			s.append(po.getCTI());
 		}
-		printv(s.toString(),0);
+		printv(s::toString,0);
 	}
 }

@@ -60,7 +60,7 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 			if(methodName.startsWith("calculate_output")){
 				methods.put(methodName, ctx);
 			}else{
-				Runner.printv("Warning: skipping over unsupported method: "+methodName,1);
+				Runner.printv(() -> "Warning: skipping over unsupported method: "+methodName,1);
 			}
 			break;
 		}
@@ -236,7 +236,7 @@ public class ProblemTreeWalker extends ProblemBaseListener {
 			//internal set usage ensures only unique clauses are added
 			result.addClause(new Clause(a.not(), b.not()));
 		}));
-		Runner.printv("Only one input enabled: "+result,2);
+		Runner.printv(() -> "Only one input enabled: "+result,2);
 		return result;
 	}
 	

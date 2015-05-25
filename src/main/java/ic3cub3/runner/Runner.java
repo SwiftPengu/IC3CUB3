@@ -28,7 +28,7 @@ public class Runner {
 		}
 	}
 	
-	public static void printv(Object s, int minverbosity){
-		if(VERBOSE>=minverbosity)System.out.println(s.toString());
+	public static void printv(Supplier<Object> s, int minverbosity){
+		if(VERBOSE>=minverbosity)System.out.println(s.get().toString());
 	}
 }
