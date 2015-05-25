@@ -1,14 +1,14 @@
-package ic3cub3.antlr;
+package ic3cub3.rersparser;
 
-import ic3cub3.antlr.ProblemParser.AndExpressionContext;
-import ic3cub3.antlr.ProblemParser.BooleanExpressionContext;
-import ic3cub3.antlr.ProblemParser.ExpressionContext;
-import ic3cub3.antlr.ProblemParser.FunctionDeclarationContext;
-import ic3cub3.antlr.ProblemParser.IfStatementContext;
-import ic3cub3.antlr.ProblemParser.OperandContext;
-import ic3cub3.antlr.ProblemParser.ProgramContext;
-import ic3cub3.antlr.ProblemParser.StatementContext;
-import ic3cub3.antlr.ProblemParser.VarDeclarationContext;
+import ic3cub3.rersparser.ProblemParser.AndExpressionContext;
+import ic3cub3.rersparser.ProblemParser.BooleanExpressionContext;
+import ic3cub3.rersparser.ProblemParser.ExpressionContext;
+import ic3cub3.rersparser.ProblemParser.FunctionDeclarationContext;
+import ic3cub3.rersparser.ProblemParser.IfStatementContext;
+import ic3cub3.rersparser.ProblemParser.OperandContext;
+import ic3cub3.rersparser.ProblemParser.ProgramContext;
+import ic3cub3.rersparser.ProblemParser.StatementContext;
+import ic3cub3.rersparser.ProblemParser.VarDeclarationContext;
 import ic3cub3.plf.*;
 import ic3cub3.plf.cnf.Clause;
 import ic3cub3.plf.cnf.Cube;

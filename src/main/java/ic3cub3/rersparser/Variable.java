@@ -1,4 +1,4 @@
-package ic3cub3.antlr;
+package ic3cub3.rersparser;
 
 import ic3cub3.plf.Literal;
 import ic3cub3.plf.cnf.Clause;

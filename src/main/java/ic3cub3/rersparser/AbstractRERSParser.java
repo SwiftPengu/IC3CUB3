@@ -1,4 +1,4 @@
-package ic3cub3.antlr;
+package ic3cub3.rersparser;
 
 import ic3cub3.plf.Formula;
 import ic3cub3.plf.Literal;
@@ -7,7 +7,6 @@ import ic3cub3.plf.cnf.Cube;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -22,8 +21,14 @@ public abstract class AbstractRERSParser extends ProblemBaseListener{
     public abstract Map<String,ProblemParser.FunctionDeclarationContext> getMethodDeclarations();
     public abstract Map<Integer,Literal> getInputs();
 
-    public Cube parseAssignment(String name,int value){
-        Variable var = getVariables().get(name);
+    /**
+     * Returns a cube representing the assignment of a value to a variable
+     * @param var a variable which is assigned a value
+     * @param value the value which is assigned
+     * @return a cube representing the two's-complement value of value with the literals from var
+     */
+    public Cube parseAssignment(Variable var,int value){
+        //A stream of [0..varsize)
         return new Cube(IntStream.range(0, getVariables().size()).boxed().sequential().map(
                 //test whether the i-th bit in value is 1 or 0
                 i -> ((value >> i) & 1) == 1 ?

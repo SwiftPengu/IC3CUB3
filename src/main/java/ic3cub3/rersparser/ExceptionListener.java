@@ -1,4 +1,4 @@
-package ic3cub3.antlr;
+package ic3cub3.rersparser;
 
 import org.antlr.v4.runtime.tree.ErrorNode;
 
