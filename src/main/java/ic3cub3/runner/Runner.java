@@ -8,6 +8,8 @@ import ic3cub3.tests.actual.*;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.function.Supplier;
+import java.util.stream.IntStream;
 
 /**
  * Bootstrapping class
@@ -16,7 +18,11 @@ import java.io.IOException;
 public class Runner {
 	public static int VERBOSE = 0;
 
-	public static void main(String[] args) throws FileNotFoundException, IOException {
+	public static void main(String[] args) throws IOException {
+		final int j = Integer.MAX_VALUE;
+		IntStream.range(0,32).boxed().map(i -> ((j>>i)&1) == 1).forEach(System.out::println);
+		System.exit(0);
+
 		ProblemSet[] problems = new ProblemSet[]{new IC3WMIM_1(), new IC3WMIM_2(), new ReachableBadState()};
 		SATSolver solver = new SAT4J();
 		IC3 ic3 = new IC3(solver);
