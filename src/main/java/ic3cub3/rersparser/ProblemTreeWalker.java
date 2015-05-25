@@ -29,8 +29,8 @@ import lombok.*;
  */
 @Setter(value=AccessLevel.PROTECTED) @Getter(value=AccessLevel.PROTECTED)
 public class ProblemTreeWalker extends ProblemBaseListener {
-	private final Map<String,List<Literal>> variables = new HashMap<>();
-	
+    private final Map<String,List<Literal>> variables = new HashMap<>();
+
 	private final Map<String,Integer> init = new HashMap<>();
 	private final Map<Integer,Literal> inputs = new HashMap<>(); //ensure unique inputs
 	//TODO convert this to a list:

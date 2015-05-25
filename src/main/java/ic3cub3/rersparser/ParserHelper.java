@@ -1,6 +1,6 @@
 package ic3cub3.rersparser;
 
-import ic3cub3.tests.ProblemSet;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -12,14 +12,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 @Getter
+@AllArgsConstructor
 public class ParserHelper {
-	private ProblemTreeWalker generator;
+    private ProblemBaseListener generator;
 	
-	public ParserHelper(){
-		generator = new ProblemTreeWalker();
-	}
-	
-	public ProblemSet parse(File f) throws IOException{
+	public void parse(File f) throws IOException{
         ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(f));
         ProblemLexer lexer = new ProblemLexer(input);
         ProblemParser parser = new ProblemParser(new CommonTokenStream(lexer));
@@ -33,6 +30,5 @@ public class ParserHelper {
         tw.walk(getGenerator(), tree);
         System.out.println("Finished analyzing parse tree");
         System.out.printf("Took: %dms\n",System.currentTimeMillis()-timer);
-		return getGenerator().getProblemSet();
 	}
 }

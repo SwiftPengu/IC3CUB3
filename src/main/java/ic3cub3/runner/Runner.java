@@ -1,15 +1,18 @@
 package ic3cub3.runner;
 
 import ic3cub3.ic3.IC3;
+import ic3cub3.rersparser.ConcreteRersParser;
+import ic3cub3.rersparser.ParserHelper;
 import ic3cub3.sat.SAT4J;
 import ic3cub3.sat.SATSolver;
 import ic3cub3.tests.ProblemSet;
-import ic3cub3.tests.actual.*;
+import ic3cub3.tests.actual.IC3WMIM_1;
+import ic3cub3.tests.actual.IC3WMIM_2;
+import ic3cub3.tests.actual.ReachableBadState;
 
-import java.io.FileNotFoundException;
+import java.io.File;
 import java.io.IOException;
 import java.util.function.Supplier;
-import java.util.stream.IntStream;
 
 /**
  * Bootstrapping class
@@ -19,10 +22,11 @@ public class Runner {
 	public static int VERBOSE = 0;
 
 	public static void main(String[] args) throws IOException {
-		final int j = Integer.MAX_VALUE;
-		IntStream.range(0,32).boxed().map(i -> ((j>>i)&1) == 1).forEach(System.out::println);
-		System.exit(0);
+		ParserHelper ph = new ParserHelper(new ConcreteRersParser());
+		ph.parse(new File("src/main/java/ic3cub3/rersproblems/problemtest.c"));
 
+
+		System.exit(0);
 		ProblemSet[] problems = new ProblemSet[]{new IC3WMIM_1(), new IC3WMIM_2(), new ReachableBadState()};
 		SATSolver solver = new SAT4J();
 		IC3 ic3 = new IC3(solver);
