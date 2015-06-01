@@ -28,7 +28,7 @@ void calculate_outputm37(int input) {
 } void calculate_outputm40(int input) {
     a134=3;
 } void calculate_outputm39(int input) {
-    if(((a143==10) && (cf==1))){
+    if(((a134==10) && (input==1))){
     	calculate_outputm40(input);
     } 
 }
@@ -37,8 +37,9 @@ void calculate_outputm37(int input) {
 	calculate_outputm37(input);
     errorCheck();
 
-    if((cf==1)) 
-    	fprintf(stderr, "Invalid input: %d\n", input); 
+    if((cf==1)) {
+    	fprintf(stderr, "Invalid input: %d\n", input);
+    	 }
 }
 
 int main()
