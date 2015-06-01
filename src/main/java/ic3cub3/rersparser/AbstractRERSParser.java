@@ -5,7 +5,7 @@ import ic3cub3.plf.Formula;
 import ic3cub3.plf.Literal;
 import ic3cub3.plf.OrFormula;
 import ic3cub3.plf.cnf.Cube;
-import ic3cub3.rersparser.ProblemParser.StatementContext;
+import ic3cub3.rersparser.ProblemParser.*;
 import ic3cub3.runner.Runner;
 import ic3cub3.tests.ProblemSet;
 import lombok.Getter;
@@ -13,9 +13,6 @@ import lombok.Setter;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static ic3cub3.rersparser.ProblemParser.*;
-import static ic3cub3.runner.Runner.printv;
 
 /**
  * Class for encoding the RERS challenge programs as transition systems and properties suitable for IC3
@@ -41,6 +38,7 @@ public abstract class AbstractRERSParser extends ProblemBaseListener{
 
     //var is equal to value
     public abstract Formula parseEqual(Variable var,int val);
+    public abstract Formula parseInputEqual(int val);
 
     public Cube parseSingleStatement(StatementContext ctx){
         if(ctx.assignStatement()!=null)return prepareAssignment(ctx.assignStatement());
@@ -67,7 +65,7 @@ public abstract class AbstractRERSParser extends ProblemBaseListener{
     }
 
     private Cube prepareFunctionCall(FunctionCallContext functionCallContext) {
-        assert(getInlinedMethods().containsKey(functionCallContext.var().IDENTIFIER().getText()));
+        assert(getMethodDeclarations().containsKey(functionCallContext.var().IDENTIFIER().getText()));
         return getInlinedMethods().get(functionCallContext.var().IDENTIFIER().getText());
     }
 
@@ -84,12 +82,21 @@ public abstract class AbstractRERSParser extends ProblemBaseListener{
     }
 
     private Formula parseBooleanCondition(BooleanExpressionContext ctx){
-        if(ctx.EQUAL()!=null) {
+        if(ctx.EQUAL()!=null && ctx.EQUAL().toString().contains("==")) {
             //TODO assumes id==number, and assumes no negative integers are compared
-            String id = ctx.addExpression(0).mulExpression(0).operand(0).getText();
-            int value = Integer.parseInt(ctx.addExpression(1).mulExpression(0).operand(0).NUMBER().getText());
+            String id = ctx.addExpression(0).mulExpression(0).operand(0).getText().trim();
+            int value = Integer.
+                    parseInt(ctx.addExpression(1).
+                            mulExpression(0).
+                            operand(0).
+                            NUMBER().
+                            getText());
             assert(getVariables().containsKey(id));
-            return parseEqual(getVariables().get(id),value);
+            if(id.equals("input")){
+                return parseInputEqual(value);
+            }else {
+                return parseEqual(getVariables().get(id), value);
+            }
         }else{
             return parseExpressionCondition(ctx.addExpression(0).mulExpression(0).operand(0).expression());
         }
