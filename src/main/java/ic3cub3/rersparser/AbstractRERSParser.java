@@ -182,7 +182,7 @@ public abstract class AbstractRERSParser extends ProblemBaseListener{
             switch(type){
                 case "int":
                     //declare the variable and allocate literals
-                    getVariables().put(id,Variable.of(32));
+                    getVariables().put(id,Variable.of(4));
 
                     //check whether this is an initialisation
                     if(ctx.assign()!=null){
