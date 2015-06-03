@@ -80,7 +80,7 @@ public class IC3 {
 				Integer inductiveFrontier = findInductiveFrontier(probl,F,T);
 				if(inductiveFrontier==null){
 					printv(() -> "Found counterexample to P: "+s,1);
-					printTrace(probl);
+					//printTrace(probl);
 					return probl.getProofTrace();
 				}else{
 					strengthen(s,F,T,inductiveFrontier,addedClauses);
@@ -295,11 +295,9 @@ public class IC3 {
 	
 	public static void printTrace(ProofObligation probl) {
 		printv(() -> "Trace to ~P: ",0);
-		StringBuilder s = new StringBuilder();
-		s.append("I");
+		StringBuilder s = new StringBuilder().append("I");
 		for(ProofObligation po:probl.getProofTrace()){
-			s.append(" --> \n");
-			s.append(po.getCTI());
+			s.append(" --> \n").append(po.getCTI());
 		}
 		printv(s::toString,0);
 	}
