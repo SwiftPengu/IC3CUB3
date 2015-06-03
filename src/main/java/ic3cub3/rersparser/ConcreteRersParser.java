@@ -61,30 +61,41 @@ public class ConcreteRersParser extends AbstractRERSParser {
     public void build() {
         printv(() -> "Converting RERS problem to PLF",0);
         //Build call tree (assume that it is indeed a tree)
-        while(parseParseableMethods()) {
-            System.out.println(getInlinedMethods());
-        }
+        while(parseParseableMethods()) {}
+        buildI();
+        buildT();
+        buildP();
+        printv(() -> this.getT().getClauses().size(),0);
         //TODO
     }
 
+    private void buildI() {
+
+    }
+
+    private void buildT() {
+        Cube resultT = restrictAssignments();
+        Cube mainMethod = parseMultipleStatement(getMainMethod().statement().closedCompoundStatement());
+        resultT = resultT.and(mainMethod);
+        setT(resultT);
+    }
+
+    private void buildP() {
+
+    }
+
     public boolean parseParseableMethods(){
-        System.out.println(getInlinedMethods());
-        long count = getMethodDeclarations().entrySet().stream()
-                .filter(e -> !getInlinedMethods().containsKey(e.getKey()))
-                .filter(e -> getAllFunctionCalls(e.getValue()).allMatch(f -> getInlinedMethods().containsKey(getMethodName(f))))
-                .count();
+        final long[] count = {0};
         getMethodDeclarations().entrySet().stream()
                 .filter(e -> !getInlinedMethods().containsKey(e.getKey()))
                 .filter(e -> getAllFunctionCalls(e.getValue()).allMatch(f -> getInlinedMethods().containsKey(getMethodName(f))))
                         //actual parsing takes place here
-                .forEach(e -> getInlinedMethods().put(e.getKey(),
-                        parseMultipleStatement(e.getValue().statement().closedCompoundStatement())));
-        return count>0;
+                .forEach(e -> {getInlinedMethods().put(e.getKey(),
+                        parseMultipleStatement(e.getValue().statement().closedCompoundStatement()));
+                        count[0]++;});
+        return count[0]>0;
     }
 
-    public static String getMethodName(FunctionCallContext ctx){
-        return ctx.var().IDENTIFIER().getText();
-    }
 
     public static Stream<FunctionCallContext> getAllFunctionCalls(FunctionDeclarationContext ctx){
         return flatten(ctx.statement()).filter(s -> s.functionCall()!=null)

@@ -33,13 +33,13 @@ void calculate_outputm37(int input) {
     } 
 }
  void calculate_output(int input) {
-        cf = (1);
+        cf = 1;
 	calculate_outputm37(input);
     errorCheck();
 
-    if((cf==1)) {
-    	fprintf(stderr, "Invalid input: %d\n", input);
-    	 }
+//    if((cf==1)) {
+  //  	fprintf(stderr, "Invalid input: %d\n", input);
+    //	 }
 }
 
 int main()

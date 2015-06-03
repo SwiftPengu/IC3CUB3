@@ -1046,8 +1046,8 @@
     } 
     errorCheck();
 
-    if((cf==1)) 
-    	fprintf(stderr, "Invalid input: %d\n", input); 
+    if((cf==1))
+    	fprintf(stderr, "Invalid input: %d\n", input);
 }
 
 int main()

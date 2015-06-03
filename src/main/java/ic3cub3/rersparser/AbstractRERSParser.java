@@ -10,6 +10,7 @@ import ic3cub3.runner.Runner;
 import ic3cub3.tests.ProblemSet;
 import lombok.Getter;
 import lombok.Setter;
+import org.antlr.v4.runtime.tree.ParseTree;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -66,7 +67,13 @@ public abstract class AbstractRERSParser extends ProblemBaseListener{
 
     private Cube prepareFunctionCall(FunctionCallContext functionCallContext) {
         assert(getMethodDeclarations().containsKey(functionCallContext.var().IDENTIFIER().getText()));
-        return getInlinedMethods().get(functionCallContext.var().IDENTIFIER().getText());
+        switch(getMethodName(functionCallContext).toLowerCase()){
+            case "printf":
+            case "errorcheck":
+                return new Cube();
+            default:
+                return getInlinedMethods().get(functionCallContext.var().IDENTIFIER().getText());
+        }
     }
 
     private Formula parseExpressionCondition(ExpressionContext ctx){
@@ -236,6 +243,36 @@ public abstract class AbstractRERSParser extends ProblemBaseListener{
 
     private static Integer getIntegerFromExpression(ExpressionContext ctx){
         //TODO assertions for every node
-        return Integer.parseInt(ctx.andExpression(0).booleanExpression(0).addExpression(0).mulExpression(0).operand(0).NUMBER().getText());
+        Optional<String> literal = Optional.of(ctx)
+                .map(e -> e.andExpression(0))
+                .map(a -> a.booleanExpression(0))
+                .map(b -> b.addExpression(0))
+                .map(a -> a.mulExpression(0))
+                .map(m -> m.operand(0))
+                .map(OperandContext::NUMBER)
+                .map(ParseTree::getText);
+        Optional<String> nestedLiteral = Optional.of(ctx)
+                .map(e -> e.andExpression(0))
+                .map(a -> a.booleanExpression(0))
+                .map(b -> b.addExpression(0))
+                .map(a -> a.mulExpression(0))
+                .map(m -> m.operand(0))
+                .map(OperandContext::expression)
+                .map(e -> e.andExpression(0))
+                .map(a -> a.booleanExpression(0))
+                .map(b -> b.addExpression(0))
+                .map(a -> a.mulExpression(0))
+                .map(m -> m.operand(0))
+                .map(OperandContext::NUMBER)
+                .map(ParseTree::getText);
+        return Integer.parseInt(literal.orElseGet(nestedLiteral::get));
+    }
+
+    public static String getMethodName(FunctionCallContext ctx){
+        return ctx.var().IDENTIFIER().getText();
+    }
+
+    public static String getMethodName(FunctionDeclarationContext ctx){
+        return ctx.var().IDENTIFIER().getText();
     }
 }

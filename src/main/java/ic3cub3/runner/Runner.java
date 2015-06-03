@@ -12,6 +12,7 @@ import ic3cub3.tests.actual.ReachableBadState;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
@@ -39,6 +40,6 @@ public class Runner {
 	}
 	
 	public static void printv(Supplier<Object> s, int minverbosity){
-		if(VERBOSE>=minverbosity)System.out.println(s.get().toString());
+		if(VERBOSE>=minverbosity)System.out.println(Optional.ofNullable(s.get()).map(Object::toString).orElse("null"));
 	}
 }
