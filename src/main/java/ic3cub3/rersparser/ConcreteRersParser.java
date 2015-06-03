@@ -6,6 +6,7 @@ import ic3cub3.plf.cnf.Cube;
 import ic3cub3.rersparser.ProblemParser.*;
 import ic3cub3.tests.ProblemSet;
 
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -59,14 +60,14 @@ public class ConcreteRersParser extends AbstractRERSParser {
         //Build call tree (assume that it is indeed a tree)
         while(parseParseableMethods()) {}
         buildI();
-        //printv(() -> this.getI(),0);
-        //printv(() -> this.getI().getClauses().size(),0);
+        printv(this::getI,2);
+        printv(() -> "Size of I: "+this.getI().getClauses().size(),1);
         buildT();
-        //printv(() -> this.getT(), 0);
-        //printv(() -> this.getT().getClauses().size(),0);
+        printv(this::getT, 2);
+        printv(() -> "Size of I: "+this.getT().getClauses().size(),1);
         buildP();
-        //printv(() -> this.getP(),0);
-        //printv(() -> this.getT().getClauses().size(),0);
+        printv(this::getP,2);
+        printv(() -> "Size of P: "+this.getP().stream().map(PropertyPair::getProperty).map(Cube::getClauses).mapToInt(Set::size).sum(),1);
         printv(() -> "Done converting problem",0);
     }
 
@@ -82,6 +83,7 @@ public class ConcreteRersParser extends AbstractRERSParser {
         Cube resultT = restrictAssignments();
         Cube mainMethod = parseMultipleStatement(getMainMethod().statement().closedCompoundStatement());
         resultT = resultT.and(mainMethod);
+        resultT = resultT.and(getUniqueInputCube());
         setT(resultT);
     }
 
@@ -90,7 +92,7 @@ public class ConcreteRersParser extends AbstractRERSParser {
                 .sorted(Entry.comparingByValue())
                 .map(Entry::getKey)
                 .map(this::parseExpressionCondition)
-                .map(f -> PropertyPair.of(f.not().toEquivalentCube(),f.toEquivalentCube()))
+                .map(f -> PropertyPair.of(f.not().toEquivalentCube(), f.toEquivalentCube()))
                 .collect(Collectors.toList()));
     }
 

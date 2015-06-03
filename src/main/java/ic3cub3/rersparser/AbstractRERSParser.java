@@ -4,6 +4,7 @@ import ic3cub3.plf.AndFormula;
 import ic3cub3.plf.Formula;
 import ic3cub3.plf.Literal;
 import ic3cub3.plf.OrFormula;
+import ic3cub3.plf.cnf.Clause;
 import ic3cub3.plf.cnf.Cube;
 import ic3cub3.rersparser.ProblemParser.*;
 import ic3cub3.runner.Runner;
@@ -267,6 +268,26 @@ public abstract class AbstractRERSParser extends ProblemBaseListener{
                 .map(OperandContext::NUMBER)
                 .map(ParseTree::getText);
         return Integer.parseInt(literal.orElseGet(nestedLiteral::get));
+    }
+
+    /**
+     * Obtains a cube which states that only a single output should be enabled
+     * @return a cube representing that only a single output is enabled at any given time
+     */
+    protected Cube getUniqueInputCube(){
+        Collection<Literal> values = getInputs().values();
+
+        //state that at least one output should be true
+        Cube result = new Cube(new Clause(values.stream().
+                collect(Collectors.toSet())));
+        values.forEach(a -> values.stream().
+                filter(b -> (a != b)).
+                forEach(b -> {
+                    //internal set usage ensures only unique clauses are added
+                    result.addClause(new Clause(a.not(), b.not()));
+                }));
+        Runner.printv(() -> "Only one input enabled: "+result,2);
+        return result;
     }
 
     public static String getMethodName(FunctionCallContext ctx){
