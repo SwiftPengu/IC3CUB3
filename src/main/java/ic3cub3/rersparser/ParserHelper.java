@@ -1,5 +1,6 @@
 package ic3cub3.rersparser;
 
+import ic3cub3.ic3.IC3;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.antlr.v4.runtime.ANTLRInputStream;
@@ -14,7 +15,7 @@ import java.io.IOException;
 @Getter
 @AllArgsConstructor
 public class ParserHelper {
-    private ProblemBaseListener generator;
+    private ConcreteRersParser generator;
 	
 	public void parse(File f) throws IOException{
         ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(f));
@@ -31,4 +32,8 @@ public class ParserHelper {
         System.out.println("Finished analyzing parse tree");
         System.out.printf("Took: %dms\n",System.currentTimeMillis()-timer);
 	}
+
+    public void check(IC3 ic3){
+        getGenerator().getProblemSet().check(ic3);
+    }
 }

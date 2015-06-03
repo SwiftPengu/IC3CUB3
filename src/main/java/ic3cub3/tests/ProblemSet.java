@@ -32,10 +32,8 @@ public class ProblemSet {
 	}
 	
 	public void check(IC3 ic3){
-		getProperties().forEach(pp -> {
-			ic3.check(getInitial(), getTransition(),
-					pp.getProperty(), pp.getNegatedProperty());
-		});
+		getProperties().stream().forEach(pp -> ic3.check(getInitial(), getTransition(),
+                pp.getProperty(), pp.getNegatedProperty()));
 	}
 
 	/**

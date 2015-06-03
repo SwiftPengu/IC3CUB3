@@ -4,12 +4,15 @@ import ic3cub3.plf.Formula;
 import ic3cub3.plf.cnf.Clause;
 import ic3cub3.plf.cnf.Cube;
 import ic3cub3.rersparser.ProblemParser.*;
+import ic3cub3.tests.ProblemSet;
 
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static ic3cub3.runner.Runner.printv;
+import static ic3cub3.tests.ProblemSet.*;
+import static java.util.Map.Entry;
 
 public class ConcreteRersParser extends AbstractRERSParser {
     /**
@@ -26,7 +29,7 @@ public class ConcreteRersParser extends AbstractRERSParser {
                         var.getLiterals().get(i).getPrimed()
                         : var.getLiterals().get(i).not().getPrimed())
                 .map(Clause::new)
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList())).and(var.getAssignmentLiteral().toEquivalentCube());
     }
 
     public Formula parseInputEqual(int val){
@@ -35,19 +38,12 @@ public class ConcreteRersParser extends AbstractRERSParser {
 
     @Override
     public Formula parseEqual(Variable var, int val) {
-        //TODO remove the conversion to cube
-        return new Cube(IntStream.range(0, var.getLiterals().size()).boxed().sequential().map(
-                //test whether the i-th bit in value is 1 or 0
-                i -> ((val >> i) & 1) == 1 ?
-                        var.getLiterals().get(i)
-                        : var.getLiterals().get(i).not())
-                .map(Clause::new)
-                .collect(Collectors.toList())).toFormula();
+        return var.getCube(val).toFormula();
     }
 
     //0 -> variable not changed
     public Cube restrictAssignments(){
-        return getVariables().values().stream().map(var ->
+        return getVariables().values().stream().sequential().map(var ->
                 var.getAssignmentLiteral().not().implies(
                         //for each literal k state that k <-> k'
                         var.getLiterals().stream().map(l -> l.iff(l.getPrimed()))
@@ -63,14 +59,23 @@ public class ConcreteRersParser extends AbstractRERSParser {
         //Build call tree (assume that it is indeed a tree)
         while(parseParseableMethods()) {}
         buildI();
+        //printv(() -> this.getI(),0);
+        //printv(() -> this.getI().getClauses().size(),0);
         buildT();
+        //printv(() -> this.getT(), 0);
+        //printv(() -> this.getT().getClauses().size(),0);
         buildP();
-        printv(() -> this.getT().getClauses().size(),0);
-        //TODO
+        //printv(() -> this.getP(),0);
+        //printv(() -> this.getT().getClauses().size(),0);
+        printv(() -> "Done converting problem",0);
     }
 
     private void buildI() {
-
+        setI(getVariables().entrySet().stream()
+                        .filter(e -> getInitialValues().containsKey(e.getKey()))
+                        .map(e -> e.getValue().getCube(getInitialValues().get(e.getKey())))
+                        .reduce(new Cube(), Cube::and, Cube::and)
+        );
     }
 
     private void buildT() {
@@ -81,7 +86,12 @@ public class ConcreteRersParser extends AbstractRERSParser {
     }
 
     private void buildP() {
-
+        setP(getErrorids().entrySet().stream()
+                .sorted(Entry.comparingByValue())
+                .map(Entry::getKey)
+                .map(this::parseExpressionCondition)
+                .map(f -> PropertyPair.of(f.toEquivalentCube(),f.not().toEquivalentCube()))
+                .collect(Collectors.toList()));
     }
 
     public boolean parseParseableMethods(){
@@ -95,7 +105,6 @@ public class ConcreteRersParser extends AbstractRERSParser {
                         count[0]++;});
         return count[0]>0;
     }
-
 
     public static Stream<FunctionCallContext> getAllFunctionCalls(FunctionDeclarationContext ctx){
         return flatten(ctx.statement()).filter(s -> s.functionCall()!=null)

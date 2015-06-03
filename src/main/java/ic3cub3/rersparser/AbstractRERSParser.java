@@ -8,6 +8,7 @@ import ic3cub3.plf.cnf.Cube;
 import ic3cub3.rersparser.ProblemParser.*;
 import ic3cub3.runner.Runner;
 import ic3cub3.tests.ProblemSet;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -18,8 +19,8 @@ import java.util.stream.Collectors;
 /**
  * Class for encoding the RERS challenge programs as transition systems and properties suitable for IC3
  */
-@Setter
-@Getter
+@Setter(AccessLevel.PROTECTED)
+@Getter(AccessLevel.PROTECTED)
 public abstract class AbstractRERSParser extends ProblemBaseListener{
     private final Map<String,Variable> variables = new HashMap<>();
     private final Map<String,FunctionDeclarationContext> methodDeclarations = new HashMap<>();
@@ -76,7 +77,7 @@ public abstract class AbstractRERSParser extends ProblemBaseListener{
         }
     }
 
-    private Formula parseExpressionCondition(ExpressionContext ctx){
+    protected Formula parseExpressionCondition(ExpressionContext ctx){
         return ctx.andExpression().stream()
                 .map(this::parseAndCondition)
                 .reduce(OrFormula::new).get();
