@@ -37,33 +37,33 @@
 				</executions>
 			</plugin>
 			
-			<plugin>  
-				<groupId>org.codehaus.mojo</groupId>  
-				<artifactId>exec-maven-plugin</artifactId>  
-				<version>1.1.1</version>  
-				<executions>  
-				<execution>  
-					<phase>test</phase>  
-					<goals>  
-						<goal>java</goal>  
-					</goals>  
-					<configuration>  
-						<mainClass>ic3cub3.runner.Runner</mainClass>   
-					</configuration>  
-				</execution>  
-				</executions>  
-				</plugin>  
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.1.1</version>
+				<executions>
+				<execution>
+					<phase>test</phase>
+					<goals>
+						<goal>java</goal>
+					</goals>
+					<configuration>
+						<mainClass>ic3cub3.runner.Runner</mainClass>
+					</configuration>
+				</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 	
 	<dependencies>
 		<dependency>
 			<groupId>org.antlr</groupId>
-			<artifactId>antlr4-runtime</artifactId>
+			<artifactId>antlr4-maven-plugin</artifactId>
 			<version>4.5</version>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.ow2.sat4j</groupId>
 			<artifactId>org.ow2.sat4j.core</artifactId>
