@@ -90,7 +90,7 @@ public class ConcreteRersParser extends AbstractRERSParser {
                 .sorted(Entry.comparingByValue())
                 .map(Entry::getKey)
                 .map(this::parseExpressionCondition)
-                .map(f -> PropertyPair.of(f.toEquivalentCube(),f.not().toEquivalentCube()))
+                .map(f -> PropertyPair.of(f.not().toEquivalentCube(),f.toEquivalentCube()))
                 .collect(Collectors.toList()));
     }
 
