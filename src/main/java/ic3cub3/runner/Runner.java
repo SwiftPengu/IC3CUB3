@@ -17,11 +17,11 @@ import java.util.function.Supplier;
  *
  */
 public class Runner {
-	public static int VERBOSE = 1;
+	public static int VERBOSE = 0;
 
 	public static void main(String[] args) throws IOException {
 		ParserHelper ph = new ParserHelper(new ConcreteRersParser());
-		ph.parse(new File("src/main/java/ic3cub3/rersproblems/problemtest.c"));
+		ph.parse(new File("src/main/java/ic3cub3/rersproblems/Problem1/Problem1.c"));
         ph.check(new IC3(new SAT4J()));
 
 		//System.exit(0);

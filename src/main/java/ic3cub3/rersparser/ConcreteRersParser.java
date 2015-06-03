@@ -4,7 +4,6 @@ import ic3cub3.plf.Formula;
 import ic3cub3.plf.cnf.Clause;
 import ic3cub3.plf.cnf.Cube;
 import ic3cub3.rersparser.ProblemParser.*;
-import ic3cub3.tests.ProblemSet;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -12,7 +11,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static ic3cub3.runner.Runner.printv;
-import static ic3cub3.tests.ProblemSet.*;
+import static ic3cub3.tests.ProblemSet.PropertyPair;
 import static java.util.Map.Entry;
 
 public class ConcreteRersParser extends AbstractRERSParser {
@@ -81,7 +80,7 @@ public class ConcreteRersParser extends AbstractRERSParser {
 
     private void buildT() {
         Cube resultT = restrictAssignments();
-        Cube mainMethod = parseMultipleStatement(getMainMethod().statement().closedCompoundStatement());
+        Cube mainMethod = parseMultipleStatement(getMainMethod().statement().closedCompoundStatement()).findAny().get();
         resultT = resultT.and(mainMethod);
         resultT = resultT.and(getUniqueInputCube());
         setT(resultT);
@@ -103,7 +102,7 @@ public class ConcreteRersParser extends AbstractRERSParser {
                 .filter(e -> getAllFunctionCalls(e.getValue()).allMatch(f -> getInlinedMethods().containsKey(getMethodName(f))))
                         //actual parsing takes place here
                 .forEach(e -> {getInlinedMethods().put(e.getKey(),
-                        parseMultipleStatement(e.getValue().statement().closedCompoundStatement()));
+                        parseMultipleStatement(e.getValue().statement().closedCompoundStatement()).findAny().get());
                         count[0]++;});
         return count[0]>0;
     }

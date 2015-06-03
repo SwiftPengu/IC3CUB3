@@ -16,6 +16,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Class for encoding the RERS challenge programs as transition systems and properties suitable for IC3
@@ -43,7 +44,7 @@ public abstract class AbstractRERSParser extends ProblemBaseListener{
     public abstract Formula parseEqual(Variable var,int val);
     public abstract Formula parseInputEqual(int val);
 
-    public Cube parseSingleStatement(StatementContext ctx){
+    public Stream<Cube> parseSingleStatement(StatementContext ctx){
         if(ctx.assignStatement()!=null)return prepareAssignment(ctx.assignStatement());
         if(ctx.functionCall()!=null)return prepareFunctionCall(ctx.functionCall());
         if(ctx.ifStatement()!=null)return prepareIf(ctx.ifStatement());
@@ -51,30 +52,29 @@ public abstract class AbstractRERSParser extends ProblemBaseListener{
         throw new UnsupportedOperationException("Unable to parse statement: "+ctx);
     }
 
-    public Cube parseMultipleStatement(ClosedCompoundStatementContext closedCompoundStatementContext){
-        return new Cube(closedCompoundStatementContext.compoundStatement().statement().stream()
-                .map(this::parseSingleStatement)
+    public Stream<Cube> parseMultipleStatement(ClosedCompoundStatementContext closedCompoundStatementContext){
+        return Stream.of(new Cube(closedCompoundStatementContext.compoundStatement().statement().stream()
+                .flatMap(this::parseSingleStatement)
                 .map(Cube::getClauses)
                 .flatMap(Set::stream)
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList())));
     }
 
-    private Cube prepareAssignment(AssignStatementContext assignStatementContext) {
+    private Stream<Cube> prepareAssignment(AssignStatementContext assignStatementContext) {
         assert(assignStatementContext!=null);
         assert(getVariables().containsKey(assignStatementContext.var().IDENTIFIER().getText()));
-        assert(assignStatementContext.expression().andExpression(0).booleanExpression(0).addExpression(0).mulExpression(0).operand(0).NUMBER()!=null);
-        return parseAssignment(getVariables().get(assignStatementContext.var().IDENTIFIER().getText()),
-               getIntegerFromExpression(assignStatementContext.expression()));
+        return Stream.of(parseAssignment(getVariables().get(assignStatementContext.var().IDENTIFIER().getText()),
+                getIntegerFromExpression(assignStatementContext.expression())));
     }
 
-    private Cube prepareFunctionCall(FunctionCallContext functionCallContext) {
-        assert(getMethodDeclarations().containsKey(functionCallContext.var().IDENTIFIER().getText()));
+    private Stream<Cube> prepareFunctionCall(FunctionCallContext functionCallContext) {
         switch(getMethodName(functionCallContext).toLowerCase()){
+            case "fprintf":
             case "printf":
             case "errorcheck":
-                return new Cube();
+                return Stream.empty();
             default:
-                return getInlinedMethods().get(functionCallContext.var().IDENTIFIER().getText());
+                return Stream.of(getInlinedMethods().get(functionCallContext.var().IDENTIFIER().getText()));
         }
     }
 
@@ -100,10 +100,10 @@ public abstract class AbstractRERSParser extends ProblemBaseListener{
                             operand(0).
                             NUMBER().
                             getText());
-            assert(getVariables().containsKey(id));
             if(id.equals("input")){
                 return parseInputEqual(value);
             }else {
+                assert(getVariables().containsKey(id));
                 return parseEqual(getVariables().get(id), value);
             }
         }else{
@@ -111,11 +111,22 @@ public abstract class AbstractRERSParser extends ProblemBaseListener{
         }
     }
 
-    private Cube prepareIf(IfStatementContext ifStatementContext) {
-        return parseExpressionCondition(ifStatementContext.expression())
-                .implies(
-                        parseSingleStatement(ifStatementContext.statement()).toFormula()
-                ).toEquivalentCube();
+    private Stream<Cube> prepareIf(IfStatementContext ifStatementContext) {
+        System.out.println(ifStatementContext.getText());
+        System.out.println(ifStatementContext.expression().getText());
+        System.out.println(ifStatementContext.statement());
+        System.out.flush();
+        Optional<Cube> statement = parseSingleStatement(
+                ifStatementContext.statement()
+        ).findAny();
+        if(statement.isPresent()){
+            return Stream.of(parseExpressionCondition(ifStatementContext.expression())
+                    .implies(statement.get().toFormula())
+                    .toEquivalentCube());
+        }else{
+            return Stream.empty();
+        }
+
     }
 
     private void processProperties(FunctionDeclarationContext ctx) {
