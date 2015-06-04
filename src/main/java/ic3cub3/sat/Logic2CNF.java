@@ -7,8 +7,14 @@ import ic3cub3.plf.cnf.Cube;
 import ic3cub3.runner.Runner;
 import ic3cub3.runner.Settings;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+import java.util.Set;
 
 /**
  * A wrapper for Logic2CNF

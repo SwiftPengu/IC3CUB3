@@ -1,10 +1,11 @@
 package ic3cub3.plf;
 
-import ic3cub3.plf.cnf.*;
+import ic3cub3.plf.cnf.Clause;
+import ic3cub3.plf.cnf.Cube;
+import ic3cub3.plf.cnf.TseitinCube;
+import lombok.Getter;
 
 import java.util.Set;
-
-import lombok.Getter;
 
 /**
  * A class representing the logical OR of two other formulae
@@ -112,10 +113,9 @@ public class OrFormula extends Formula{
 	@Override
 	public Cube toEquivalentCube() {
 		final Cube result = new Cube();
-		final Cube R = getRight().toEquivalentCube();
-		getLeft().toEquivalentCube().getClauses().stream().forEach(
-				c1 -> R.getClauses().stream().forEach(
-						c2 -> result.addClause(c1.or(c2))));
+        Cube R = getRight().toEquivalentCube();
+        Cube L = getLeft().toEquivalentCube();
+        L.getClauses().stream().forEach(c1 -> R.getClauses().stream().map(c1::or).forEach(result::addClause));
 		return result;
 	}
 }

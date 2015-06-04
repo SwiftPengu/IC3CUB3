@@ -1,10 +1,12 @@
 package ic3cub3.plf;
 
-import ic3cub3.plf.cnf.*;
-
-import java.util.*;
-
+import ic3cub3.plf.cnf.Cube;
+import ic3cub3.plf.cnf.TseitinCube;
 import lombok.Getter;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A class representing a boolean literal

@@ -2,7 +2,9 @@ package ic3cub3.runner;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.*;
+import java.util.Collections;
+import java.util.Scanner;
+import java.util.Set;
 
 /**
  *	Class used to store settings in a file 

@@ -1,13 +1,14 @@
 package ic3cub3.ic3;
 
 
-import static ic3cub3.runner.Runner.printv;
 import ic3cub3.plf.Literal;
 import ic3cub3.plf.cnf.Clause;
 import ic3cub3.plf.cnf.Cube;
 import ic3cub3.sat.SATSolver;
 
 import java.util.*;
+
+import static ic3cub3.runner.Runner.printv;
 
 /**
  * Class which implements the IC3 algorithm

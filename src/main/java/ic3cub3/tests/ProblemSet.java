@@ -2,11 +2,10 @@ package ic3cub3.tests;
 
 import ic3cub3.ic3.IC3;
 import ic3cub3.plf.cnf.Cube;
+import lombok.Data;
 
 import java.util.Arrays;
 import java.util.List;
-
-import lombok.Data;
 
 /**
  * Class representing a transition system, along with multiple properties and their negation

@@ -4,12 +4,16 @@ import ic3cub3.plf.Literal;
 import ic3cub3.plf.cnf.Clause;
 import ic3cub3.plf.cnf.Cube;
 import ic3cub3.runner.Runner;
-
-import java.util.*;
-
 import org.sat4j.core.VecInt;
 import org.sat4j.minisat.SolverFactory;
-import org.sat4j.specs.*;
+import org.sat4j.specs.ContradictionException;
+import org.sat4j.specs.ISolver;
+import org.sat4j.specs.TimeoutException;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 /**
  * A wrapper for the SAT4J port of Minisat

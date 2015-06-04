@@ -2,10 +2,9 @@ package ic3cub3.ic3;
 
 import ic3cub3.plf.cnf.Cube;
 import ic3cub3.runner.Runner;
+import lombok.Getter;
 
 import java.util.LinkedList;
-
-import lombok.Getter;
 
 /**
  * Class representing an obligation to prove that a given CTI should not hold be

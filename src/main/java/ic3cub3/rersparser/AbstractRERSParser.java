@@ -7,7 +7,6 @@ import ic3cub3.plf.OrFormula;
 import ic3cub3.plf.cnf.Clause;
 import ic3cub3.plf.cnf.Cube;
 import ic3cub3.rersparser.ProblemParser.*;
-import ic3cub3.runner.Runner;
 import ic3cub3.tests.ProblemSet;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -17,6 +16,8 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static ic3cub3.runner.Runner.printv;
 
 /**
  * Class for encoding the RERS challenge programs as transition systems and properties suitable for IC3
@@ -112,10 +113,6 @@ public abstract class AbstractRERSParser extends ProblemBaseListener{
     }
 
     private Stream<Cube> prepareIf(IfStatementContext ifStatementContext) {
-        System.out.println(ifStatementContext.getText());
-        System.out.println(ifStatementContext.expression().getText());
-        System.out.println(ifStatementContext.statement());
-        System.out.flush();
         Optional<Cube> statement = parseSingleStatement(
                 ifStatementContext.statement()
         ).findAny();
@@ -126,7 +123,6 @@ public abstract class AbstractRERSParser extends ProblemBaseListener{
         }else{
             return Stream.empty();
         }
-
     }
 
     private void processProperties(FunctionDeclarationContext ctx) {
@@ -139,7 +135,7 @@ public abstract class AbstractRERSParser extends ProblemBaseListener{
             assert(statement.ifStatement().statement().closedCompoundStatement().compoundStatement().statement(1).label().statement().functionCall().var().getText().equals("assert"));
             String errorconst = statement.ifStatement().statement().closedCompoundStatement().compoundStatement().statement(1).label().statement().functionCall().expression(0).andExpression(0).booleanExpression(0).operand().getText();
             errorids.put(condition, Integer.parseInt(errorconst.substring(6)));
-            System.out.println("Error number "+errorids.get(condition)+" has condition "+condition.getText());
+            printv(() -> "Error number " + errorids.get(condition) + " has condition " + condition.getText(),1);
         }
     }
 
@@ -162,7 +158,7 @@ public abstract class AbstractRERSParser extends ProblemBaseListener{
                 if(methodName.startsWith("calculate_output")){
                     getMethodDeclarations().put(methodName, ctx);
                 }else{
-                    Runner.printv(() -> "Warning: skipping over unsupported method: " + methodName, 1);
+                    printv(() -> "Warning: skipping over unsupported method: " + methodName, 1);
                 }
                 break;
         }
@@ -198,18 +194,18 @@ public abstract class AbstractRERSParser extends ProblemBaseListener{
         //parse the variable type
         String type = ctx.type().types().getText();
         if(!id.startsWith("error_")){
-            System.out.println("Adding variable: "+id);
+            printv(() -> "Adding variable: "+id,1);
             switch(type){
                 case "int":
                     //declare the variable and allocate literals
-                    getVariables().put(id,Variable.of(4));
+                    getVariables().put(id,Variable.of(32));
 
                     //check whether this is an initialisation
                     if(ctx.assign()!=null){
                         //TODO code breaks with arrays
                         int val = getIntegerFromExpression(ctx.assign().expression());
                         initialValues.put(id, val);
-                        System.out.println("Initialised " + id + " to " + initialValues.get(id));
+                        printv(() -> "Initialised " + id + " to " + initialValues.get(id),1);
                     }
                     break;
                 default:
@@ -297,7 +293,7 @@ public abstract class AbstractRERSParser extends ProblemBaseListener{
                     //internal set usage ensures only unique clauses are added
                     result.addClause(new Clause(a.not(), b.not()));
                 }));
-        Runner.printv(() -> "Only one input enabled: "+result,2);
+        printv(() -> "Only one input enabled: " + result, 2);
         return result;
     }
 

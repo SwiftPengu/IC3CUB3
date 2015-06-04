@@ -17,9 +17,10 @@ import java.util.function.Supplier;
  *
  */
 public class Runner {
-	public static int VERBOSE = 0;
+	public static int VERBOSE = 1;
 
 	public static void main(String[] args) throws IOException {
+        System.out.println("cores: "+Runtime.getRuntime().availableProcessors());
 		ParserHelper ph = new ParserHelper(new ConcreteRersParser());
 		ph.parse(new File("src/main/java/ic3cub3/rersproblems/Problem1/Problem1.c"));
         ph.check(new IC3(new SAT4J()));

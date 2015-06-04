@@ -1,6 +1,8 @@
 package ic3cub3.plf.cnf;
 
-import ic3cub3.plf.*;
+import ic3cub3.plf.AndFormula;
+import ic3cub3.plf.Formula;
+import ic3cub3.plf.Literal;
 
 import java.util.ArrayList;
 import java.util.Collection;

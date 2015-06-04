@@ -1,11 +1,12 @@
 package ic3cub3.plf.cnf;
 
-import ic3cub3.plf.*;
+import ic3cub3.plf.AndFormula;
+import ic3cub3.plf.Formula;
+import ic3cub3.plf.Literal;
+import lombok.Getter;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
-import lombok.Getter;
 
 /**
  *  A class representing a conjunction of clauses

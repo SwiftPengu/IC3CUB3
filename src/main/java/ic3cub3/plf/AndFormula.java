@@ -1,10 +1,11 @@
 package ic3cub3.plf;
 
-import ic3cub3.plf.cnf.*;
+import ic3cub3.plf.cnf.Clause;
+import ic3cub3.plf.cnf.Cube;
+import ic3cub3.plf.cnf.TseitinCube;
+import lombok.Getter;
 
 import java.util.Set;
-
-import lombok.Getter;
 
 /**
  * A class representing the logical AND of two other formulae
@@ -112,8 +113,8 @@ public class AndFormula extends Formula{
 	
 	@Override
 	public Cube toEquivalentCube() {
-		Cube result = getLeft().toEquivalentCube();
-		result = result.and(getRight().toEquivalentCube());
-		return result;
+        Cube R = getRight().toEquivalentCube();
+        Cube L = getLeft().toEquivalentCube();
+		return L.and(R);
 	}
 }
