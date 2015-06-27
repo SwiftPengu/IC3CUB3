@@ -251,30 +251,45 @@ public class Problem {
 	}
 
 	protected Formula makePlayerMove(int dX, int dY){
-		long xResult = getFalse();
+		Formula xResult = null;
 		for(int x = Math.max(0, -dX); x < game.getWidth() - Math.max(0, dX); x++) {
-			long moveForThisX = getTrue();
+			Formula moveForThisX = null;
 			for(int varX = 0; varX < game.getWidth(); varX++) {
-				moveForThisX = makeAnd(moveForThisX,
-						varX == x ? gh.getPlayerXVar(varX) : makeNot(gh.getPlayerXVar(varX)));
-				moveForThisX = makeAnd(moveForThisX,
-						varX + dX == x ? gh.getPlayerXVarPrime(varX) : makeNot(gh.getPlayerXVarPrime(varX)));
+				Literal xequal = varX == x ? gh.getPlayerXVar(varX) : gh.getPlayerXVar(varX).not());
+				if(moveForThisX==null){
+					moveForThisX=xequal;
+				}else{
+					moveForThisX = moveForThisX.and(xequal);
+				}
+				moveForThisX = moveForThisX.and(varX + dX == x ? gh.getPlayerXVarPrime(varX) : gh.getPlayerXVarPrime(varX).not());
 			}
-			xResult = makeOr(xResult, moveForThisX);
+			if(xResult==null){
+				xResult=moveForThisX;
+			}else{
+				xResult=xResult.or(moveForThisX);
+			}
 		}
 
-		long yResult = getFalse();
+		Formula yResult = null;
 		for(int y = Math.max(0, -dY); y < game.getHeight() - Math.max(0, dY); y++) {
-			long moveForThisY = getTrue();
+			Formula moveForThisY = null;
 			for(int varY = 0; varY < game.getHeight(); varY++) {
-				moveForThisY = makeAnd(moveForThisY,
-						varY == y ? gh.getPlayerYVar(varY) : makeNot(gh.getPlayerYVar(varY)));
-				moveForThisY = makeAnd(moveForThisY,
-						varY + dY == y ? gh.getPlayerYVarPrime(varY) : makeNot(gh.getPlayerYVarPrime(varY)));
+				Literal yequal = varY == y ? gh.getPlayerYVar(varY) : gh.getPlayerYVar(varY).not();
+				if(moveForThisY==null){
+					moveForThisY=yequal;
+				}else{
+					moveForThisY = moveForThisY.and(yequal);
+				}
+				moveForThisY = moveForThisY.and(varY + dY == y ? gh.getPlayerYVarPrime(varY) : gh.getPlayerYVarPrime(varY).not());
 			}
-			yResult = makeOr(yResult, moveForThisY);
+			if(yResult==null){
+				yResult=moveForThisY;
+			}else {
+				yResult = yResult.or(moveForThisY);
+			}
 		}
-		return makeAnd(xResult, yResult);
+		assert(xResult!=null && yResult!=null);
+		return xResult.and(yResult);
 	}
 
 //	(x=next(player.x) & y=next(player.y) ->
@@ -288,56 +303,36 @@ public class Problem {
 		List<int[]> boxes = game.getBoxes();
 		long result = getTrue();
 		for(int i = 0; i < boxes.size(); i++) {
-			disableGC();
-			Runner.sleepPrint(String.format("d: box %d/%d",i,boxes.size()));
 			long playerBoxCollision = makePlayerBoxCollision(i);
 			long boxMove = getTrue();
 
-			Runner.sleepPrint(String.format("d: box %d/%d LEFT",i,boxes.size()));
 			long moveLeft = makeImplies(
 					makeAnd(gh.getDirectionVariable(Direction.LEFT), makeNot(gh.getBoxX(i,0))),
 					makeBoxMove(i,-1,0));
 			boxMove=ref(makeAnd(moveLeft,boxMove));
 
-			Runner.sleepPrint(String.format("d: box %d/%d RIGHT",i,boxes.size()));
 			long moveRight = makeImplies(
 					makeAnd(gh.getDirectionVariable(Direction.RIGHT), makeNot(gh.getBoxX(i,game.getWidth() - 1))),
 					makeBoxMove(i,1,0));
-			deref(boxMove);
 			boxMove=ref(makeAnd(moveRight,boxMove));
 
-			Runner.sleepPrint(String.format("d: box %d/%d UP",i,boxes.size()));
 			long moveUp = makeImplies(
 					makeAnd(gh.getDirectionVariable(Direction.UP), makeNot(gh.getBoxY(i,0))),
 					makeBoxMove(i,0,-1));
 			deref(boxMove);
 			boxMove=ref(makeAnd(moveUp,boxMove));
 
-			Runner.sleepPrint(String.format("d: box %d/%d DOWN",i,boxes.size()));
 			long moveDown = makeImplies(
 					makeAnd(gh.getDirectionVariable(Direction.DOWN), makeNot(gh.getBoxY(i,game.getHeight() - 1))),
 					makeBoxMove(i,0,1));
-			deref(boxMove);
 			boxMove=ref(makeAnd(moveDown,boxMove));
 
-			//long boxMove = makeAnd(makeAnd(makeAnd(moveLeft,moveRight), moveUp), moveDown);
-			Runner.sleepPrint(String.format("d: box %d/%d Result",i,boxes.size()));
-
 			long moveBoxAside = makeImplies(playerBoxCollision, boxMove);
-			Runner.sleepPrint(String.format("d: box %d/%d Box d0",i,boxes.size()));
 			long noBoxMovement = makeBoxMove(i,0,0);
-			Runner.sleepPrint(String.format("d: box %d/%d moveatcollision",i,boxes.size()));
 			long onlyMoveAtCollision = makeImplies(makeNot(playerBoxCollision), noBoxMovement);
-			Runner.sleepPrint(String.format("d: box %d/%d total",i,boxes.size()));
 			long total = makeAnd(moveBoxAside, onlyMoveAtCollision);
-			Runner.sleepPrint(String.format("d: box %d/%d append",i,boxes.size()));
-			deref(result);
-			enableGC();
 			result = ref(makeAnd(result, total));
-
 		}
-		ref(result);
-		//enableGC();
 		return result;
 	}
 
@@ -378,8 +373,8 @@ public class Problem {
 				result = result.and(playerboxcol);
 			}
 		}
-		assert(result!=null);
-		for(int y = 0; y < game.getHeight(); y++) {
+		assert (result != null);
+		for (int y = 0; y < game.getHeight(); y++) {
 			result = result.and(gh.getBoxY(box, y).iff(gh.getPlayerYVarPrime(y)));
 		}
 		return result.toEquivalentCube();
