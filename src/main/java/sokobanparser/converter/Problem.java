@@ -1,5 +1,6 @@
 package sokobanparser.converter;
 
+import com.google.common.primitives.Ints;
 import ic3cub3.plf.AndFormula;
 import ic3cub3.plf.Formula;
 import ic3cub3.plf.Literal;
@@ -11,6 +12,8 @@ import sokobanparser.Game;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -75,11 +78,15 @@ public class Problem {
 	 * @return referenced BDD
 	 */
 	public Cube getTrans(){
-		return makeWallsInvariant()
+		Cube result = makeWallsInvariant()
 				.and(makeDirectionTrans())
 				.and(makePlayerMove())
-				.and(makeNoBoxCollisionInvariant())
 				.and(makeBoxMove());
+		Optional<Cube> nbcinv = makeNoBoxCollisionInvariant();
+		if(nbcinv.isPresent()){
+			result = result.and(nbcinv.get());
+		}
+		return result;
 	}
 
 	/**
@@ -181,27 +188,20 @@ public class Problem {
 	 * This is an invariant.
 	 * @return The referenced BDD.
 	 */
-	protected Cube makeNoBoxCollisionInvariant() {
+	protected Optional<Cube> makeNoBoxCollisionInvariant() {
 		int numberOfBoxes = game.getBoxes().size();
-		long result = getTrue();
+
 		//Invariant is only needed when more than one box exists
 		if(numberOfBoxes>1){
-			// We will make pairwise expressions for all the boxes
-			for(int i = 0; i < numberOfBoxes; i++) {
-				for(int j = i + 1; j < numberOfBoxes; j++) {
-					long paircollision = makeBoxCollisionPair(i,j);
-					//TODO test dit
-					deref(result);
-					result = ref(makeAnd(result, makeNot(paircollision)));
-					deref(paircollision);
-				}
-			}
+			return Optional.of(IntStream.range(0,numberOfBoxes).boxed().flatMap(i ->
+					IntStream.range(i+1,numberOfBoxes).boxed().map(j -> makeBoxCollisionPair(i,j).not())
+			).reduce(Formula::and).get().toEquivalentCube());
+		}else{
+			return Optional.empty();
 		}
-		result = ref(result);
-		return result;
 	}
 
-	protected Cube makeBoxCollisionPair(int box1, int box2) {
+	protected Formula makeBoxCollisionPair(int box1, int box2) {
 		disableGC();
 		long result = getTrue();
 		//TODO optimize: only consider valid positions (without a wall)
