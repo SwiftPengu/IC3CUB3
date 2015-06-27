@@ -255,7 +255,7 @@ public class Problem {
 		for(int x = Math.max(0, -dX); x < game.getWidth() - Math.max(0, dX); x++) {
 			Formula moveForThisX = null;
 			for(int varX = 0; varX < game.getWidth(); varX++) {
-				Literal xequal = varX == x ? gh.getPlayerXVar(varX) : gh.getPlayerXVar(varX).not());
+				Literal xequal = varX == x ? gh.getPlayerXVar(varX) : gh.getPlayerXVar(varX).not();
 				if(moveForThisX==null){
 					moveForThisX=xequal;
 				}else{
