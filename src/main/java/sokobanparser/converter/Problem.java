@@ -2,13 +2,17 @@ package sokobanparser.converter;
 
 import ic3cub3.plf.AndFormula;
 import ic3cub3.plf.Formula;
+import ic3cub3.plf.Literal;
+import ic3cub3.plf.cnf.Clause;
 import ic3cub3.plf.cnf.Cube;
 import lombok.Getter;
 import sokobanparser.Game;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * Class representing the BDDs of the problem to be solved
@@ -84,19 +88,13 @@ public class Problem {
 	 * @return The reference to the BDD
 	 */
 	private Cube makeUniqueDirection() {
-		Direction[] dirs = Direction.values();
-		disableGC();
-		long result = getFalse();
-		for(int i = 0; i < dirs.length; i++) {
-			long dirBdd = getTrue();
-			for(int j = 0; j < dirs.length; j++) {
-				dirBdd = makeAnd(dirBdd, i == j ? gh.getDirectionVariable(dirs[j]) : makeNot(gh.getDirectionVariable(dirs[j])));
-			}
-			result = makeOr(result, dirBdd);
-		}
-		ref(result);
-		enableGC();
-		return result;
+		return Arrays.stream(Direction.values()).map(dir -> Arrays.stream(Direction.values())
+                	.map(dir2 -> dir2 == dir ? gh.getDirectionVariable(dir2) : gh.getDirectionVariable(dir2).not())
+                	.map(l -> (Formula) l)
+                	.reduce(Formula::and).get()
+		).reduce(Formula::or)
+				.get()
+				.toEquivalentCube();
 	}
 
 	/**
@@ -105,31 +103,18 @@ public class Problem {
 	 * @return a reference to a BDD representing that the player is at location x
 	 */
 	private Cube makePlayerAtX(int x){
-		disableGC();
-		long result = getTrue();
-		for(int i = 0;i<game.getWidth();i++){
-			result = makeAnd(result,
-					(i==x)?gh.getPlayerXVar(i)
-							:makeNot(gh.getPlayerXVar(i)));
-		}
-		ref(result);
-		enableGC();
-		return result;
+		return IntStream.range(0,game.getWidth()).boxed()
+				.map(i -> (i==x?gh.getPlayerXVar(i):gh.getPlayerXVar(i).not()))
+				.map(Cube::new)
+				.reduce(Cube::and).get();
 	}
 
 	//returns a referenced BDD representing that the player is at location y
 	private Cube makePlayerAtY(int y){
-		disableGC();
-		long result = getTrue();
-		for(int i = 0;i<game.getHeight();i++){
-			result = makeAnd(result,
-					(i==y)?gh.getPlayerYVar(i)
-							:makeNot(gh.getPlayerYVar(i)));
-		}
-		ref(result);
-		enableGC();
-		return result;
-	}
+		return IntStream.range(0,game.getWidth()).boxed()
+				.map(i -> (i==y?gh.getPlayerYVar(i):gh.getPlayerYVar(i).not()))
+				.map(Cube::new)
+				.reduce(Cube::and).get();	}
 
 	//returns a reference to a BDD representing all the boxes at the right locations
 	private Cube makeBoxes() {
