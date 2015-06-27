@@ -301,42 +301,25 @@ public class Problem {
 //	(!(x = next(player.x) & y = next(player.y)) -> x = next(x) & y = next(y))
 	protected Cube makeBoxMove() {
 		List<int[]> boxes = game.getBoxes();
-		long result = getTrue();
+		Cube result = new Cube();
 		for(int i = 0; i < boxes.size(); i++) {
-			long playerBoxCollision = makePlayerBoxCollision(i);
-			long boxMove = getTrue();
+			Formula playerBoxCollision = makePlayerBoxCollision(i);
+			Cube moveLeft = new AndFormula(gh.getDirectionVariable(Direction.LEFT), gh.getBoxX(i,0).not()).implies(makeBoxMove(i,-1,0)).toEquivalentCube();
+			Cube moveRight = new AndFormula(gh.getDirectionVariable(Direction.RIGHT), gh.getBoxX(i,game.getWidth() - 1).not()).implies(makeBoxMove(i,1,0)).toEquivalentCube();
+			Cube moveUp = new AndFormula(gh.getDirectionVariable(Direction.UP), gh.getBoxY(i,0).not()).implies(makeBoxMove(i,0,-1)).toEquivalentCube();
+			Cube moveDown = new AndFormula(gh.getDirectionVariable(Direction.DOWN), gh.getBoxY(i,game.getHeight() - 1).not()).implies(makeBoxMove(i,0,1)).toEquivalentCube();
 
-			long moveLeft = makeImplies(
-					makeAnd(gh.getDirectionVariable(Direction.LEFT), makeNot(gh.getBoxX(i,0))),
-					makeBoxMove(i,-1,0));
-			boxMove=ref(makeAnd(moveLeft,boxMove));
-
-			long moveRight = makeImplies(
-					makeAnd(gh.getDirectionVariable(Direction.RIGHT), makeNot(gh.getBoxX(i,game.getWidth() - 1))),
-					makeBoxMove(i,1,0));
-			boxMove=ref(makeAnd(moveRight,boxMove));
-
-			long moveUp = makeImplies(
-					makeAnd(gh.getDirectionVariable(Direction.UP), makeNot(gh.getBoxY(i,0))),
-					makeBoxMove(i,0,-1));
-			deref(boxMove);
-			boxMove=ref(makeAnd(moveUp,boxMove));
-
-			long moveDown = makeImplies(
-					makeAnd(gh.getDirectionVariable(Direction.DOWN), makeNot(gh.getBoxY(i,game.getHeight() - 1))),
-					makeBoxMove(i,0,1));
-			boxMove=ref(makeAnd(moveDown,boxMove));
-
-			long moveBoxAside = makeImplies(playerBoxCollision, boxMove);
-			long noBoxMovement = makeBoxMove(i,0,0);
-			long onlyMoveAtCollision = makeImplies(makeNot(playerBoxCollision), noBoxMovement);
-			long total = makeAnd(moveBoxAside, onlyMoveAtCollision);
-			result = ref(makeAnd(result, total));
+			Cube boxMove = moveLeft.and(moveRight).and(moveUp).and(moveDown);
+			Formula moveBoxAside = playerBoxCollision.implies(boxMove.toFormula());
+			Formula noBoxMovement = makeBoxMove(i,0,0);
+			Formula onlyMoveAtCollision = playerBoxCollision.not().implies(noBoxMovement);
+			Cube total = moveBoxAside.and(onlyMoveAtCollision).toEquivalentCube();
+			result = result.and(total);
 		}
 		return result;
 	}
 
-	protected Cube makeBoxMove(int boxid, int dX, int dY){
+	protected Formula makeBoxMove(int boxid, int dX, int dY){
 		long xResult = getFalse();
 		for(int x = Math.max(0, -dX); x < game.getWidth() - Math.max(0, dX); x++) {
 			long moveForThisX = getTrue();
@@ -363,7 +346,7 @@ public class Problem {
 	}
 
 	// box.x=next(player.x) & box.y=next(player.y)
-	protected Cube makePlayerBoxCollision(int box) {
+	protected Formula makePlayerBoxCollision(int box) {
 		Formula result = null;
 		for(int x = 0; x < game.getWidth(); x++) {
 			Formula playerboxcol = gh.getBoxX(box,x).iff(gh.getPlayerXVarPrime(x));
@@ -377,7 +360,7 @@ public class Problem {
 		for (int y = 0; y < game.getHeight(); y++) {
 			result = result.and(gh.getBoxY(box, y).iff(gh.getPlayerYVarPrime(y)));
 		}
-		return result.toEquivalentCube();
+		return result;
 	}
 
 }
