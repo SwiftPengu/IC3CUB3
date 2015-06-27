@@ -172,7 +172,7 @@ public class Problem {
 			if(result==null){
 				result = nextplayerloc;
 			}else{
-				result = result.or(nextplayerloc)
+				result = result.or(nextplayerloc);
 			}
 			for(int boxid = 0; boxid < boxes.size(); boxid++) {
 				result.or(new AndFormula(gh.getBoxXPrime(boxid, x), gh.getBoxYPrime(boxid, y)));
@@ -245,7 +245,7 @@ public class Problem {
 				.implies(makePlayerMove(0, -1)).toEquivalentCube());
 
 		// direction=DOWN & y<yDimen+(-1) -> next(y) = y+1 & next(x) = x
-		result = result.and(new AndFormula(gh.getDirectionVariable(Direction.UP),gh.getPlayerYVar(game.getHeight()-1).not())
+		result = result.and(new AndFormula(gh.getDirectionVariable(Direction.UP), gh.getPlayerYVar(game.getHeight() - 1).not())
 				.implies(makePlayerMove(0, 1)).toEquivalentCube());
 		return result;
 	}
@@ -369,14 +369,20 @@ public class Problem {
 
 	// box.x=next(player.x) & box.y=next(player.y)
 	protected Cube makePlayerBoxCollision(int box) {
-		long result = getTrue();
+		Formula result = null;
 		for(int x = 0; x < game.getWidth(); x++) {
-			result = makeAnd(result, makeEquals(gh.getBoxX(box, x), gh.getPlayerXVarPrime(x)));
+			Formula playerboxcol = gh.getBoxX(box,x).iff(gh.getPlayerXVarPrime(x));
+			if(result==null){
+				result=playerboxcol;
+			}else {
+				result = result.and(playerboxcol);
+			}
 		}
+		assert(result!=null);
 		for(int y = 0; y < game.getHeight(); y++) {
-			result = makeAnd(result, makeEquals(gh.getBoxY(box, y), gh.getPlayerYVarPrime(y)));
+			result = result.and(gh.getBoxY(box, y).iff(gh.getPlayerYVarPrime(y)));
 		}
-		return result;
+		return result.toEquivalentCube();
 	}
 
 }
