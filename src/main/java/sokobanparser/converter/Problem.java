@@ -2,21 +2,19 @@ package sokobanparser.converter;
 
 import ic3cub3.plf.AndFormula;
 import ic3cub3.plf.Formula;
-import ic3cub3.plf.Literal;
-import ic3cub3.plf.OrFormula;
 import ic3cub3.plf.cnf.Cube;
+import lombok.Getter;
 import sokobanparser.Game;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
  * Class representing the BDDs of the problem to be solved
  *
  */
+@Getter
 public class Problem {
 	private final Game game;
 	private final GameHelper gh;
@@ -63,7 +61,7 @@ public class Problem {
 				//for every box (disjunction)
 				.flatMap(boxid -> goals.stream()
 						//x and y match goal x,y
-							.map(goal -> new AndFormula(gh.getBoxX(boxid,goal[0]),gh.getBoxY(boxid,goal[1]))))
+						.map(goal -> new AndFormula(gh.getBoxX(boxid, goal[0]), gh.getBoxY(boxid, goal[1]))))
 				.map(f -> (Formula)f)
 				.reduce(Formula::or).get().toEquivalentCube();
 	}
@@ -72,44 +70,12 @@ public class Problem {
 	 * BDD representing the transition relation
 	 * @return referenced BDD
 	 */
-	public long getTrans(){
-		long wallsInvariant = makeWallsInvariant();
-		//long result = makeAnd(getTrue(),wallsInvariant);
-		long result = wallsInvariant;
-		long old = result;
-		//deref(wallsInvariant);
-		Runner.sleepPrint("dt: wallsinv "+nodecount(result));
-
-		long direction = makeDirectionTrans();
-		result = makeAnd(result,direction);
-		deref(old);
-		old = result;
-		deref(direction);
-		Runner.sleepPrint("dt: dir "+nodecount(result));
-
-		long playerMove = makePlayerMove();
-		result = makeAnd(result,playerMove);
-		Runner.sleepPrint("dt: playermove "+nodecount(result));
-		deref(playerMove);
-
-		//TODO check of iterative methods beter werken
-		long noBoxCollisionInvariant = makeNoBoxCollisionInvariant();
-		result = makeAnd(result,noBoxCollisionInvariant);
-		Runner.sleepPrint("dt: boxinv "+nodecount(result));
-		deref(noBoxCollisionInvariant);
-
-		long boxMove = makeBoxMove();
-		result = makeAnd(result,boxMove);
-		Runner.sleepPrint("dt: boxmove "+nodecount(result));
-		deref(boxMove);
-
-		result = ref(result);
-		Runner.sleepPrint("dt: result "+nodecount(result));
-		return result;
-	}
-
-	public GameHelper getGameHelper(){
-		return gh;
+	public Cube getTrans(){
+		return makeWallsInvariant()
+				.and(makeDirectionTrans())
+				.and(makePlayerMove())
+				.and(makeNoBoxCollisionInvariant())
+				.and(makeBoxMove());
 	}
 
 	/**
@@ -117,7 +83,7 @@ public class Problem {
 	 * in a single direction for every step
 	 * @return The reference to the BDD
 	 */
-	private long makeUniqueDirection() {
+	private Cube makeUniqueDirection() {
 		Direction[] dirs = Direction.values();
 		disableGC();
 		long result = getFalse();
@@ -138,7 +104,7 @@ public class Problem {
 	 * @param x the location to represent
 	 * @return a reference to a BDD representing that the player is at location x
 	 */
-	private long makePlayerAtX(int x){
+	private Cube makePlayerAtX(int x){
 		disableGC();
 		long result = getTrue();
 		for(int i = 0;i<game.getWidth();i++){
@@ -152,7 +118,7 @@ public class Problem {
 	}
 
 	//returns a referenced BDD representing that the player is at location y
-	private long makePlayerAtY(int y){
+	private Cube makePlayerAtY(int y){
 		disableGC();
 		long result = getTrue();
 		for(int i = 0;i<game.getHeight();i++){
@@ -166,7 +132,7 @@ public class Problem {
 	}
 
 	//returns a reference to a BDD representing all the boxes at the right locations
-	private long makeBoxes() {
+	private Cube makeBoxes() {
 		disableGC();
 		long result = getTrue();
 		List<int[]> boxes = game.getBoxes();
@@ -193,7 +159,7 @@ public class Problem {
 	 * This is an invariant.
 	 * @return The referenced BDD.
 	 */
-	protected long makeWallsInvariant() {
+	protected Cube makeWallsInvariant() {
 		//Store all the walls
 		List<int[]> walls = new ArrayList<int[]>();
 		for(int x = 0; x < game.getWidth(); x++) {
@@ -227,7 +193,7 @@ public class Problem {
 	 * This is an invariant.
 	 * @return The referenced BDD.
 	 */
-	protected long makeNoBoxCollisionInvariant() {
+	protected Cube makeNoBoxCollisionInvariant() {
 		int numberOfBoxes = game.getBoxes().size();
 		long result = getTrue();
 		//Invariant is only needed when more than one box exists
@@ -247,7 +213,7 @@ public class Problem {
 		return result;
 	}
 
-	protected long makeBoxCollisionPair(int box1, int box2) {
+	protected Cube makeBoxCollisionPair(int box1, int box2) {
 		disableGC();
 		long result = getTrue();
 		//TODO optimize: only consider valid positions (without a wall)
@@ -267,7 +233,7 @@ public class Problem {
 	 * has a unique direction for the player
 	 * @return The referenced BDD
 	 */
-	protected long makeDirectionTrans() {
+	protected Cube makeDirectionTrans() {
 		Direction[] dirs = Direction.values();
 		disableGC();
 		long result = getFalse();
@@ -287,7 +253,7 @@ public class Problem {
 	 * Build a BDD that represents the allowed moves of the player
 	 * @return The references BDD
 	 */
-	protected long makePlayerMove() {
+	protected Cube makePlayerMove() {
 		disableGC();
 		// direction=LEFT & x>0 -> next(x) = x+(-1) & next(y) = y
 		long moveLeft = makeImplies(
@@ -313,7 +279,7 @@ public class Problem {
 		return result;
 	}
 
-	protected long makePlayerMove(int dX, int dY){
+	protected Cube makePlayerMove(int dX, int dY){
 		long xResult = getFalse();
 		for(int x = Math.max(0, -dX); x < game.getWidth() - Math.max(0, dX); x++) {
 			long moveForThisX = getTrue();
@@ -346,7 +312,7 @@ public class Problem {
 //		(player.direction=DOWN & y<yDimen+(-1) -> next(y) = y+1 & next(x) = x)
 //	) &
 //	(!(x = next(player.x) & y = next(player.y)) -> x = next(x) & y = next(y))
-	protected long makeBoxMove() {
+	protected Cube makeBoxMove() {
 		List<int[]> boxes = game.getBoxes();
 		long result = getTrue();
 		for(int i = 0; i < boxes.size(); i++) {
@@ -403,7 +369,7 @@ public class Problem {
 		return result;
 	}
 
-	protected long makeBoxMove(int boxid, int dX, int dY){
+	protected Cube makeBoxMove(int boxid, int dX, int dY){
 		long xResult = getFalse();
 		for(int x = Math.max(0, -dX); x < game.getWidth() - Math.max(0, dX); x++) {
 			long moveForThisX = getTrue();
@@ -430,7 +396,7 @@ public class Problem {
 	}
 
 	// box.x=next(player.x) & box.y=next(player.y)
-	protected long makePlayerBoxCollision(int box) {
+	protected Cube makePlayerBoxCollision(int box) {
 		long result = getTrue();
 		for(int x = 0; x < game.getWidth(); x++) {
 			result = makeAnd(result, makeEquals(gh.getBoxX(box, x), gh.getPlayerXVarPrime(x)));
