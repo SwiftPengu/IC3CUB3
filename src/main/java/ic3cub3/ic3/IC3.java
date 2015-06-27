@@ -244,7 +244,7 @@ public class IC3 {
 		printv(() -> notcex,2);
 		assert(satsolver.sat(F.and(notcex).and(T).and(cex.getPrimed())).size()==0) : "MIC: ~cex is not inductive on F";
 		
-		Clause result = notcex.clone(); //~s is the maximum inductive clause, return this if all else fails
+		Clause result = notcex.deepCopy(); //~s is the maximum inductive clause, return this if all else fails
 		
 		//The code below is rather awkward due to Java preventing removal of items 
 		//from lists which are being iterated on.

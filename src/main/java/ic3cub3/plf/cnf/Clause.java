@@ -97,7 +97,7 @@ public class Clause {
 		return result;
 	}
 
-	public Clause clone() {
+	public Clause deepCopy() {
 		return new Clause(getLiterals());
 	}
 	
