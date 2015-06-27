@@ -118,23 +118,21 @@ public class Problem {
 
 	//returns a reference to a BDD representing all the boxes at the right locations
 	private Cube makeBoxes() {
-		disableGC();
-		long result = getTrue();
 		List<int[]> boxes = game.getBoxes();
+
+		Cube result = new Cube();
 		for(int boxid = 0; boxid < boxes.size(); boxid++) {
 			int[] box = boxes.get(boxid);
 			int x = box[0];
 			int y = box[1];
 
 			for(int varX = 0; varX < game.getWidth(); varX++) {
-				result = makeAnd(result, x == varX ? gh.getBoxX(boxid, varX) : makeNot(gh.getBoxX(boxid, varX)));
+				result.addLiteral(x == varX ? gh.getBoxX(boxid, varX) : gh.getBoxX(boxid, varX).not());
 			}
 			for(int varY = 0; varY < game.getHeight(); varY++) {
-				result = makeAnd(result, y == varY ? gh.getBoxY(boxid, varY) : makeNot(gh.getBoxY(boxid, varY)));
+				result.addLiteral(y == varY ? gh.getBoxY(boxid, varY) : gh.getBoxY(boxid, varY).not());
 			}
 		}
-		ref(result);
-		enableGC();
 		return result;
 	}
 
@@ -149,7 +147,7 @@ public class Problem {
 		List<int[]> walls = new ArrayList<int[]>();
 		for(int x = 0; x < game.getWidth(); x++) {
 			for(int y = 0; y < game.getHeight(); y++) {
-				if(game.getItemAt(x, y) == FieldItem.WALL) {
+				if(game.getItemAt(x, y) == Game.FieldItem.WALL) {
 					walls.add(new int[]{x,y});
 				}
 			}
