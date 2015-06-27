@@ -202,17 +202,19 @@ public class Problem {
 	}
 
 	protected Formula makeBoxCollisionPair(int box1, int box2) {
-		disableGC();
-		long result = getTrue();
-		//TODO optimize: only consider valid positions (without a wall)
+		Formula result = null;
 		for(int x = 0; x < game.getWidth(); x++) {
-			result = makeAnd(result, makeEquals(gh.getBoxXPrime(box1, x), gh.getBoxXPrime(box2, x)));
+			Formula boxxequal = gh.getBoxXPrime(box1,x).iff(gh.getBoxXPrime(box2,x));
+			if(result==null){
+				result = boxxequal;
+			}else{
+				result = result.and(boxxequal);
+			}
 		}
+		assert(result!=null);
 		for(int y = 0; y < game.getHeight(); y++) {
-			result = makeAnd(result, makeEquals(gh.getBoxYPrime(box1, y), gh.getBoxYPrime(box2, y)));
+			result = result.and(gh.getBoxYPrime(box1,y).iff(gh.getBoxYPrime(box2,y)));
 		}
-		result = ref(result);
-		enableGC();
 		return result;
 	}
 
@@ -222,19 +224,7 @@ public class Problem {
 	 * @return The referenced BDD
 	 */
 	protected Cube makeDirectionTrans() {
-		Direction[] dirs = Direction.values();
-		disableGC();
-		long result = getFalse();
-		for(int i = 0; i < dirs.length; i++) {
-			long dirBdd = getTrue();
-			for(int j = 0; j < dirs.length; j++) {
-				dirBdd = makeAnd(dirBdd, i == j ? gh.getDirectionVariablePrime(dirs[j]) : makeNot(gh.getDirectionVariablePrime(dirs[j])));
-			}
-			result = makeOr(result, dirBdd);
-		}
-		ref(result);
-		enableGC();
-		return result;
+		return makeUniqueDirection().getPrimed();
 	}
 
 	/**
