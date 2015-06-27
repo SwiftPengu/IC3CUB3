@@ -143,6 +143,8 @@ public class Problem {
 	 * @return The referenced BDD.
 	 */
 	protected Cube makeWallsInvariant() {
+		Formula result = null;
+
 		//Store all the walls
 		List<int[]> walls = new ArrayList<int[]>();
 		for(int x = 0; x < game.getWidth(); x++) {
@@ -153,21 +155,24 @@ public class Problem {
 			}
 		}
 
-		disableGC();
 		//state that the next player location is on a wall or that the next box location is on a wall
-		long result = getFalse();
+
 		List<int[]> boxes = game.getBoxes();
 		for(int[] wall:walls) {
 			int x = wall[0];
 			int y = wall[1];
-			result = makeOr(result, makeAnd(gh.getPlayerXVarPrime(x), gh.getPlayerYVarPrime(y)));
+			AndFormula nextplayerloc = new AndFormula(gh.getPlayerXVarPrime(x), gh.getPlayerYVarPrime(y));
+			if(result==null){
+				result = nextplayerloc;
+			}else{
+				result = result.or(nextplayerloc)
+			}
 			for(int boxid = 0; boxid < boxes.size(); boxid++) {
-				result = makeOr(result, makeAnd(gh.getBoxXPrime(boxid, x), gh.getBoxYPrime(boxid, y)));
+				result.or(new AndFormula(gh.getBoxXPrime(boxid, x), gh.getBoxYPrime(boxid, y)));
 			}
 		}
-		result = ref(makeNot(result));
-		enableGC();
-		return result;
+		assert(result!=null);
+		return result.toEquivalentCube();
 	}
 
 	/**
