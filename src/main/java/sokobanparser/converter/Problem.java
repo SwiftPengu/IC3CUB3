@@ -213,7 +213,7 @@ public class Problem {
 		}
 		assert(result!=null);
 		for(int y = 0; y < game.getHeight(); y++) {
-			result = result.and(gh.getBoxYPrime(box1,y).iff(gh.getBoxYPrime(box2,y)));
+			result = result.and(gh.getBoxYPrime(box1, y).iff(gh.getBoxYPrime(box2, y)));
 		}
 		return result;
 	}
@@ -232,32 +232,25 @@ public class Problem {
 	 * @return The references BDD
 	 */
 	protected Cube makePlayerMove() {
-		disableGC();
 		// direction=LEFT & x>0 -> next(x) = x+(-1) & next(y) = y
-		long moveLeft = makeImplies(
-							makeAnd(gh.getDirectionVariable(Direction.LEFT), makeNot(gh.getPlayerXVar(0))),
-							makePlayerMove(-1,0));
+		Cube result = new AndFormula(gh.getDirectionVariable(Direction.LEFT),gh.getPlayerXVar(0).not())
+				.implies(makePlayerMove(-1, 0)).toEquivalentCube();
 
 		// direction=RIGHT & x<xDimen+(-1) -> next(x) = x+1 & next(y) = y
-		long moveRight = makeImplies(
-							makeAnd(gh.getDirectionVariable(Direction.RIGHT), makeNot(gh.getPlayerXVar(game.getWidth() - 1))),
-							makePlayerMove(1,0));
+		result = result.and(new AndFormula(gh.getDirectionVariable(Direction.RIGHT),gh.getPlayerXVar(game.getWidth()-1).not())
+				.implies(makePlayerMove(1, 0)).toEquivalentCube());
 
 		// direction=UP & y>0 -> next(y) = y+(-1) & next(x) = x
-		long moveUp = makeImplies(
-							makeAnd(gh.getDirectionVariable(Direction.UP), makeNot(gh.getPlayerYVar(0))),
-							makePlayerMove(0,-1));
+		result = result.and(new AndFormula(gh.getDirectionVariable(Direction.UP),gh.getPlayerYVar(0).not())
+				.implies(makePlayerMove(0, -1)).toEquivalentCube());
 
 		// direction=DOWN & y<yDimen+(-1) -> next(y) = y+1 & next(x) = x
-		long moveDown = makeImplies(
-							makeAnd(gh.getDirectionVariable(Direction.DOWN), makeNot(gh.getPlayerYVar(game.getHeight() - 1))),
-							makePlayerMove(0,1));
-		long result = ref(makeAnd(makeAnd(makeAnd(moveLeft, moveRight), moveUp), moveDown));
-		enableGC();
+		result = result.and(new AndFormula(gh.getDirectionVariable(Direction.UP),gh.getPlayerYVar(game.getHeight()-1).not())
+				.implies(makePlayerMove(0, 1)).toEquivalentCube());
 		return result;
 	}
 
-	protected Cube makePlayerMove(int dX, int dY){
+	protected Formula makePlayerMove(int dX, int dY){
 		long xResult = getFalse();
 		for(int x = Math.max(0, -dX); x < game.getWidth() - Math.max(0, dX); x++) {
 			long moveForThisX = getTrue();
@@ -269,6 +262,7 @@ public class Problem {
 			}
 			xResult = makeOr(xResult, moveForThisX);
 		}
+
 		long yResult = getFalse();
 		for(int y = Math.max(0, -dY); y < game.getHeight() - Math.max(0, dY); y++) {
 			long moveForThisY = getTrue();
@@ -383,14 +377,6 @@ public class Problem {
 			result = makeAnd(result, makeEquals(gh.getBoxY(box, y), gh.getPlayerYVarPrime(y)));
 		}
 		return result;
-	}
-
-	protected Game getGame(){
-		return game;
-	}
-
-	protected VarManager getvarManager(){
-		return varman;
 	}
 
 }
