@@ -1,5 +1,8 @@
 package sokobanparser;
 
+import ic3cub3.ic3.IC3;
+import ic3cub3.sat.SAT4J;
+import ic3cub3.tests.ProblemSet;
 import sokobanparser.converter.Problem;
 
 import java.io.File;
@@ -13,28 +16,23 @@ import static ic3cub3.runner.Runner.printv;
 public class Solver {
     /**
      * Starts solving the provided screen file
-     * @param screen the sokoban screen to solve
      * @throws FileNotFoundException when screen does not exist
      */
-    public static void processSolve(String screen)
+    public static void main(String... args)
             throws FileNotFoundException {
         long time = System.currentTimeMillis();
 
         // parse the screen
-        Game g = SokobanParser.parseScreen(new File(screen));
-
+        Game g = SokobanParser.parseScreen(new File("sokoban/screen.2000"));
         // Solve the screen
         sleepPrint("Generating problem BDDs");
         Problem p = new Problem(g);
+        ProblemSet problemSet = p.getProblemSet();
         sleepPrint("Generated problem BDDs");
-
-        //Start solving the screen
-        Solver s = new Solver(p);
         sleepPrint("Solving puzzle...");
-        String solution = s.solve();
+        problemSet.check(new IC3(new SAT4J()));
         sleepPrint(String.format("Solution found in %ds (%dms)",
-                (System.currentTimeMillis() - time) / 1000,System.currentTimeMillis()-time));
-        System.out.println(solution);
+                (System.currentTimeMillis() - time) / 1000, System.currentTimeMillis() - time));
 
         // Clean exit
         System.exit(0);

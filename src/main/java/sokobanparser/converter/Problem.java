@@ -1,11 +1,10 @@
 package sokobanparser.converter;
 
-import com.google.common.primitives.Ints;
 import ic3cub3.plf.AndFormula;
 import ic3cub3.plf.Formula;
 import ic3cub3.plf.Literal;
-import ic3cub3.plf.cnf.Clause;
 import ic3cub3.plf.cnf.Cube;
+import ic3cub3.tests.ProblemSet;
 import lombok.Getter;
 import sokobanparser.Game;
 
@@ -13,9 +12,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
+
+import static ic3cub3.runner.Runner.printv;
 
 /**
  * Class representing the BDDs of the problem to be solved
@@ -31,16 +30,20 @@ public class Problem {
 		gh = new GameHelper(game);
 	}
 
+    public ProblemSet getProblemSet(){
+        return new ProblemSet(getInit(),getTrans(),getError().toFormula().not().toEquivalentCube(),getError());
+    }
+
 	/**
 	 * Constructs a BDD representing the initial state
 	 * @return referenced BDD representing the initial state
 	 */
-	public Cube getInit(){
+	protected Cube getInit(){
 		Cube dir = makeUniqueDirection();
 		Cube p_x = makePlayerAtX(game.getPlayerLocation()[0]);
 		Cube p_y = makePlayerAtY(game.getPlayerLocation()[1]);
 		Cube boxes = makeBoxes();
-
+        printv(() -> "Init",1);
 		return dir.and(p_x).and(p_y).and(boxes);
 	}
 
@@ -50,7 +53,7 @@ public class Problem {
 	 * search for.
 	 * @return referenced BDD
 	 */
-	public Cube getError(){
+    protected Cube getError(){
 		//Obtain a list of all goals
 		List<int[]> goals = new ArrayList<int[]>();
 		for(int x = 0; x < game.getWidth(); x++) {
@@ -64,6 +67,7 @@ public class Problem {
 		//For every box we will check whether it is on one of the goals
 		List<int[]> boxes = game.getBoxes();
 
+        printv(() -> "Problem",1);
 		return IntStream.range(0,boxes.size()).boxed()
 				//for every box (disjunction)
 				.flatMap(boxid -> goals.stream()
@@ -77,7 +81,8 @@ public class Problem {
 	 * BDD representing the transition relation
 	 * @return referenced BDD
 	 */
-	public Cube getTrans(){
+    protected Cube getTrans(){
+        printv(() -> "Trans start",1);
 		Cube result = makeWallsInvariant()
 				.and(makeDirectionTrans())
 				.and(makePlayerMove())
@@ -86,6 +91,7 @@ public class Problem {
 		if(nbcinv.isPresent()){
 			result = result.and(nbcinv.get());
 		}
+        printv(() -> "Trans end",1);
 		return result;
 	}
 
@@ -118,7 +124,7 @@ public class Problem {
 
 	//returns a referenced BDD representing that the player is at location y
 	private Cube makePlayerAtY(int y){
-		return IntStream.range(0,game.getWidth()).boxed()
+		return IntStream.range(0,game.getHeight()).boxed()
 				.map(i -> (i==y?gh.getPlayerYVar(i):gh.getPlayerYVar(i).not()))
 				.map(Cube::new)
 				.reduce(Cube::and).get();	}
@@ -320,29 +326,45 @@ public class Problem {
 	}
 
 	protected Formula makeBoxMove(int boxid, int dX, int dY){
-		long xResult = getFalse();
+		Formula xResult = null;
 		for(int x = Math.max(0, -dX); x < game.getWidth() - Math.max(0, dX); x++) {
-			long moveForThisX = getTrue();
+			Formula moveForThisX = null;
 			for(int varX = 0; varX < game.getWidth(); varX++) {
-				moveForThisX = makeAnd(moveForThisX,
-						varX == x ? gh.getBoxX(boxid,varX) : makeNot(gh.getBoxX(boxid,varX)));
-				moveForThisX = makeAnd(moveForThisX,
-						varX + dX == x ? gh.getBoxXPrime(boxid,varX) : makeNot(gh.getBoxXPrime(boxid,varX)));
+				Formula xmatch = varX == x ? gh.getBoxX(boxid,varX) : gh.getBoxX(boxid,varX).not();
+				if(moveForThisX==null){
+					moveForThisX = xmatch;
+				} else {
+					moveForThisX = moveForThisX.and(xmatch);
+				}
+				moveForThisX = moveForThisX.and(varX + dX == x ? gh.getBoxXPrime(boxid,varX) : gh.getBoxXPrime(boxid,varX).not());
 			}
-			xResult = makeOr(xResult, moveForThisX);
+			if(xResult==null){
+				xResult=moveForThisX;
+			}else{
+				xResult=xResult.or(moveForThisX);
+			}
 		}
-		long yResult = getFalse();
+
+        Formula yResult = null;
 		for(int y = Math.max(0, -dY); y < game.getHeight() - Math.max(0, dY); y++) {
-			long moveForThisY = getTrue();
+			Formula moveForThisY = null;
 			for(int varY = 0; varY < game.getHeight(); varY++) {
-				moveForThisY = makeAnd(moveForThisY,
-						varY == y ? gh.getBoxY(boxid,varY) : makeNot(gh.getBoxY(boxid,varY)));
-				moveForThisY = makeAnd(moveForThisY,
-						varY + dY == y ? gh.getBoxYPrime(boxid,varY) : makeNot(gh.getBoxYPrime(boxid,varY)));
+                Formula ymatch = varY == y ? gh.getBoxY(boxid,varY) : gh.getBoxY(boxid,varY).not();
+                if(moveForThisY==null){
+                    moveForThisY=ymatch;
+                }else{
+                    moveForThisY=moveForThisY.and(ymatch);
+                }
+				moveForThisY = moveForThisY.and(varY + dY == y ? gh.getBoxYPrime(boxid,varY) : gh.getBoxYPrime(boxid,varY).not());
 			}
-			yResult = makeOr(yResult, moveForThisY);
+            if(yResult==null){
+                yResult=moveForThisY;
+            }else{
+                yResult=yResult.or(moveForThisY);
+            }
 		}
-		return makeAnd(xResult, yResult);
+        assert(xResult!=null && yResult!=null);
+		return xResult.and(yResult);
 	}
 
 	// box.x=next(player.x) & box.y=next(player.y)
