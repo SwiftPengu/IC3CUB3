@@ -178,6 +178,7 @@ public class IC3 {
 		}
 	}
 
+    //TODO this might have errors
 	private void propagateClauses(Cube T,List<Cube> F,
 			Set<Clause> addedClauses,int k) {
 		//TODO don't check for induction, but assert it (when allowed)
@@ -230,7 +231,8 @@ public class IC3 {
 		//implementation which asks the SAT solver:
 		//boolean equal = satsolver.sat(f.get(f1).toFormula().iff(f.get(f2).toFormula()).tseitinTransform()).size()>0;
 	}
-		
+
+    //TODO this has errors
 	/**
 	 * Finds a minimally inductive clause relative to F (F ^ T ^ ~result => ~result') given a negated counterexample
 	 * @param F the frontier set which the result should be relatively inductive to
