@@ -10,7 +10,6 @@
 	int cf = 1;
 	int a134 = 2;
 
-
 	void errorCheck() {
 	    if((a134==1)){
 	    cf = (0);
@@ -36,10 +35,6 @@ void calculate_outputm37(int input) {
         cf = 1;
 	calculate_outputm37(input);
     errorCheck();
-
-//    if((cf==1)) {
-  //  	fprintf(stderr, "Invalid input: %d\n", input);
-    //	 }
 }
 
 int main()

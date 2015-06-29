@@ -15,6 +15,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static ic3cub3.runner.Runner.printv;
+
 /**
  * A wrapper for the SAT4J port of Minisat
  */
@@ -50,7 +52,7 @@ public class SAT4J extends SATSolver{
 				//System.out.println(clause);
 				solver.addClause(conv);
 			} catch (ContradictionException e) {
-				if(Runner.VERBOSE>1)System.out.println("Trivially unsat");
+				printv(() -> "Trivially unsat", 2);
 				//System.out.println(c);
 				return UNSAT;
 			}

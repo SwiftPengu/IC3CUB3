@@ -33,7 +33,7 @@ public class IC3 {
 			printv(() -> "I:\t"+I,2);
 			printv(() -> "T:\t"+T,2);
 			printv(() -> "P:\t"+P,2);
-			printv(() -> "NP:\t",2);
+			printv(() -> "NP:\t"+NP,2);
 		//
 		// Establish invariants
 		
