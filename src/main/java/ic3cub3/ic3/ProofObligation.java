@@ -6,6 +6,8 @@ import lombok.Getter;
 
 import java.util.LinkedList;
 
+import static ic3cub3.runner.Runner.printv;
+
 /**
  * Class representing an obligation to prove that a given CTI should not hold be
  * reachable within level+1 steps
@@ -51,4 +53,13 @@ public class ProofObligation implements Comparable<ProofObligation> {
 		}
 		return result;
 	}
+
+    public String getTraceString() {
+        printv(() -> "Trace to ~P: ",0);
+        String result = "I";
+        for(ProofObligation po:getProofTrace()){
+            result = result + " --> \n" + po.getCTI();
+        }
+        return result;
+    }
 }

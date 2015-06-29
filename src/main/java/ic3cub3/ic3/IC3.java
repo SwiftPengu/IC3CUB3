@@ -293,13 +293,4 @@ public class IC3 {
 			return null;
 		}
 	}
-	
-	public static void printTrace(ProofObligation probl) {
-		printv(() -> "Trace to ~P: ",0);
-		StringBuilder s = new StringBuilder().append("I");
-		for(ProofObligation po:probl.getProofTrace()){
-			s.append(" --> \n").append(po.getCTI());
-		}
-		printv(s::toString,0);
-	}
 }
