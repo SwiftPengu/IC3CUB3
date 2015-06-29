@@ -177,8 +177,7 @@ public class IC3 {
 			}
 		}
 	}
-
-    //TODO this might have errors
+    
 	private void propagateClauses(Cube T,List<Cube> F,
 			Set<Clause> addedClauses,int k) {
 		//TODO don't check for induction, but assert it (when allowed)
