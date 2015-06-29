@@ -29,7 +29,7 @@ public class IC3 {
 	 * @param NP the negation of P
 	 * @return null when the property holds, or a trace (reachable from I) to NP
 	 */
-	public List<ProofObligation> check(Cube I, Cube T, Cube P,Cube NP){
+	public ProofObligation check(Cube I, Cube T, Cube P,Cube NP){
 			printv(() -> "I:\t"+I,2);
 			printv(() -> "T:\t"+T,2);
 			printv(() -> "P:\t"+P,2);
@@ -41,7 +41,7 @@ public class IC3 {
 		printv(() -> "Check I => P",1);
 		if(satsolver.sat(I.and(NP)).size()>0){
 			printv(() -> "I => P does not hold",1);
-			return Collections.singletonList(new ProofObligation(P, 0));
+			return new ProofObligation(P, 0);
 		}else{
 			printv(() -> "I => P",1);
 		}
@@ -49,7 +49,7 @@ public class IC3 {
 		//check I ^ T => P
 		if(satsolver.sat(I.and(T).and(NP)).size()>0){
 			printv(() -> "I ^ T => P does not hold",1);
-			return Collections.singletonList(new ProofObligation(P, 1));
+			return new ProofObligation(P, 1);
 		}else{
 			printv(() -> "I ^ T => P",1);
 		}
@@ -82,7 +82,7 @@ public class IC3 {
 				if(inductiveFrontier==null){
 					printv(() -> "Found counterexample to P: "+s,1);
 					//printTrace(probl);
-					return probl.getProofTrace();
+					return probl;
 				}else{
 					strengthen(s,F,T,inductiveFrontier,addedClauses);
 					checkCTIResolved(F,probl,inductiveFrontier,k,T,proofObligations);					
