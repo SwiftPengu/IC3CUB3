@@ -11,7 +11,7 @@
 	int a134 = 2;
 
 	void errorCheck() {
-	    if((a134==1)){
+	    if((a134==3)){
 	    cf = (0);
 	    error_99: assert(!error_0);
 	    }
@@ -32,7 +32,7 @@ void calculate_outputm37(int input) {
     } 
 }
  void calculate_output(int input) {
-        cf = 1;
+        //cf = 1;
 	calculate_outputm37(input);
     errorCheck();
 }
