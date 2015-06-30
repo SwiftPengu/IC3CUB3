@@ -38,7 +38,7 @@ public class ProblemSet {
 		getProperties().stream()
                 .map(pp -> ic3.check(getInitial(), getTransition(),
                         pp.getProperty(), pp.getNegatedProperty()))
-                .map(po -> po != null ? po.getProofTrace() : null).forEach(System.out::println);
+                .map(po -> po != null ? po.getTraceString() : null).forEach(System.out::println);
 	}
 
 	/**
