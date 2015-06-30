@@ -31,6 +31,7 @@ public class Runner {
         new IC3WMIM_1().check(ic3);
         new IC3WMIM_2().check(ic3);
         new ReachableBadState().check(ic3);
+        new ProblemTestManual().check(ic3);
     }
 
     @SneakyThrows
