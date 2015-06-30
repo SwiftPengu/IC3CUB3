@@ -7,17 +7,24 @@
 	int inputs[] = {1,2,5,4,3};
 
 	const int error_0 = 1;
-	int cf = 1;
+	//int cf = 1;
 	int a134 = 2;
 
 	void errorCheck() {
-	    if((a134==3)){
-	    cf = (0);
+	    if((a134==1)){
+	    //cf = (0);
+	    scanf();
 	    error_99: assert(!error_0);
 	    }
 	}
  
 void calculate_outputm37(int input) {
+if(a134==0){
+	a134=0;
+}
+	if(a134==1){
+		a134=1;
+	}
 	if(a134==2){
 		calculate_outputm40(input);
 	}
