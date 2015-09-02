@@ -63,7 +63,7 @@ public class ConcreteRersParser extends AbstractRERSParser {
         printv(() -> "Size of I: "+this.getI().getClauses().size(),1);
         buildT();
         printv(() -> "T: "+getT(), 2);
-        printv(() -> "Size of I: "+this.getT().getClauses().size(),1);
+        printv(() -> "Size of T: "+this.getT().getClauses().size(),1);
         buildP();
         printv(() -> "P: "+getP(),2);
         printv(() -> "Size of P: "+this.getP().stream().map(PropertyPair::getProperty).map(Cube::getClauses).mapToInt(Set::size).sum(),1);
