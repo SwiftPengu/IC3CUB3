@@ -6,6 +6,7 @@ import ic3cub3.rersparser.ParserHelper;
 import ic3cub3.sat.SAT4J;
 import ic3cub3.tests.actual.IC3WMIM_1;
 import ic3cub3.tests.actual.IC3WMIM_2;
+import ic3cub3.tests.actual.ProblemTestManual;
 import ic3cub3.tests.actual.ReachableBadState;
 import lombok.SneakyThrows;
 

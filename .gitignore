@@ -27,3 +27,5 @@ src/ic3cub3/antlr_gen/
 IC3CUB3.zip
 
 target/
+*.synctex.gz
+*.aux
