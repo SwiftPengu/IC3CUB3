@@ -29,11 +29,11 @@ public class IC3 {
 	 * @param NP the negation of P
 	 * @return null when the property holds, or a trace (reachable from I) to NP
 	 */
-	public List<ProofObligation> check(Cube I, Cube T, Cube P,Cube NP){
+	public ProofObligation check(Cube I, Cube T, Cube P,Cube NP){
 			printv(() -> "I:\t"+I,2);
 			printv(() -> "T:\t"+T,2);
 			printv(() -> "P:\t"+P,2);
-			printv(() -> "NP:\t",2);
+			printv(() -> "NP:\t"+NP,2);
 		//
 		// Establish invariants
 		
@@ -41,7 +41,7 @@ public class IC3 {
 		printv(() -> "Check I => P",1);
 		if(satsolver.sat(I.and(NP)).size()>0){
 			printv(() -> "I => P does not hold",1);
-			return Collections.singletonList(new ProofObligation(P, 0));
+			return new ProofObligation(P, 0);
 		}else{
 			printv(() -> "I => P",1);
 		}
@@ -49,7 +49,7 @@ public class IC3 {
 		//check I ^ T => P
 		if(satsolver.sat(I.and(T).and(NP)).size()>0){
 			printv(() -> "I ^ T => P does not hold",1);
-			return Collections.singletonList(new ProofObligation(P, 1));
+			return new ProofObligation(P, 1);
 		}else{
 			printv(() -> "I ^ T => P",1);
 		}
@@ -82,7 +82,7 @@ public class IC3 {
 				if(inductiveFrontier==null){
 					printv(() -> "Found counterexample to P: "+s,1);
 					//printTrace(probl);
-					return probl.getProofTrace();
+					return probl;
 				}else{
 					strengthen(s,F,T,inductiveFrontier,addedClauses);
 					checkCTIResolved(F,probl,inductiveFrontier,k,T,proofObligations);					
@@ -177,7 +177,7 @@ public class IC3 {
 			}
 		}
 	}
-
+    
 	private void propagateClauses(Cube T,List<Cube> F,
 			Set<Clause> addedClauses,int k) {
 		//TODO don't check for induction, but assert it (when allowed)
@@ -230,7 +230,8 @@ public class IC3 {
 		//implementation which asks the SAT solver:
 		//boolean equal = satsolver.sat(f.get(f1).toFormula().iff(f.get(f2).toFormula()).tseitinTransform()).size()>0;
 	}
-		
+
+    //TODO this has errors
 	/**
 	 * Finds a minimally inductive clause relative to F (F ^ T ^ ~result => ~result') given a negated counterexample
 	 * @param F the frontier set which the result should be relatively inductive to
@@ -292,14 +293,5 @@ public class IC3 {
 			//TODO use counterexample to refine rhat (rhat = rhat without literals not in ~cex = keep only literals in cex))
 			return null;
 		}
-	}
-	
-	public static void printTrace(ProofObligation probl) {
-		printv(() -> "Trace to ~P: ",0);
-		StringBuilder s = new StringBuilder().append("I");
-		for(ProofObligation po:probl.getProofTrace()){
-			s.append(" --> \n").append(po.getCTI());
-		}
-		printv(s::toString,0);
 	}
 }

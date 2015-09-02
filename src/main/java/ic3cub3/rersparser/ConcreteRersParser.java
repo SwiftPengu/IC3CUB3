@@ -59,13 +59,13 @@ public class ConcreteRersParser extends AbstractRERSParser {
         //Build call tree (assume that it is indeed a tree)
         while(parseParseableMethods()) {}
         buildI();
-        printv(this::getI,2);
+        printv(() -> "I: "+getI(),2);
         printv(() -> "Size of I: "+this.getI().getClauses().size(),1);
         buildT();
-        printv(this::getT, 2);
+        printv(() -> "T: "+getT(), 2);
         printv(() -> "Size of I: "+this.getT().getClauses().size(),1);
         buildP();
-        printv(this::getP,2);
+        printv(() -> "P: "+getP(),2);
         printv(() -> "Size of P: "+this.getP().stream().map(PropertyPair::getProperty).map(Cube::getClauses).mapToInt(Set::size).sum(),1);
         printv(() -> "Done converting problem",0);
     }
@@ -75,7 +75,9 @@ public class ConcreteRersParser extends AbstractRERSParser {
                         .filter(e -> getInitialValues().containsKey(e.getKey()))
                         .map(e -> e.getValue().getCube(getInitialValues().get(e.getKey())))
                         .reduce(new Cube(), Cube::and, Cube::and)
+                        .and(getUniqueInputCube())
         );
+        printv(() -> getVariables().entrySet().toString(),2);
     }
 
     private void buildT() {

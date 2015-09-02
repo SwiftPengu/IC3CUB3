@@ -21,7 +21,7 @@ public class Variable {
                 IntStream.range(0, size).boxed()
                         .map(i -> new Literal())
                         .collect(Collectors.toList()));
-        printv(() -> "new variable: " + result.getAssignmentLiteral().getID() + "; " + result.getLiterals(),2);
+        printv(() -> "new variable: " + result.getAssignmentLiteral().getID() + "; " + result.getLiterals(),1);
         return result;
     }
 

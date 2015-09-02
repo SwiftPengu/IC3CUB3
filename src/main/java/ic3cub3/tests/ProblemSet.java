@@ -1,11 +1,14 @@
 package ic3cub3.tests;
 
 import ic3cub3.ic3.IC3;
+import ic3cub3.ic3.ProofObligation;
 import ic3cub3.plf.cnf.Cube;
 import lombok.Data;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static ic3cub3.runner.Runner.printv;
 
 /**
  * Class representing a transition system, along with multiple properties and their negation
@@ -31,9 +34,11 @@ public class ProblemSet {
 	}
 	
 	public void check(IC3 ic3){
-		getProperties().stream().map(pp -> ic3.check(getInitial(), getTransition(),
-                pp.getProperty(), pp.getNegatedProperty()))
-		.forEach(System.out::println);
+        printv(() -> "Checking: "+getClass().getName(),0);
+		getProperties().stream()
+                .map(pp -> ic3.check(getInitial(), getTransition(),
+                        pp.getProperty(), pp.getNegatedProperty()))
+                .map(po -> po != null ? po.getTraceString() : null).forEach(System.out::println);
 	}
 
 	/**
