@@ -39,7 +39,7 @@ public class Runner {
     private static void runRERSTests(){
         IC3 ic3 = new IC3(new SAT4J());
         ParserHelper ph = new ParserHelper(new ConcreteRersParser());
-        ph.parse(new File("src/main/java/ic3cub3/rersproblems/problemtest.c"));
+        ph.parse(new File("rersproblems/problemtest.c"));
         //ph.parse(new File("src/main/java/ic3cub3/rersproblems/Problem1/Problem1.c"));
         ph.check(ic3);
     }
