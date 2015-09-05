@@ -206,7 +206,6 @@ A counterexample is a trace to the reachable bad state. A trace can be seen as a
 
 As mentioned in section \ref{sec:ic3_str}, elimination of a bad state $s$ may depend on other bad states $t$ from which $s$ is reachable. This induces to a chain of dependent bad states. As soon as (part of) this chain is reachable from $I$, the chain is a counterexample trace.
 
-
 \newpage
 \section{Implementation}
 \subsection{Propositional Logic Formulae and CNF}
@@ -381,6 +380,13 @@ When this procedure finishes, we have generated a formula for the top-level func
 \paragraph{Properties}
 The properties are obtained from the \texttt{errorCheck()} function. These properties consist of assertions represented by conditions. We encode these conditions as described earlier in this section, however we feed them as a property to the \texttt{ProblemSet}. Note that \texttt{errorCheck()} describes formulae for bad states, while IC3 checks whether a property always holds. To this end, we negate the formulae for the properties.
 
+\subsubsection{Sokoban}
+In an effort to create additional useful testcases, a parser was implemented for Sokoban screens. 
+This was achieved by modifying the screen parser from the Modelling and Analysis of Concurrent Systems 2 (MACS2) course, which parses a Sokoban screen to a Binary Decision Diagram representation for use with symbolic reachability analysis.
+
+As it happens, this format is analogous to the format used by the IC3 algorithm. The BDDs represent an initial state, a transition relation, and a bad state.
+With little effort, the code for the parser was transformed in order to generate a ProblemSet instance for use with IC3.
+
 \subsection{Measurements}
 Without a correctly functioning encoder (see section \ref{sec:enc}) for the RERS problems, we were not able to measure the performance of IC3 for large problems.
 
@@ -409,13 +415,24 @@ ReachableBadState & no & 18188 ms & 1.82 ms & 4.7 MB
 \caption{Measurement results}
 \end{table}
 
-\subsection{Future Work}
-\subsubsection{IC3}
+\section{Discussion}
+\subsection{RERS C programs}
+%TODO
+%Parser code messy
+%Also code needed for all unchanged variables
+%CNF conversion gives rise to long parsing times
+
+\subsection{Sokoban}
+%BDD implementation was already inefficient
+%It takes over 5m to construct a ProblemSet instance
+
+\section{Future Work}
+\subsection{IC3}
 The SAT solvers might also be optimized for use with the IC3 algorithm. For instance, the IC3 algorithm often issues SAT queries which are equivalent to earlier queries. Furthermore, there is also some overlap on parts of the formulae (for example, the transition relation $T$ will often be part of a SAT query) provided in the query.
 
 The IC3 algorithm shows similarities with abstraction (CEGAR), symbolic (BDDs), and BMC model checking algorithms. Perhaps combining IC3 with these techniques (for instance, implementing the MIC algorithm using BDDs) will lead to an improvement in performance.
 
-\subsubsection{Implementation}
+\subsection{Implementation}
 We failed to implement the encoder for the RERS problems. However, the design shows that it should be possbile. Implementing this encoder will allow for measurements of IC3 for larger problems.
 
 Hassan et al. \cite{Hassan2013} have improved the \texttt{down} algorithm. This improvement supersedes an intermediate improvement by Bradley et al. \cite{Bradley2007} which defines the \emph{up} algorithm. The created Java implementation of the IC3 algorithm only implements part of the \emph{down} algorithm. As the MIC algorithm is essential to the performance of IC3, implementing the improved algorithm could yield better overall performance.
@@ -426,13 +443,16 @@ While Minisat is a popular SAT solver, different SAT solvers might have differen
 
 The presented method for representing C programs as propositional logic formulae very probably is not the only existing method in existence to represent such programs. Different encodings might also result in a better performance of either the used SAT solver, or the generalisation algorithm.
 
-\subsubsection{Encodings}
+\subsection{Encodings}
 The C programming language can be used to solve a vast array of problems. %DUH!
 Restricting the domain for which encodings have to be generated might allow for more general representations of problems due to knowledge on a higher level. For example checking properties on a model of Sokoban is probably more efficient in comparison to a C implementation of the game.
 
-The current encoding algorithm already removes unreachable methods. However, unused variables (those which are only read/written in reachable code) are not removed. This will result in a smaller representation. Also, the 32 allocated literals per integer are not always used (for instance in booleans). Detecting these boundaries might decrease the representation size and the total amount of literals used. 
+The current encoding algorithm already removes unreachable methods. However, unused variables (those which are only read/written in reachable code) are not removed. This will result in a smaller representation. Also, the 32 allocated literals per integer are not always used (for instance in booleans). Detecting these boundaries might decrease the representation size and the total amount of literals used.
 
-\subsection{Conclusion}
+%TODO more efficinet Sokoban parser might improve solving time 
+
+\section{Conclusion}
+%TODO rewrite this
 We were able to construct a working implementation of the IC3 algorithm in Java, supporting multiple SAT solvers. We also designed an encoding scheme in order to verify RERS problems with the IC3 algorithm. Unfortunately there was not enough time left to correctly implement the RERS problem encoding scheme and test the algorithm with a larger test case.
 
 \bibliographystyle{plain}
