@@ -12,6 +12,8 @@ import lombok.SneakyThrows;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -39,8 +41,8 @@ public class Runner {
     private static void runRERSTests(){
         IC3 ic3 = new IC3(new SAT4J());
         ParserHelper ph = new ParserHelper(new ConcreteRersParser());
-        ph.parse(new File("rersproblems/problemtest.c"));
-        //ph.parse(new File("src/main/java/ic3cub3/rersproblems/Problem1/Problem1.c"));
+        File problemtest = Files.find(Paths.get(""),10,(path,attr) -> path.endsWith("problemtest.c")).findFirst().get().toFile();
+        ph.parse(problemtest);
         ph.check(ic3);
     }
 	

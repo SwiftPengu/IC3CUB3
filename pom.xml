@@ -4,7 +4,7 @@
 	<groupId>ic3cub3</groupId>
 	<artifactId>ic3cub3</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0-SNAPSHOT</version>
+	<version>1.0</version>
 	<name>ic3cub3</name>
 	<url>http://maven.apache.org</url>
 	<properties>
@@ -36,6 +36,7 @@
 					</transformers>
 					<shadedArtifactAttached>false</shadedArtifactAttached>
 					<createDependencyReducedPom>false</createDependencyReducedPom>
+					<minimizeJar>true</minimizeJar>
 				</configuration>
 				<executions>
 					<execution>

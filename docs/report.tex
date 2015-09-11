@@ -466,23 +466,23 @@ We were able to construct a working implementation of the IC3 algorithm in Java,
 \newpage
 \appendix
 \section{Compiling and running the project}
-The program must be compiled with the Java JDK, with a version $\geq 8$. The program has the following dependencies (all included in the lib folder):
+The program must be compiled with the Java JDK, with a version $\geq 8$. The program has the following dependencies, which are automatically downloaded by Maven:
 \begin{itemize}
 \item SAT4J
 \item Antlr4
 \item Lombok
 \end{itemize}
 
-The code can be built with the provided ant script. This is done by issuing the following command from the root directory of the project:
+The code can be built using Maven, with the provided pom file. This is done by issuing the following command from the root directory of the project:
 
-\texttt{ant build}
+\texttt{mvn compile}
 
 To create a runnable .jar file, run the following command from the root directory of the project:
 
-\texttt{ant jar}
+\texttt{mvn install}
 
-It is also possible to run the testcases using the following command:
+It is also possible to run the testcases after building the .jar file using the following command:
 
-\texttt{ant run}
+\texttt{java -jar target/ic3cub3-1.0.jar}
 
 \end{document}
