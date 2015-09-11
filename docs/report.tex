@@ -385,7 +385,7 @@ In an effort to create additional useful testcases, a parser was implemented for
 This was achieved by modifying the screen parser from the Modelling and Analysis of Concurrent Systems 2 (MACS2) course, which parses a Sokoban screen to a Binary Decision Diagram representation for use with symbolic reachability analysis.
 
 As it happens, this format is analogous to the format used by the IC3 algorithm. The BDDs represent an initial state, a transition relation, and a bad state.
-With little effort, the code for the parser was transformed in order to generate a ProblemSet instance for use with IC3.
+With little effort, the code for the parser was transformed in order to be able to generate a ProblemSet instance for use with IC3.
 
 \subsection{Measurements}
 Without a correctly functioning encoder (see section \ref{sec:enc}) for the RERS problems, we were not able to measure the performance of IC3 for large problems.
@@ -417,14 +417,18 @@ ReachableBadState & no & 18188 ms & 1.82 ms & 4.7 MB
 
 \section{Discussion}
 \subsection{RERS C programs}
-%TODO
-%Parser code messy
-%Also code needed for all unchanged variables
-%CNF conversion gives rise to long parsing times
+Writing a parser using ANTLR resulted in quite messy parser code for all kinds of parsing edge cases.
+This made it hard to maintain a high-level view on the actual transformation from C to predicate logic, and was error-prone and hard to debug.
+
+The speed of the resulting transformation code was extremely slow for larger programs. For large RERS programs, most of the transformation time is spent in CNF conversion, which corresponds with the theory.
+
+The duration of the conversion was not a problem for the RERS code, but was a problem for the Sokoban conversion.
+
+Unfortunately, the generated ProblemSet instances were not correct.
+That is, model represented by the predicate logic was not the same as the model represented by the C code. This due to the fact that the C code only models the variables which change. When this behaviour is mapped one-to-one to predicate logic, the SAT-solver liberally alters variables which should not change. This leads to incorrect behaviour of the IC3 algorithm.
 
 \subsection{Sokoban}
-%BDD implementation was already inefficient
-%It takes over 5m to construct a ProblemSet instance
+The Sokoban parsing code was copied from a similar implementation for symbolic reachability using BDDs. For the BDD code, the implementation was already inefficient, and the resulting conversion did not finish within 5 minutes for the simplest Sokoban instance. Maybe a more efficient implementation of the transition relation might help in this case.
 
 \section{Future Work}
 \subsection{IC3}
@@ -449,11 +453,12 @@ Restricting the domain for which encodings have to be generated might allow for 
 
 The current encoding algorithm already removes unreachable methods. However, unused variables (those which are only read/written in reachable code) are not removed. This will result in a smaller representation. Also, the 32 allocated literals per integer are not always used (for instance in booleans). Detecting these boundaries might decrease the representation size and the total amount of literals used.
 
-%TODO more efficinet Sokoban parser might improve solving time 
+The current parser code for Sokoban screens is not really efficient.
+It is known from other groups of the MACS2 course, that there are better implementations. Perhaps these implementations lower the parsing load, and allow the IC3 algorithm to solve the Sokoban puzzles.
 
 \section{Conclusion}
 %TODO rewrite this
-We were able to construct a working implementation of the IC3 algorithm in Java, supporting multiple SAT solvers. We also designed an encoding scheme in order to verify RERS problems with the IC3 algorithm. Unfortunately there was not enough time left to correctly implement the RERS problem encoding scheme and test the algorithm with a larger test case.
+We were able to construct a working implementation of the IC3 algorithm in Java, supporting multiple SAT solvers. We also designed an encoding scheme in order to verify RERS problems with the IC3 algorithm. Unfortunately, the scheme was not correct, as was the resulting parser code. Consequently, the IC3 algorithm was only tested with small test cases.
 
 \bibliographystyle{plain}
 \bibliography{references}
