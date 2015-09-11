@@ -430,6 +430,15 @@ That is, model represented by the predicate logic was not the same as the model 
 \subsection{Sokoban}
 The Sokoban parsing code was copied from a similar implementation for symbolic reachability using BDDs. For the BDD code, the implementation was already inefficient, and the resulting conversion did not finish within 5 minutes for the simplest Sokoban instance. Maybe a more efficient implementation of the transition relation might help in this case.
 
+\subsection{Time schedule}
+The time invested in each part is the following:
+
+\begin{tabularx}{\linewidth}{X|l|l|l|l|l|l}
+	Activity & Total time& IC3 & Parser & Testing & Report & Other\\\hline
+	Updated build file & 	1h &&&&&	1h	\\
+	Write discussion part &	2h &&&&		2h	\\\hline
+\end{tabularx}
+
 \section{Future Work}
 \subsection{IC3}
 The SAT solvers might also be optimized for use with the IC3 algorithm. For instance, the IC3 algorithm often issues SAT queries which are equivalent to earlier queries. Furthermore, there is also some overlap on parts of the formulae (for example, the transition relation $T$ will often be part of a SAT query) provided in the query.
@@ -457,7 +466,6 @@ The current parser code for Sokoban screens is not really efficient.
 It is known from other groups of the MACS2 course, that there are better implementations. Perhaps these implementations lower the parsing load, and allow the IC3 algorithm to solve the Sokoban puzzles.
 
 \section{Conclusion}
-%TODO rewrite this
 We were able to construct a working implementation of the IC3 algorithm in Java, supporting multiple SAT solvers. We also designed an encoding scheme in order to verify RERS problems with the IC3 algorithm. Unfortunately, the scheme was not correct, as was the resulting parser code. Consequently, the IC3 algorithm was only tested with small test cases.
 
 \bibliographystyle{plain}
