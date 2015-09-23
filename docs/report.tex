@@ -28,7 +28,7 @@ This report covers the individual project performed by H.N. Hindriks, under supe
 
 IC3 is a rather new algorithm for model checking, developed by Fabio Somenzi and Aaron Bradley \cite{Bradley2007}. The algorithm relies on providing a SAT solver (relatively) small queries in order to construct either an inductive proof or a counterexample to induction. The algorithm is described in more detail by Bradley \cite{Bradley2011}.
 
-The RERS challenge (which stands for Rigorous Examination of Reactive Systems), is an international contest currently held annualy. During the contest participants attempt to find bugs in reactive systems of varying complexity using testing and model checking tools.
+The RERS challenge (which stands for Rigorous Examination of Reactive Systems), is an international contest currently held annually. During the contest, participants attempt to find bugs in reactive systems of varying complexity using testing and model checking tools.
 
 The aim of the project was to acquire a better in-depth knowledge of the IC3 algorithm, while also experiencing the challenges encountered when model checking real-world-like programs.
 
@@ -99,7 +99,7 @@ F_i \land T &\Rightarrow F_{i+1}' & 0 \leq i < k
 
 These four invariants define frontier sets $F_0 \ldots F_k$. A single frontier set $F_i$ overapproximates all states from the transition system reachable within $i$ steps or less.
 
-During the execution of the IC3 algorithm, the value of $k$ is increased, and consequently more more frontier sets are introduced. The algorithm also strengthens the frontier sets when spurious (unreachable) bad states are found.
+During the execution of the IC3 algorithm, the value of $k$ is increased, and consequently more frontier sets are introduced. The algorithm also strengthens the frontier sets when spurious (unreachable) bad states are found.
 
 \subsubsection{Initialization}
 The algorithm is initialized by setting up an environment in which the aforementioned invariants hold. This is done by proving that the following formulae hold (using BMC):
@@ -135,7 +135,7 @@ For each proof obligation we have a level $l \in \mathbb{Z}$ and a bad state $s 
 %Dit 'largest' concept is nog wat vaag in deze tekst
 In order to prove this, the algorithm attempts to find the largest (highest index) frontier set $F_{ind}$ for which $F_{ind} \land \lnot s \land T \Rightarrow \lnot s'$ is satisfiable.
 
-When $F_{ind}$ is not found, it means that $s$ is reachable from $I$, and a counterexample trace is returned. In the case that $F_{ind}$ is found, we attempt to refine $F_{ind} \ldots F_k$ by strenghtening the frontier sets.
+When $F_{ind}$ is not found, it means that $s$ is reachable from $I$, and a counterexample trace is returned. In the case that $F_{ind}$ is found, we attempt to refine $F_{ind} \ldots F_k$ by strengthening the frontier sets.
 
 \subsubsection{Strenghtening}
 \label{sec:ic3_str}
@@ -144,13 +144,13 @@ From this point, we have a frontier set $F_i$ from which the bad state $s$ canno
 We now verify whether we have resolved the initial counterexample. When this is the case, we continue with the algorithm by increasing $k$. However, when the counterexample is not yet resolved, this must mean that a predecessor state $t \in F_i$ exists, form which $s$ is reachable ($t \land T \Rightarrow s$). We query the SAT solver to obtain such a state by finding a model for $F_{i} \land T \land s'$. We add this state to the proof obligation queue with priority $i$, and return to the beginning of the refining loop.
 
 \subsubsection{Increasing $k$}
-When the refining phase ends, this means that all counterexamples were refuted by strenghtening all involved frontier sets. We know %(do we?)
+When the refining phase ends, this means that all counterexamples were refuted by strengthening all involved frontier sets. We know %(do we?)
 that $\lnot P$ is unreachable within $k$ steps.
 
 We now increase the value of $k$, and initialize the new $F_k$ with $P$.
 However, we also retain our previously gathered knowledge about the transition system by \emph{propagating clauses}. Recall the second invariant ($F_i \Rightarrow F_{i+1}$) , we can also express it as $Clauses(F_i) \subseteq Clauses(F_{i+1})$. This means that for all frontier sets $F_0 \ldots F_{k-1}$, we must take every clause $c$ for which $c \in F_i \land c\notin F_{i+1}$ holds, and add $c$ to $F_{i+1}$.
 
-Now all invariants hold, and we attempt to see whether we have found an inductive strengthening (a fixpoint, where $\exists i. F_i \land T \Rightarrow F_{i+1}$). This however, is evaluated syntactically in favor of semantically (by querying the SAT solver), by checking whether $\exists i. Clauses(F_i) = Clauses(F_{i+1})$. When such an inductive strenghtening is found, it is returned, and the algorithm is finished.
+Now all invariants hold, and we attempt to see whether we have found an inductive strengthening (a fixpoint, where $\exists i. F_i \land T \Rightarrow F_{i+1}$). This however, is evaluated syntactically in favor of semantically (by querying the SAT solver), by checking whether $\exists i. Clauses(F_i) = Clauses(F_{i+1})$. When such an inductive strengthening is found, it is returned, and the algorithm is finished.
 
 \subsubsection{The Minimal Inductive (sub)Clause algorithm}
 \label{sec:MIC}
@@ -164,7 +164,7 @@ The algorithm takes as input:
 \item $F_i$, with $i=0 \ldots k$, a frontier set for which $F \land T \rightarrow \lnot s'$ is satisfiable
 \end{itemize}
 
-Note that it is not nessecary to implement the MIC algorithm, the negation of the counterexample is already inductive. However, not doing so effectively only removes a single state from the search. While, in many cases, the MIC algorithm will remove many more states from the search.
+Note that it is not necessary to implement the MIC algorithm, the negation of the counterexample is already inductive. However, not doing so effectively only removes a single state from the search. While, in many cases, the MIC algorithm will remove many more states from the search.
 
 The simplest algorithm (after the 'algorithm' described in the previous paragraph), is documented as the \emph{down} algorithm, which behaves as described in algorithm \ref{alg:down}.
 
@@ -199,7 +199,7 @@ down($I$,$T$,$F_i$,$s$){
 
 Informally, the \emph{down} algorithm drops a literal from $\lnot s$, tests whether $\lnot s$ remains inductive, and if so, repeats the process.
 
-The resulting clause is then minimal (no more literals can be dropped), and is used afterwards by the IC3 algorithm to strengthen the frontier sets.
+The resulting clause is then minimal \cite{Hassan2013} (no more literals can be dropped), and is used afterwards by the IC3 algorithm to strengthen the frontier sets.
 
 \subsubsection{Generating Counterexamples}
 A counterexample is a trace to the reachable bad state. A trace can be seen as a sequence of states. As IC3 can only deal with propositional logic formulae, 'state' refers to the CNF representation of that state.
@@ -209,7 +209,7 @@ As mentioned in section \ref{sec:ic3_str}, elimination of a bad state $s$ may de
 \newpage
 \section{Implementation}
 \subsection{Propositional Logic Formulae and CNF}
-IC3 relies on using logic formula for representing transition systems and properties. To use these formula internally, we designed two systems for representing propositional logic. A system to represent arbitrary propositional logic formulae, and a system to represent formulae in conjunctive normal form. Furthermore, both systems contain code to convert either system to an equisatisfiable formula in the other system.
+IC3 relies on using logic formulae for representing transition systems and properties, because it uses a SAT solver (SAT solvers commonly only support CNF formulae as input). To use these formulae internally, we designed two systems for representing propositional logic. A system to represent arbitrary propositional logic formulae, and a system to represent formulae in conjunctive normal form. Furthermore, both systems contain code to convert either system to an equisatisfiable formula in the other system.
 
 The first system supports formulae consisting of the $\lnot$,$\lor$,and $\land$ operators. It is implemented (by an object oriented structure) as a binary tree. It comes with convenience methods which also implement the $\rightarrow$ and $\leftrightarrow$ operators. Negation of the entire formula is also supported.
 
@@ -222,12 +222,12 @@ In order to perform conversion of the two formula representation systems, the af
 
 \subsection{SAT solvers}
 \subsubsection{Logic2CNF}
-At the beginning of the project, no formulae representing test cases were avaiable in CNF, and in order to test the semantics of IC3, a SAT solver was needed which supported arbitrary formulae. Logic2CNF is a fork of Minisat, which supports arbitrary formulae. Internally it applies the Tseitin transform algorithm, and drops the newly introduced literals from the output. It is able to find all models for a given formula, but also supports searching up to a specified maximum.
+At the beginning of the project, no formulae representing test cases were available in CNF, and in order to test the semantics of IC3, a SAT solver was needed which supported arbitrary formulae. Logic2CNF is a fork of Minisat, which supports arbitrary formulae. Internally it applies the Tseitin transform algorithm, and drops the newly introduced literals from the output. It is able to find all models for a given formula, but also supports searching up to a specified maximum.
 
 \subsubsection{SAT4J}
 SAT4J is a Java implementation of the Minisat SAT solver. It only supports formulae which are in CNF. SAT4J is able to find a single model of a formula, but it is also able to find all models.
 
-Furthermore, it conserves the behaviour of Minisat to report unsatisfiablity whenever a trivially unsatisfiable formula is provided to it (e.g.: $p \land \lnot p \Leftrightarrow \bot$). This enables the SAT solver to return a result early.
+Furthermore, it conserves the behaviour of Minisat to report unsatisfiability whenever a trivially unsatisfiable formula is provided to it (e.g.: $p \land \lnot p \Leftrightarrow \bot$). This enables the SAT solver to return a result early.
 
 \subsection{Problem solving architecture}
 The IC3 algorithm requires a very specific input format. To facilitate the bootstrapping process (e.g. feeding problems to the algorithm), the \texttt{ProblemSet} class was created. This class is used as a container for the formulae describing the transition system, and formulae describing (possibly multiple) properties. The class also contains a shortcut to automatically check all defined properties in the problem set.
@@ -258,7 +258,7 @@ The IC3 algorithm was implemented in Java. The algorithm itself consists of a tw
 
 \subsection{Testcases}
 \label{sec:ic3_testcases}
-Three testcases were designed to test the IC3 implementation, the behaviour of the algorithm was compared with the described behaviour (if any).
+Three test cases were designed to test the IC3 implementation, the behaviour of the algorithm was compared with the described behaviour (if any).
 
 Somenzi and Bradley provide two in-depth examples in \cite{Somenzi2011}.
 
@@ -367,12 +367,12 @@ We assume that the conditions in the program only consist of equality checks of 
 Multiple conditions might be concatenated by (boolean) $\land$ and $\lor$ operators. We already have code which supports this, which means that we can directly encode these operators according to their definition.
 
 \paragraph{Function calls}
-We are now able to construct formulae for all mentioned statements, except for function calls. However, we assumed that the function call graph can be resolved. This means, that for every function call, it is either possible to generate code for it, or to inline the already generated code. We always have the following choices:
+We are now able to construct formulae for all mentioned statements, except for function calls. However, we assumed that the function call graph can be resolved. This means, that for every function call, it is either possible to generate code for it, or to inline the already generated code. This property does not hold for recursive functions, but those were not present in the RERS programs. This gives us the following options:
 
 \begin{itemize}
 \item Either, the function call is independent $\rightarrow$ generate a formula immediately.
-\item or, the function call is dependent, but formulae for all dependent functions has already been generated $\rightarrow$ inline the generated formulae.
-\item or, the function call is depentent, and for some dependent functions no code has yet been generated $\rightarrow$ skip this function for now, and process it when more code has been processed.
+\item or, the function call is dependent, but formulae for all dependent functions have already been generated $\rightarrow$ inline the generated formulae.
+\item or, the function call is dependent, and for some dependent functions no code has yet been generated $\rightarrow$ skip this function for now, and process it when more code has been processed.
 \end{itemize}
 
 When this procedure finishes, we have generated a formula for the top-level function, and therefore have a representation for the entire program.
@@ -381,7 +381,7 @@ When this procedure finishes, we have generated a formula for the top-level func
 The properties are obtained from the \texttt{errorCheck()} function. These properties consist of assertions represented by conditions. We encode these conditions as described earlier in this section, however we feed them as a property to the \texttt{ProblemSet}. Note that \texttt{errorCheck()} describes formulae for bad states, while IC3 checks whether a property always holds. To this end, we negate the formulae for the properties.
 
 \subsubsection{Sokoban}
-In an effort to create additional useful testcases, a parser was implemented for Sokoban screens. 
+In an effort to create additional useful test cases, a parser was implemented for Sokoban screens. 
 This was achieved by modifying the screen parser from the Modelling and Analysis of Concurrent Systems 2 (MACS2) course, which parses a Sokoban screen to a Binary Decision Diagram representation for use with symbolic reachability analysis.
 
 As it happens, this format is analogous to the format used by the IC3 algorithm. The BDDs represent an initial state, a transition relation, and a bad state.
@@ -395,7 +395,7 @@ For the tests, all output was disabled, to only test the performance of the algo
 \paragraph{Timing}
 The timing measurements were performed by letting the algorithm run each test case n=10000 times. The program then printed the difference in milliseconds between the start and the end time.
 
-\paragraph{Memory} The memory usage was measured using the VisualVM profiler. As the real memory usage cannot be measured due to the memory allocation characteristics of Java, the measured memory usage serves only as an indication. To migitate this behaviour, we explicitly call the garbage collector \footnote{By invoking \texttt{System.gc()}} before each call of \texttt{ic3.check()}. Given that garbage collection takes more time, we ran each test case only n=1000 times.
+\paragraph{Memory} The memory usage was measured using the VisualVM profiler. As the real memory usage cannot be measured due to the memory allocation characteristics of Java, the measured memory usage serves only as an indication. To mitigate this behaviour, we explicitly call the garbage collector \footnote{By invoking \texttt{System.gc()}} before each call of \texttt{ic3.check()}. Given that garbage collection takes more time, we ran each test case only n=1000 times.
 
 
 We used the following JVM parameters (start the JVM in server mode, with a maximum heap size of 3GB):
@@ -446,7 +446,7 @@ The SAT solvers might also be optimized for use with the IC3 algorithm. For inst
 The IC3 algorithm shows similarities with abstraction (CEGAR), symbolic (BDDs), and BMC model checking algorithms. Perhaps combining IC3 with these techniques (for instance, implementing the MIC algorithm using BDDs) will lead to an improvement in performance.
 
 \subsection{Implementation}
-We failed to implement the encoder for the RERS problems. However, the design shows that it should be possbile. Implementing this encoder will allow for measurements of IC3 for larger problems.
+We failed to implement the encoder for the RERS problems. The implementation we constructed produced incorrect representations of the C programs. Correctly Implementing this encoder will allow for measurements of IC3 for concrete problems.
 
 Hassan et al. \cite{Hassan2013} have improved the \texttt{down} algorithm. This improvement supersedes an intermediate improvement by Bradley et al. \cite{Bradley2007} which defines the \emph{up} algorithm. The created Java implementation of the IC3 algorithm only implements part of the \emph{down} algorithm. As the MIC algorithm is essential to the performance of IC3, implementing the improved algorithm could yield better overall performance.
 
@@ -454,7 +454,7 @@ Currently, our IC3 implementation, as well as our SAT solver, both run on the JV
 
 While Minisat is a popular SAT solver, different SAT solvers might have different performance characteristics. Also, using a compiled SAT solver using JNI will definitely improve performance.
 
-The presented method for representing C programs as propositional logic formulae very probably is not the only existing method in existence to represent such programs. Different encodings might also result in a better performance of either the used SAT solver, or the generalisation algorithm.
+The presented method for representing C programs as propositional logic formulae very probably is not the only existing method in existence to represent such programs. Different encodings might also result in a better performance of either the used SAT solver, or the generalization algorithm.
 
 \subsection{Encodings}
 The C programming language can be used to solve a vast array of problems. %DUH!
@@ -489,7 +489,7 @@ To create a runnable .jar file, run the following command from the root director
 
 \texttt{mvn install}
 
-It is also possible to run the testcases after building the .jar file using the following command:
+It is also possible to run the test cases after building the .jar file using the following command:
 
 \texttt{java -jar target/ic3cub3-1.0.jar}
 
