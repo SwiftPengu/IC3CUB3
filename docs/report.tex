@@ -425,7 +425,7 @@ The speed of the resulting transformation code was extremely slow for larger pro
 The duration of the conversion was not a problem for the RERS code, but was a problem for the Sokoban conversion.
 
 Unfortunately, the generated ProblemSet instances were not correct.
-That is, model represented by the predicate logic was not the same as the model represented by the C code. This due to the fact that the C code only models the variables which change. When this behaviour is mapped one-to-one to predicate logic, the SAT-solver liberally alters variables which should not change. This leads to incorrect behaviour of the IC3 algorithm.
+That is, the model represented by the predicate logic was not the same as the model represented by the C code. This due to the fact that the C code only models the variables which change. When this behaviour is mapped one-to-one to predicate logic, the SAT-solver liberally alters variables which should not change. This leads to incorrect behaviour of the IC3 algorithm.
 
 \subsection{Sokoban}
 The Sokoban parsing code was copied from a similar implementation for symbolic reachability using BDDs. For the BDD code, the implementation was already inefficient, and the resulting conversion did not finish within 5 minutes for the simplest Sokoban instance. Maybe a more efficient implementation of the transition relation might help in this case.
