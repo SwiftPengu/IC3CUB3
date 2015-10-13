@@ -8,6 +8,7 @@
 \usepackage{algorithm}
 \usepackage{xcolor}
 \usepackage{tabularx}
+\usepackage{booktabs}
 
 \lstdefinestyle{customjava}{
 language=Java,
@@ -433,14 +434,19 @@ The Sokoban parsing code was copied from a similar implementation for symbolic r
 \subsection{Time schedule}
 The time invested in each part is the following:
 
-\begin{tabularx}{\linewidth}{X|l|l|l|l|l|l}
-	Activity & Total time& IC3 & Parser & Testing & Report & Other\\\hline
-	Reading up on IC3 & 	35 & 20 		&&&&\\\hline
-	Initial implementation & 10 & 10		&&&&\\\hline
-	Fixing implementation & 23 & 23		&&&&\\\hline
-	Initial parser implementation & 3 && 3 \\\hline
-	Updated build file & 	1 &&&&&	1	\\\hline
-	Write discussion part &	2 &&&&	2	&\\\hline
+\begin{tabularx}{\linewidth}{X|rrrrrr}
+Activity                      & Total time & IC3 & Parser & Testing & Report & Other \\\hline
+Reading up on IC3             & 25         & 25  &        &         &        &       \\
+Initial implementation        & 17         & 15  &        & 2       &        &       \\
+Fixing implementation         & 27         & 23  &        & 4       &        &       \\
+Initial parser implementation & 7          &     & 3      & 4       &        &       \\
+First report                  & 14         &     &        &         & 14     &       \\
+Second parser implementation  & 12         &     & 12     &         &        &       \\
+Small IC3 bugfixes            & 3          & 2   &        & 1       &        &       \\
+Sokoban conversion            & 2          &     &        &         &        & 2     \\
+Updating build method         & 2          &     &        &         &        & 2     \\
+Writing of discussion part    & 2          &     &        &         & 2      &       \\\hline
+Total                         & 111        & 65  & 15     & 11      & 16     & 4    
 \end{tabularx}
 
 \section{Future Work}
